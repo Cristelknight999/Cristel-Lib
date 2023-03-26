@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "cristellib",
+  "version": "${version}",
+  "name": "Cristel Lib",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": [
+    "Cristelknight999"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "MIT",
+  "icon": "assets/cristellib/textures/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.cristellib.fabric.CristelLibFabric"
+    ],
+    "cristellib": [
+      "net.cristellib.fabriclike.api.BuiltInAPI"
+    ]
+  },
+  "mixins": [
+    "cristellib.mixins.json",
+    "cristellib-common.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=1.19"
+  }
+}

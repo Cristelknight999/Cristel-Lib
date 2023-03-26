@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "mixin": [
+    "cristellib.mixins.json",
+    "cristellib-common.mixins.json"
+  ],
+  "quilt_loader": {
+    "group": "${group}",
+    "id": "cristellib",
+    "version": "${version}",
+    "name": "Cristel Lib",
+    "description": "This is an example description! Tell everyone what your mod is about!",
+    "authors": ["Cristelknight999"],
+    "contact": {
+      "sources": "https://github.com/architectury/architectury-templates"
+    },
+    "license": "MIT",
+    "icon": "assets/cristellib/textures/icon.png",
+    "intermediate_mappings": "net.fabricmc:intermediary",
+    "environment": "*",
+    "entrypoints": {
+      "init": [
+        "net.cristellib.quilt.CristelLibQuilt"
+      ],
+      "cristellib": [
+        "net.cristellib.fabriclike.api.BuiltInAPI"
+      ]
+    },
+    "depends": [
+      {
+        "id": "quilt_loader",
+        "version": "*"
+      },
+      {
+        "id": "quilt_base",
+        "version": "*"
+      },
+      {
+        "id": "minecraft",
+        "version": ">=1.19"
+      }
+    ]
+  }
+}

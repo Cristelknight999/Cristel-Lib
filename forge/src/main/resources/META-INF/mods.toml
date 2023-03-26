@@ -1,0 +1,28 @@
+modLoader = "javafml"
+loaderVersion = "[41,)"
+#issueTrackerURL = ""
+license = "MIT"
+
+[[mods]]
+modId = "cristellib"
+version = "${version}"
+displayName = "Cristel Lib"
+authors = "Cristelknight999"
+description = '''
+This is an example description! Tell everyone what your mod is about!
+'''
+logoFile = "assets/cristellib/textures/icon.png"
+
+[[dependencies.cristellib]]
+modId = "forge"
+mandatory = true
+versionRange = "[41,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.cristellib]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.19,)"
+ordering = "NONE"
+side = "BOTH"

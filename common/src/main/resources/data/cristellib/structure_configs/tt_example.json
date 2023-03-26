@@ -1,0 +1,14 @@
+{
+  "name": "ruined_portalsENABLE_DISABLE",
+  "subPath": "cristellib",
+  "header": "Header",
+  "config_type": "ENABLE_DISABLE",
+  "comments": {
+  },
+  "structure_sets": [
+    {
+      "modid": "minecraft",
+      "structure_set": "minecraft:ruined_portals"
+    }
+  ]
+}
