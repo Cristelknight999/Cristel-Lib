@@ -38,7 +38,7 @@ The file structure should look like this:
 ```
 #### Required Fields
 - **"subPath"** specifies the sub folder in the config folder where the file will be located. E.g. if you put there "cristellib" your config will be in `/config/cristellib/`.
-- **"config_type"** specifies, if the config will be for editing the placement (PLACEMENT), or if it is for enabling/disabling (ENABLE_DISABLE) a structure (there is no combined version yet).
+- **"config_type"** specifies, if the config will be for editing the placement (`PLACEMENT`), or if it is for enabling/disabling (`ENABLE_DISABLE`) a structure (there is no combined version yet).
 - **"structure_sets"** in this array you have to put every structure set, which should be in the config. The **"modid"** specifies in which mod container the structure set file should be searched, and the **"structure_set"** parameter defines the location.
 
 #### Optional Fields
