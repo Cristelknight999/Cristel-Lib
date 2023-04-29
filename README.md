@@ -42,3 +42,5 @@ The file structure should look like this:
 - **"structure_sets"** in this array you have to put every structure set, which should be in the config. The **"modid"** specifies in which mod container the structure set file should be searched, and the **"structure_set"** parameter defines the location.
 
 #### Optional Fields
+- **"name"** changes the name of the config file.
+- **"header"** is the text, which will be at the top of your config file.
