@@ -1,9 +1,7 @@
-package net.cristellib.api.builtinpacks;
+package net.cristellib.builtinpacks;
 
 import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
 import net.cristellib.CristelLib;
-import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.config.ConfigUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.FeatureFlagsMetadataSection;
@@ -18,8 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

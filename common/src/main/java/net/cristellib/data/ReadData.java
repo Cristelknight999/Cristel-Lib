@@ -7,7 +7,7 @@ import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.CristelLibRegistry;
 import net.cristellib.StructureConfig;
-import net.cristellib.api.builtinpacks.BuiltInDataPacks;
+import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.cristellib.config.ConfigType;
 import net.cristellib.config.ConfigUtil;
 import net.minecraft.commands.arguments.ComponentArgument;
@@ -23,6 +23,8 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 public class ReadData {
+
+    private static boolean checkedConfigFiles = false;
 
 
     public static void getBuiltInPacks(String modid){
@@ -47,7 +49,7 @@ public class ReadData {
                     CristelLib.LOGGER.debug("Couldn't parse: \"" + name + "\" to a component", e);
                 }
 
-                boolean b = Conditions.readCondition(object);
+                boolean b = Conditions.readConditions(object);
                 BuiltInDataPacks.registerPack(rl, modid, component, () -> b);
             }
         }
@@ -66,7 +68,7 @@ public class ReadData {
                 String location = object.get("location").getAsString();
                 String destination = object.get("destination").getAsString();
 
-                if(Conditions.readCondition(object)){
+                if(Conditions.readConditions(object)){
                     copyFileFromJar(location, destination, modid);
                 }
             }
@@ -103,16 +105,7 @@ public class ReadData {
             if(element instanceof JsonObject object){
                 String subPath = object.get("subPath").getAsString();
                 String name = object.get("name").getAsString();
-                String header = object.get("header").getAsString();
-                JsonObject comments = object.get("comments").getAsJsonObject();
-                HashMap<String, String> commentFinalMap = new HashMap<>();
-                Map<String, JsonElement> commentMap = comments.asMap();
-                for(String s : commentMap.keySet()){
-                    JsonElement e = commentMap.get(s);
-                    if(e instanceof JsonPrimitive p){
-                        commentFinalMap.put(s, p.getAsString());
-                    }
-                }
+
 
                 StructureConfig config = StructureConfig.createWithDefaultConfigPath(subPath, name, ConfigType.valueOf(object.get("config_type").getAsString()));
                 JsonArray sets = object.get("structure_sets").getAsJsonArray();
@@ -130,12 +123,27 @@ public class ReadData {
                 }
 
 
-                if(!header.isEmpty()){
-                    config.setHeader(header + "\n");
+                if(object.has("header")){
+                    String header = object.get("header").getAsString();
+                    if(!header.isEmpty()){
+                        config.setHeader(header + "\n");
+                    }
                 }
-                if(!commentFinalMap.isEmpty()){
-                    config.setComments(commentFinalMap);
+
+                if(object.has("comments")){
+                    JsonObject comments = object.get("comments").getAsJsonObject();
+                    HashMap<String, String> commentFinalMap = new HashMap<>();
+                    Map<String, JsonElement> commentMap = comments.asMap();
+                    for(String s : commentMap.keySet()){
+                        if(commentMap.get(s) instanceof JsonPrimitive p){
+                            commentFinalMap.put(s, p.getAsString());
+                        }
+                    }
+                    if(!commentFinalMap.isEmpty()){
+                        config.setComments(commentFinalMap);
+                    }
                 }
+
                 configs.add(config);
             }
         }
@@ -163,10 +171,23 @@ public class ReadData {
      */
     public static void findFiles(List<Path> rootPaths, String modid, String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
         if (modid.equals("minecraft")) return;
+        if(!checkedConfigFiles){
+            findInConfigFiles(subPath, rootFilter, processor, visitAllFiles, maxDepth);
+            checkedConfigFiles = true;
+        }
         try {
             for (var root : rootPaths) {
                 walk(root.resolve(String.format("data/%s/%s", modid, subPath)), rootFilter, processor, visitAllFiles, maxDepth);
             }
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+
+    public static void findInConfigFiles(String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
+        try {
+            walk(ConfigUtil.CONFIG_LIB.resolve(String.format("data/%s", subPath)), rootFilter, processor, visitAllFiles, maxDepth);
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }

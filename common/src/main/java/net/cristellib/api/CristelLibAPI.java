@@ -11,7 +11,6 @@ public interface CristelLibAPI {
     }
 
     default void registerStructureSets(CristelLibRegistry registry){
-        //registry.registerSetToConfig(new ResourceLocation("namespace", "subpath")); (subpath = e.g. villages)
     }
 
 }

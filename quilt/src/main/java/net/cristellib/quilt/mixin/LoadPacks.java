@@ -1,7 +1,6 @@
 package net.cristellib.quilt.mixin;
 
-import net.cristellib.CristelLib;
-import net.cristellib.api.builtinpacks.BuiltInDataPacks;
+import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import org.quiltmc.qsl.resource.loader.impl.ResourceLoaderImpl;

@@ -1,6 +1,6 @@
 package net.cristellib.forge.extrapackutil;
 
-import net.cristellib.api.builtinpacks.BuiltInDataPacks;
+import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.RepositorySource;
 import org.jetbrains.annotations.NotNull;

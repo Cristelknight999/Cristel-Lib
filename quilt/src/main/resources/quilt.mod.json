@@ -23,7 +23,7 @@
         "net.cristellib.quilt.CristelLibQuilt"
       ],
       "cristellib": [
-        "net.cristellib.fabriclike.api.BuiltInAPI"
+        "net.cristellib.api.BuiltInAPI"
       ]
     },
     "depends": [

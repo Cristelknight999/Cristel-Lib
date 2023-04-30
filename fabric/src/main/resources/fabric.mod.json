@@ -19,7 +19,7 @@
       "net.cristellib.fabric.CristelLibFabric"
     ],
     "cristellib": [
-      "net.cristellib.fabriclike.api.BuiltInAPI"
+      "net.cristellib.api.BuiltInAPI"
     ]
   },
   "mixins": [

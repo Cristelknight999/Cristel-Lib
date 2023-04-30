@@ -1,6 +1,6 @@
 package net.cristellib.fabric.mixin;
 
-import net.cristellib.api.builtinpacks.BuiltInDataPacks;
+import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.fabricmc.fabric.impl.resource.loader.ModResourcePackCreator;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;

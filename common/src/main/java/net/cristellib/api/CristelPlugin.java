@@ -1,4 +1,4 @@
-package net.cristellib.forge.extraapiutil;
+package net.cristellib.api;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

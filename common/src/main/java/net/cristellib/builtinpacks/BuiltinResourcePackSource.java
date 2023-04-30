@@ -1,4 +1,4 @@
-package net.cristellib.api.builtinpacks;
+package net.cristellib.builtinpacks;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
