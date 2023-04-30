@@ -23,6 +23,8 @@ The file structure should look like this:
   "header": "",
   "config_type": "",
   "comments": {
+    "ancient_cities": "A dark city at the bottom of the World",
+    "buried_treasures.spacing": "Set the spacing of the buried treasure structure set"
   },
   "structure_sets": [
     {
@@ -42,3 +44,6 @@ The file structure should look like this:
 - **"structure_sets"** in this array you have to put every structure set, which should be in the config. The **"modid"** specifies in which mod container the structure set file should be searched, and the **"structure_set"** parameter defines the location.
 
 #### Optional Fields
+- **"name"** changes the name of the config file.
+- **"header"** is the text, which will be at the top of your config file.
+- **"comments"** is a map where the keys indicate the location where the comment should appear.
