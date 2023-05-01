@@ -1,23 +1,12 @@
 package net.cristellib;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonWriter;
 import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.cristellib.builtinpacks.RuntimePack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.IoSupplier;
-import net.minecraft.util.GsonHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
-import java.nio.file.Path;
 import java.util.Set;
 
 public class CristelLib {
@@ -30,6 +19,9 @@ public class CristelLib {
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 
     public static void init() {
+    }
+
+    public static void preInit(){
         BuiltInDataPacks.registerPack(DATA_PACK, Component.literal("Cristel Lib Config Pack"), () -> true);
 
         CristelLibRegistry.configs = ImmutableMap.copyOf(CristelLibExpectPlatform.getConfigs(REGISTRY));
@@ -40,10 +32,9 @@ public class CristelLib {
                 config.addSetsToRuntimePack();
             }
         }
-
     }
 
-
+    /*
     public static void writeStreamToFile(String filename, ResourceLocation from, PackResources packResources){
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         IoSupplier<InputStream> stream = packResources.getResource(PackType.SERVER_DATA, from);
@@ -64,4 +55,5 @@ public class CristelLib {
             throw new RuntimeException(ex);
         }
     }
+     */
 }

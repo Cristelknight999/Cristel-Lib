@@ -40,7 +40,7 @@ public class StructureConfig {
         structureSets.add(set);
     }
 
-    public void addSetsToRuntimePack() {
+    protected void addSetsToRuntimePack() {
         Map<String, Boolean> map = ConfigUtil.readConfig(path);
         Map<String, Placement> map2 = ConfigUtil.readPlacementConfig(path);
 
@@ -81,7 +81,7 @@ public class StructureConfig {
         }
     }
 
-    public void writeConfig() {
+    protected void writeConfig() {
         if(type.equals(ConfigType.ENABLE_DISABLE) && structures.isEmpty()){
             readSetsAndAddStructures();
             ConfigUtil.createConfig(this);

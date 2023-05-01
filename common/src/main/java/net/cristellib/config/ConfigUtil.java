@@ -6,6 +6,7 @@ import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.StructureConfig;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -13,7 +14,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class ConfigUtil {
@@ -27,8 +30,6 @@ public class ConfigUtil {
     public static final Supplier<JsonGrammar.Builder> JSON_GRAMMAR_BUILDER = () -> new JsonGrammar.Builder().withComments(true).bareSpecialNumerics(true).printCommas(true);
 
     public static final JsonGrammar JSON_GRAMMAR = JSON_GRAMMAR_BUILDER.get().build();
-
-    public static final String MODID = "Cristel Lib";
 
 
 
@@ -138,7 +139,7 @@ public class ConfigUtil {
         }
         return map;
     }
-    public static @Nullable com.google.gson.JsonElement getSetElement(String getDataFromModId, ResourceLocation location) {
+    public static @Nullable  com.google.gson.JsonElement getSetElement(String getDataFromModId, ResourceLocation location) {
         return getElement(getDataFromModId, "data/" + location.getNamespace() + "/worldgen/structure_set/" + location.getPath() + ".json");
     }
     public static @Nullable com.google.gson.JsonElement getElement(String getDataFromModId, String location) {
