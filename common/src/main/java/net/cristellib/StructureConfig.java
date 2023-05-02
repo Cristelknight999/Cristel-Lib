@@ -46,7 +46,19 @@ public class StructureConfig {
 
         for(Pair<String, ResourceLocation> s : structureSets) {
             ResourceLocation location = s.getSecond();
-            JsonElement e = ConfigUtil.getSetElement(s.getFirst(), location);
+
+
+            JsonElement e = null;
+
+            ResourceLocation structureLocation = Util.getLocationForStructureSet(location);
+
+            if(CristelLib.DATA_PACK.hasResource(structureLocation)){
+                e = CristelLib.DATA_PACK.getResource(structureLocation);
+            }
+            if(e == null){
+                e = ConfigUtil.getSetElement(s.getFirst(), location);
+            }
+
             if(e instanceof JsonObject object) {
                 JsonObject objectOld = object.deepCopy();
 

@@ -32,10 +32,6 @@ public class BuiltInDataPacks {
 
 	public static void getPacks(Consumer<Pack> consumer){
 		if(list.isEmpty()) return;
-		/*
-		List<Tuple<Tuple<Component, PackResources>, Supplier<Boolean>>> copiedList = new ArrayList<>(list);
-		copiedList.add(new Tuple<>(new Tuple<>(Component.literal(""), CristelLib.DATA_PACK), () -> true));
-		 */
 		for (Tuple<Tuple<Component, PackResources>, Supplier<Boolean>> entry : list) {
 			if(entry.getB().get()){
 				PackResources pack = entry.getA().getB();
@@ -44,9 +40,6 @@ public class BuiltInDataPacks {
 					CristelLib.LOGGER.error("Pack for " + displayName.getString() + " is null");
 					continue;
 				}
-
-				//writeStreamToFile("acacia" + list.indexOf(entry), new ResourceLocation("minecraft", "worldgen/structure_set/villages.json"), pack);
-
 				if (!pack.getNamespaces(PackType.SERVER_DATA).isEmpty()) {
 					Pack profile = Pack.readMetaAndCreate(
 							pack.packId(),
@@ -56,8 +49,7 @@ public class BuiltInDataPacks {
 							PackType.SERVER_DATA,
 							Pack.Position.TOP,
 							new BuiltinResourcePackSource()
-					);
-					//Pack profile = Pack.create(entry.getA(), true, () -> pack, factory, Pack.Position.TOP, new BuiltinModResourcePackSource(pack.getFabricModMetadata().getId()));
+					);;
 					if (profile != null) {
 						consumer.accept(profile);
 					}

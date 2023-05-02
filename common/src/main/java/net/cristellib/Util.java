@@ -1,5 +1,7 @@
 package net.cristellib;
 
+import net.minecraft.resources.ResourceLocation;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +18,18 @@ public class Util {
                 addTo.put(string, addFrom.get(string));
             }
         }
+    }
+
+    public static ResourceLocation getLocationForStructureSet(ResourceLocation location){
+        return createJsonLocation("worldgen/structure_set", location);
+    }
+
+    public static ResourceLocation createJsonLocation(String prefix, ResourceLocation identifier) {
+        return createResourceLocation(prefix, "json", identifier);
+    }
+
+    public static ResourceLocation createResourceLocation(String prefix, String end, ResourceLocation identifier) {
+        return new ResourceLocation(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end);
     }
 
 }

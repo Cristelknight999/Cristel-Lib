@@ -1,8 +1,11 @@
 package net.cristellib.builtinpacks;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
 import net.cristellib.CristelLib;
+import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.config.ConfigUtil;
+import net.minecraft.FileUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.FeatureFlagsMetadataSection;
 import net.minecraft.server.packs.FilePackResources;
@@ -10,6 +13,7 @@ import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.flag.FeatureFlags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,6 +54,10 @@ public class RuntimePack implements PackResources {
     public byte[] addStructureSet(ResourceLocation identifier, JsonObject set) {
         return this.addDataForJsonLocation("worldgen/structure_set", identifier, set);
     }
+
+
+
+
     public byte[] addBiome(ResourceLocation identifier, JsonObject biome) {
         return this.addDataForJsonLocation("worldgen/biome", identifier, biome);
     }
@@ -210,6 +218,10 @@ public class RuntimePack implements PackResources {
         }
     }
 
+    public boolean hasResource(ResourceLocation location){
+        return data.containsKey(location);
+    }
+
     @Override
     public boolean isBuiltin() {
         return true;
@@ -223,5 +235,49 @@ public class RuntimePack implements PackResources {
     @Override
     public void close() {
         CristelLib.LOGGER.debug("Closing RDP: " + this.name);
+    }
+
+    public void dump(){
+        for(ResourceLocation l : data.keySet()){
+            writeStreamToFile(l.getPath(), l);
+        }
+    }
+
+    public @Nullable JsonObject getResource(ResourceLocation location){
+        IoSupplier<InputStream> stream = this.getResource(PackType.SERVER_DATA, location);
+        JsonObject jsonObject;
+        try {
+            jsonObject = GsonHelper.parse(new BufferedReader(new InputStreamReader(stream.get())));
+        } catch (IOException | NullPointerException ex) {
+            CristelLib.LOGGER.error("Couldn't get JsonObject from location: " + location, ex);
+            return null;
+        }
+        return jsonObject;
+    }
+
+    public void writeStreamToFile(String filename, ResourceLocation from){
+        JsonObject jsonObject = getResource(from);
+        if(jsonObject == null) return;
+
+        List<String> directory = new ArrayList<>(Arrays.stream(filename.split("/")).toList());
+        directory.remove(directory.size() - 1);
+        StringBuilder finalS = new StringBuilder();
+        for(String s : directory){
+            finalS.append(s).append("/");
+        }
+
+        Path path;
+        try {
+            FileUtil.createDirectoriesSafe(CristelLibExpectPlatform.getConfigDirectory().resolve(String.valueOf(finalS)));
+            path = CristelLibExpectPlatform.getConfigDirectory().resolve(filename);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (FileWriter fileWriter = new FileWriter(path.toFile()); JsonWriter jsonWriter = gson.newJsonWriter(fileWriter)) {
+            jsonWriter.jsonValue(gson.toJson(jsonObject));
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

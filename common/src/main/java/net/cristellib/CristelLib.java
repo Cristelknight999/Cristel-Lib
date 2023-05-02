@@ -19,6 +19,7 @@ public class CristelLib {
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 
     public static void init() {
+        //DATA_PACK.dump();
     }
 
     public static void preInit(){
@@ -26,34 +27,11 @@ public class CristelLib {
 
         CristelLibRegistry.configs = ImmutableMap.copyOf(CristelLibExpectPlatform.getConfigs(REGISTRY));
 
-        for(Set<StructureConfig> pack : CristelLibRegistry.configs.values()){
+        for(Set<StructureConfig> pack : CristelLibRegistry.getConfigs().values()){
             for(StructureConfig config : pack){
                 config.writeConfig();
                 config.addSetsToRuntimePack();
             }
         }
     }
-
-    /*
-    public static void writeStreamToFile(String filename, ResourceLocation from, PackResources packResources){
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        IoSupplier<InputStream> stream = packResources.getResource(PackType.SERVER_DATA, from);
-        if(stream == null){
-            LOGGER.error("null stream");
-            return;
-        }
-        JsonObject jsonObject;
-        try {
-            jsonObject = GsonHelper.parse(new BufferedReader(new InputStreamReader(stream.get())));
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        Path path = CristelLibExpectPlatform.getConfigDirectory().resolve(filename + ".json");
-        try (FileWriter fileWriter = new FileWriter(path.toFile()); JsonWriter jsonWriter = gson.newJsonWriter(fileWriter)) {
-            jsonWriter.jsonValue(gson.toJson(jsonObject));
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-     */
 }
