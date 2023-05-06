@@ -29,11 +29,17 @@ The file structure should look like this:
   "structure_sets": [
     {
       "modid": "minecraft",
-      "structure_set": "minecraft:ancient_cities"
+      "structure_set": [
+        "minecraft:ancient_cities",
+        "minecraft:buried_treasures"
+      ]
     },
     {
-      "modid": "minecraft",
-      "structure_set": "minecraft:buried_treasures"
+      "modid": "t_and_t",
+      "structure_set": [
+        "towns_and_towers:towers",
+        "towns_and_towers:towns"
+      ]
     }
   ]
 }
