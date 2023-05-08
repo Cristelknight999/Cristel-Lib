@@ -11,6 +11,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 @Mod(CristelLib.MOD_ID)
 public class CristelLibForge {
     public CristelLibForge() {
+        CristelLib.preInit();
         CristelLib.init();
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addListener(this::injectPackRepositories);

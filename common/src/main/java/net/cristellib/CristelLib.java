@@ -20,7 +20,7 @@ public class CristelLib {
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 
     public static void init() {
-        //DATA_PACK.dump();
+        DATA_PACK.dump();
     }
 
     public static void preInit(){

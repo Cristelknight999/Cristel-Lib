@@ -3,7 +3,7 @@
   "id": "cristellib",
   "version": "${version}",
   "name": "Cristel Lib",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "A Library mod for easy structure config and runtime datapacks.",
   "authors": [
     "Cristelknight999"
   ],
@@ -20,6 +20,9 @@
     ],
     "cristellib": [
       "net.cristellib.api.BuiltInAPI"
+    ],
+    "preLaunch": [
+      "net.cristellib.fabriclike.CristelLibPreInit"
     ]
   },
   "mixins": [

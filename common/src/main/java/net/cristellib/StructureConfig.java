@@ -79,7 +79,10 @@ public class StructureConfig {
                         a.addProperty("salt", p.salt);
                         a.addProperty("spacing", p.spacing);
                         a.addProperty("separation", p.separation);
-                        if(p.frequency != 0) a.addProperty("frequency", p.frequency);
+                        
+                        double f = p.frequency;
+                        
+                        if(f != 0 && a.has("frequency") && (a.get("frequency").getAsFloat() != f)) a.addProperty("frequency", f);
                     }
                 }
 
@@ -147,7 +150,7 @@ public class StructureConfig {
             if(salt != null) p.salt = salt.getAsInt();
             if(spacing != null) p.spacing = spacing.getAsInt();
             if(separation != null) p.separation = separation.getAsInt();
-            if(frequency != null) p.frequency = frequency.getAsFloat();
+            if(frequency != null) p.frequency = frequency.getAsDouble();
 
             structurePlacement.put(setLocation, p);
         }

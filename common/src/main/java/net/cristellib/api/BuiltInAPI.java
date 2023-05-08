@@ -48,9 +48,11 @@ public class BuiltInAPI implements CristelLibAPI {
         registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "pillager_outposts"), MINECRAFT_ED, MINECRAFT_P);
         registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "ruined_portals"), MINECRAFT_ED, MINECRAFT_P);
         registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "shipwrecks"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "strongholds"), MINECRAFT_ED, MINECRAFT_P);
         registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "swamp_huts"), MINECRAFT_ED, MINECRAFT_P);
         registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "villages"), MINECRAFT_ED, MINECRAFT_P);
         registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "woodland_mansions"), MINECRAFT_ED, MINECRAFT_P);
+
+        //No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
+        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "strongholds"), MINECRAFT_ED);
     }
 }

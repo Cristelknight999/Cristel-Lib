@@ -9,7 +9,7 @@ version = "${version}"
 displayName = "Cristel Lib"
 authors = "Cristelknight999"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+A Library mod for easy structure config and runtime datapacks.
 '''
 logoFile = "assets/cristellib/textures/icon.png"
 

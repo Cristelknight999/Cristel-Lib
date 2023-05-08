@@ -53,6 +53,7 @@ public class ReadData {
                 BuiltInDataPacks.registerPack(rl, modid, component, () -> b);
             }
         }
+        checkedConfigFiles = false;
     }
 
     public static void copyFile(String modid){
@@ -73,6 +74,7 @@ public class ReadData {
                 }
             }
         }
+        checkedConfigFiles = false;
     }
 
 
@@ -107,18 +109,17 @@ public class ReadData {
                 String name = object.get("name").getAsString();
 
 
-                StructureConfig config = StructureConfig.createWithDefaultConfigPath(subPath, name, ConfigType.valueOf(object.get("config_type").getAsString()));
+                StructureConfig config = StructureConfig.createWithDefaultConfigPath(subPath, name, ConfigType.valueOf(object.get("config_type").getAsString().toUpperCase()));
                 JsonArray sets = object.get("structure_sets").getAsJsonArray();
                 for(JsonElement e : sets){
-                    if(e instanceof JsonObject o){
-                        if(o.has("structure_set")){
-                            String mS = modid;
-                            if(o.has("modid")){
-                                mS = o.get("modid").getAsString();
+                    if(e instanceof JsonObject o && o.has("structure_set") && o.has("modid")){
+                        String mS = o.get("modid").getAsString();
+                        JsonArray array = o.get("structure_set").getAsJsonArray();
+                        for(JsonElement s : array){
+                            if(s instanceof JsonPrimitive primitive){
+                                registry.registerSetToConfig(mS, ResourceLocation.tryParse(primitive.getAsString()), config);
                             }
-                            registry.registerSetToConfig(mS, ResourceLocation.tryParse(o.get("structure_set").getAsString()), config);
                         }
-
                     }
                 }
 
@@ -147,6 +148,7 @@ public class ReadData {
                 configs.add(config);
             }
         }
+        checkedConfigFiles = false;
         if(configs.isEmpty()) return;
         modidAndConfigs.put(modid, configs);
     }
@@ -177,7 +179,7 @@ public class ReadData {
         }
         try {
             for (var root : rootPaths) {
-                walk(root.resolve(String.format("data/%s/%s", modid, subPath)), rootFilter, processor, visitAllFiles, maxDepth);
+                walk(root.resolve(String.format("data/cristellib/%s", subPath)), rootFilter, processor, visitAllFiles, maxDepth);
             }
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);

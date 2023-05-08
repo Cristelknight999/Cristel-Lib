@@ -24,6 +24,9 @@
       ],
       "cristellib": [
         "net.cristellib.api.BuiltInAPI"
+      ],
+      "preLaunch": [
+        "net.cristellib.fabriclike.CristelLibPreInit"
       ]
     },
     "depends": [

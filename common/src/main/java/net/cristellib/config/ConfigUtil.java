@@ -2,10 +2,16 @@ package net.cristellib.config;
 
 import blue.endless.jankson.*;
 import com.google.gson.JsonParser;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.StructureConfig;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.feature.foliageplacers.RandomSpreadFoliagePlacer;
+import net.minecraft.world.level.levelgen.structure.placement.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +23,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class ConfigUtil {
@@ -80,7 +87,7 @@ public class ConfigUtil {
         for(ResourceLocation location : sets.keySet()){
             JsonElement element = JANKSON.toJson(sets.get(location));
             if(element instanceof JsonObject object1){
-                if(object1.getFloat("frequency", 0F) == 0F){
+                if(object1.getDouble("frequency", 0F) == 0F){
                     object1.remove("frequency");
                 }
             }
@@ -112,6 +119,15 @@ public class ConfigUtil {
         Map<String, Placement> map = new HashMap<>();
         for(Map.Entry<String, JsonElement> entry : object.entrySet()){
             if(entry.getValue() instanceof JsonObject jsonObject){
+                /*
+                StructurePlacement placement = StructurePlacement.CODEC.decode(JsonOps.INSTANCE, object).result().get().getFirst();
+                if(placement.type().equals(StructurePlacementType.RANDOM_SPREAD)){
+                    RandomSpreadStructurePlacement placement1 = RandomSpreadStructurePlacement.CODEC.decode(JsonOps.INSTANCE, object).result().get().getFirst();
+                }
+                else if(placement.type().equals(StructurePlacementType.CONCENTRIC_RINGS)){
+                    ConcentricRingsStructurePlacement placement1 = ConcentricRingsStructurePlacement.CODEC.decode(JsonOps.INSTANCE, object).result().get().getFirst();
+                }
+                 */
                 map.put(entry.getKey(), JANKSON.fromJson(jsonObject, Placement.class));
             }
 
@@ -119,26 +135,60 @@ public class ConfigUtil {
         return map;
     }
 
+
     public static Map<String, Boolean> readConfig(Path path) {
         try{
             JsonObject load = JANKSON.load(path.toFile());
-            return stringBooleanMap(load);
+            return newStringBooleanMap(load);
         } catch (Exception errorMsg) {
             throw new IllegalArgumentException("Couldn't read " + path + ", crashing instead. Maybe try to delete the config files!");
         }
     }
 
+    /*
     public static Map<String, Boolean> stringBooleanMap(JsonObject object){
         Map<String, Boolean> map = new HashMap<>();
         for(Map.Entry<String, JsonElement> entry : object.entrySet()){
-            if(entry.getValue() instanceof JsonObject jsonObject){
-                map.putAll(stringBooleanMap(jsonObject));
-                continue;
+            String key = entry.getKey();
+            JsonElement e = entry.getValue();
+            if(e instanceof JsonPrimitive primitive && primitive.getValue() instanceof Boolean bool){
+                CristelLib.LOGGER.error("Normal: " + key);
+                map.put(key, bool);
             }
-            map.put(entry.getKey(), object.getBoolean(entry.getKey(), true));
+            else if(e instanceof JsonObject jsonObject){
+                map.putAll(stringBooleanMap(jsonObject));
+            }
         }
         return map;
     }
+     */
+
+    public static Map<String, Boolean> stringBooleanMap(JsonObject object, String parent){
+        Map<String, Boolean> map = new HashMap<>();
+        for(Map.Entry<String, JsonElement> entry : object.entrySet()){
+            String key = parent.equals("") ? entry.getKey() : parent + "/" + entry.getKey();
+            JsonElement e = entry.getValue();
+            if(e instanceof JsonPrimitive primitive && primitive.getValue() instanceof Boolean bool){
+                map.put(key, bool);
+            }
+            else if(e instanceof JsonObject jsonObject){
+                map.putAll(stringBooleanMap(jsonObject, entry.getKey()));
+            }
+        }
+        return map;
+    }
+
+    public static Map<String, Boolean> newStringBooleanMap(JsonObject object){
+        Map<String, Boolean> map = new HashMap<>();
+        for(Map.Entry<String, JsonElement> entry : object.entrySet()){
+            JsonElement e = entry.getValue();
+            if(e instanceof JsonObject jsonObject){
+                map.putAll(stringBooleanMap(jsonObject, ""));
+            }
+        }
+        return map;
+    }
+
     public static @Nullable  com.google.gson.JsonElement getSetElement(String getDataFromModId, ResourceLocation location) {
         return getElement(getDataFromModId, "data/" + location.getNamespace() + "/worldgen/structure_set/" + location.getPath() + ".json");
     }
@@ -172,6 +222,7 @@ public class ConfigUtil {
                 object.setComment(objectKey, commentToAdd);
                 comment = commentToAdd;
             }
+
             JsonElement value = entry.getValue();
             if (value instanceof JsonArray array) {
                 JsonArray sortedJsonElements = new JsonArray();
@@ -188,6 +239,7 @@ public class ConfigUtil {
                     object.put(objectKey, sortedJsonElements, comment);
                 }
             }
+
             if (value instanceof JsonObject nestedObject) {
                 object.put(objectKey, addComments(comments, nestedObject, entry.getKey() + "."), comment);
             }
