@@ -240,7 +240,7 @@ public class RuntimePack implements PackResources {
     public void dump(){
         if(data.isEmpty()) CristelLib.LOGGER.info("No data, that can be dumped");
         for(ResourceLocation l : data.keySet()){
-            writeStreamToFile(l.getPath(), l);
+            writeStreamToFile(l.getNamespace() + "/" + l.getPath(), l);
         }
     }
 
