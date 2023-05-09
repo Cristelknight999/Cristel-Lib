@@ -1,21 +1,15 @@
 package net.cristellib.builtinpacks;
 
-import com.google.gson.*;
-import com.google.gson.stream.JsonWriter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import net.cristellib.CristelLib;
-import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.config.ConfigUtil;
-import net.minecraft.FileUtil;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.FeatureFlagsMetadataSection;
-import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
-import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.flag.FeatureFlags;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
@@ -28,22 +22,25 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class RuntimePack implements PackResources {
-    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping()
+
+    public static final Gson GSON = new GsonBuilder().disableHtmlEscaping()
             .registerTypeAdapter(ResourceLocation.class, new ResourceLocation.Serializer())
             .create();
+
+    public final int packVersion;
+    private final ResourceLocation id;
     private final Lock waiting = new ReentrantLock();
     private final Map<ResourceLocation, Supplier<byte[]>> data = new ConcurrentHashMap<>();
-    private final Map<List<String>, Supplier<byte[]>> root = new ConcurrentHashMap<>();
-    public final int packVersion;
-    private final String name;
+    private final Map<String, Supplier<byte[]>> root = new ConcurrentHashMap<>();
 
 
-    public RuntimePack(String name, int version, @Nullable Path imageFile) {
+    public RuntimePack(ResourceLocation id, int version, @Nullable Path imageFile) {
         this.packVersion = version;
-        this.name = name;
+        this.id = id;
         if(imageFile != null){
             byte[] image = extractImageBytes(imageFile);
             if(image != null) this.addRootResource("pack.png", image);
@@ -51,6 +48,7 @@ public class RuntimePack implements PackResources {
     }
 
 
+    //Adding Stuff
     public byte[] addStructureSet(ResourceLocation identifier, JsonObject set) {
         return this.addDataForJsonLocation("worldgen/structure_set", identifier, set);
     }
@@ -85,6 +83,11 @@ public class RuntimePack implements PackResources {
         this.data.put(path, () -> data);
         return data;
     }
+    public byte[] addRootResource(String path, byte[] data) {
+        this.root.put(path, () -> data);
+        return data;
+    }
+
 
     public static byte @Nullable [] extractImageBytes(Path imageName) {
         InputStream stream;
@@ -100,8 +103,6 @@ public class RuntimePack implements PackResources {
             return null;
         }
     }
-
-
     public static byte[] serializeJson(JsonObject object) {
         UnsafeByteArrayOutputStream ubaos = new UnsafeByteArrayOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(ubaos, StandardCharsets.UTF_8);
@@ -114,24 +115,142 @@ public class RuntimePack implements PackResources {
         return ubaos.getBytes();
     }
 
-    public byte[] addRootResource(String path, byte[] data) {
-        this.root.put(Arrays.asList(path.split("/")), () -> data);
-        return data;
+
+    //Rest of the Stuff
+
+
+
+
+
+
+
+
+
+
+
+
+    public void dumpDirect(Path output) {
+        CristelLib.LOGGER.info("dumping " + this.id + "'s assets and data");
+        // data dump time
+        try {
+            for(Map.Entry<String, Supplier<byte[]>> e : this.root.entrySet()) {
+                Path root = output.resolve(e.getKey());
+                Files.createDirectories(root.getParent());
+                Files.write(root, e.getValue().get());
+            }
+
+            Path data = output.resolve("data");
+            Files.createDirectories(data);
+            for(Map.Entry<ResourceLocation, Supplier<byte[]>> entry : this.data.entrySet()) {
+                this.write(data, entry.getKey(), entry.getValue().get());
+            }
+        } catch(IOException exception) {
+            throw new RuntimeException(exception);
+        }
     }
+
 
 
     @Nullable
     @Override
-    public IoSupplier<InputStream> getRootResource(String @NotNull ... strings) {
+    public InputStream getRootResource(String fileName) {
+        if(!fileName.contains("/") && !fileName.contains("\\")) {
+            this.lock();
+            Supplier<byte[]> supplier = this.root.get(fileName);
+            if(supplier == null) {
+                this.waiting.unlock();
+                return null;
+            }
+            this.waiting.unlock();
+            return new ByteArrayInputStream(supplier.get());
+        } else {
+            throw new IllegalArgumentException("File name can't be a path");
+        }
+    }
+
+    @Override
+    public InputStream getResource(PackType packType, ResourceLocation resourceLocation) {
+        if(packType.equals(PackType.CLIENT_RESOURCES)) return null;
         this.lock();
-        Supplier<byte[]> supplier = this.root.get(Arrays.asList(strings));
+        Supplier<byte[]> supplier = data.get(id);
         if(supplier == null) {
+            CristelLib.LOGGER.warn("No resource found for " + id);
             this.waiting.unlock();
             return null;
         }
         this.waiting.unlock();
-        return () -> new ByteArrayInputStream(supplier.get());
+        return new ByteArrayInputStream(supplier.get());
     }
+
+
+    public @Nullable JsonObject getResource(ResourceLocation location){
+        InputStream stream = this.getResource(PackType.SERVER_DATA, location);
+        return GsonHelper.parse(new BufferedReader(new InputStreamReader(stream)));
+    }
+
+
+
+    @Override
+    public Collection<ResourceLocation> getResources(PackType packType, String namespace, String prefix, int maxDepth, Predicate<String> pathFilter) {
+        Set<ResourceLocation> resourceLocations = new HashSet<>();
+        if(packType.equals(PackType.CLIENT_RESOURCES)) return resourceLocations;
+        this.lock();
+        for(ResourceLocation ResourceLocation : data.keySet()) {
+            if(ResourceLocation.getNamespace().equals(namespace) && ResourceLocation.getPath().startsWith(prefix) && pathFilter.test(ResourceLocation.getPath())) {
+                resourceLocations.add(ResourceLocation);
+            }
+        }
+        this.waiting.unlock();
+        return resourceLocations;
+    }
+
+    @Override
+    public boolean hasResource(PackType packType, ResourceLocation resourceLocation) {
+        if(packType.equals(PackType.CLIENT_RESOURCES)) return false;
+        this.lock();
+        boolean contains = data.containsKey(id);
+        this.waiting.unlock();
+        return contains;
+    }
+
+    @Override
+    public Set<String> getNamespaces(PackType packType) {
+        Set<String> namespaces = new HashSet<>();
+        if(packType.equals(PackType.CLIENT_RESOURCES)) return namespaces;
+        this.lock();
+        for(ResourceLocation ResourceLocation : this.data.keySet()) {
+            namespaces.add(ResourceLocation.getNamespace());
+        }
+        this.waiting.unlock();
+        return namespaces;
+    }
+
+    @Nullable
+    @Override
+    public <T> T getMetadataSection(MetadataSectionSerializer<T> metaReader) {
+        if(metaReader.getMetadataSectionName().equals("pack")) {
+            JsonObject object = new JsonObject();
+            object.addProperty("pack_format", this.packVersion);
+            object.addProperty("description", "runtime resource pack");
+            return metaReader.fromJson(object);
+        }
+        CristelLib.LOGGER.info("'" + metaReader.getMetadataSectionName() + "' is an unsupported metadata key!");
+        return metaReader.fromJson(new JsonObject());
+    }
+
+    @Override
+    public String getName() {
+        return "Runtime Resource Pack" + this.id;
+    }
+
+    @Override
+    public void close() {
+        CristelLib.LOGGER.info("closing rrp " + this.id);
+        this.lock();
+        this.waiting.unlock();
+    }
+
+
 
     private void lock() {
         if(!this.waiting.tryLock()) {
@@ -139,146 +258,15 @@ public class RuntimePack implements PackResources {
         }
     }
 
-    @Nullable
-    @Override
-    public IoSupplier<InputStream> getResource(@NotNull PackType packType, @NotNull ResourceLocation id) {
-        this.lock();
-        Supplier<byte[]> supplier = this.data.get(id);
-        if(supplier == null) {
-            this.waiting.unlock();
-            return null;
-        }
-        this.waiting.unlock();
-        return () -> new ByteArrayInputStream(supplier.get());
-    }
-
-
-    @Override
-    public void listResources(@NotNull PackType packType, @NotNull String namespace, @NotNull String prefix, @NotNull ResourceOutput resourceOutput) {
-        this.lock();
-        for(ResourceLocation identifier : this.data.keySet()) {
-            Supplier<byte[]> supplier = this.data.get(identifier);
-            if(supplier == null) {
-                this.waiting.unlock();
-                continue;
-            }
-
-            if(identifier.getNamespace().equals(namespace) && identifier.getPath().contains(prefix + "/")) {
-                /*
-                List<String> identifierHere = Arrays.stream(identifier.getPath().split("/")).toList();
-                List<String> identifierThere = Arrays.stream(prefix.split("/")).toList();
-                if(new HashSet<>(identifierHere).containsAll(identifierThere)) {
-                 */
-                IoSupplier<InputStream> inputSupplier = () -> new ByteArrayInputStream(supplier.get());
-                resourceOutput.accept(identifier, inputSupplier);
-
-            }
-        }
-        this.waiting.unlock();
-    }
-
-    @Override
-    public Set<String> getNamespaces(@NotNull PackType packType) {
-        this.lock();
-        Set<String> namespaces = new HashSet<>();
-        for(ResourceLocation identifier : this.data.keySet()) {
-            namespaces.add(identifier.getNamespace());
-        }
-        this.waiting.unlock();
-        return namespaces;
-    }
-
-
-    @Nullable
-    @Override
-    public <T> T getMetadataSection(@NotNull MetadataSectionSerializer<T> metadataSectionSerializer) {
-        InputStream stream = null;
+    private void write(Path dir, ResourceLocation ResourceLocation, byte[] data) {
         try {
-            IoSupplier<InputStream> supplier = this.getRootResource("pack.mcmeta");
-            if (supplier != null) {
-                stream = supplier.get();
+            Path file = dir.resolve(ResourceLocation.getNamespace()).resolve(ResourceLocation.getPath());
+            Files.createDirectories(file.getParent());
+            try(OutputStream output = Files.newOutputStream(file)) {
+                output.write(data);
             }
-        } catch (IOException e) {
+        } catch(IOException e) {
             throw new RuntimeException(e);
-        }
-        if(stream != null) {
-            return FilePackResources.getMetadataFromStream(metadataSectionSerializer, stream);
-        } else {
-            if(metadataSectionSerializer.getMetadataSectionName().equals("pack")) {
-                JsonObject object = new JsonObject();
-                object.addProperty("pack_format", this.packVersion);
-                object.addProperty("description", this.name);
-                return metadataSectionSerializer.fromJson(object);
-            }
-            else if(metadataSectionSerializer.getMetadataSectionName().equals("features")){
-                return metadataSectionSerializer.fromJson(FeatureFlagsMetadataSection.TYPE.toJson(new FeatureFlagsMetadataSection(FeatureFlags.DEFAULT_FLAGS)));
-            }
-            CristelLib.LOGGER.debug("'" + metadataSectionSerializer.getMetadataSectionName() + "' is an unsupported metadata key");
-            return null;
-        }
-    }
-
-    public boolean hasResource(ResourceLocation location){
-        return data.containsKey(location);
-    }
-
-    @Override
-    public boolean isBuiltin() {
-        return true;
-    }
-
-    @Override
-    public String packId() {
-        return this.name;
-    }
-
-    @Override
-    public void close() {
-        CristelLib.LOGGER.debug("Closing RDP: " + this.name);
-    }
-
-    public void dump(){
-        if(data.isEmpty()) CristelLib.LOGGER.info("No data, that can be dumped");
-        for(ResourceLocation l : data.keySet()){
-            writeStreamToFile(l.getNamespace() + "/" + l.getPath(), l);
-        }
-    }
-
-    public @Nullable JsonObject getResource(ResourceLocation location){
-        IoSupplier<InputStream> stream = this.getResource(PackType.SERVER_DATA, location);
-        JsonObject jsonObject;
-        try {
-            jsonObject = GsonHelper.parse(new BufferedReader(new InputStreamReader(stream.get())));
-        } catch (IOException | NullPointerException ex) {
-            CristelLib.LOGGER.error("Couldn't get JsonObject from location: " + location, ex);
-            return null;
-        }
-        return jsonObject;
-    }
-
-    public void writeStreamToFile(String filename, ResourceLocation from){
-        JsonObject jsonObject = getResource(from);
-        if(jsonObject == null) return;
-
-        List<String> directory = new ArrayList<>(Arrays.stream(filename.split("/")).toList());
-        directory.remove(directory.size() - 1);
-        StringBuilder finalS = new StringBuilder();
-        for(String s : directory){
-            finalS.append(s).append("/");
-        }
-
-        Path path;
-        try {
-            FileUtil.createDirectoriesSafe(CristelLibExpectPlatform.getConfigDirectory().resolve(String.valueOf(finalS)));
-            path = CristelLibExpectPlatform.getConfigDirectory().resolve(filename);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (FileWriter fileWriter = new FileWriter(path.toFile()); JsonWriter jsonWriter = gson.newJsonWriter(fileWriter)) {
-            jsonWriter.jsonValue(gson.toJson(jsonObject));
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
         }
     }
 }

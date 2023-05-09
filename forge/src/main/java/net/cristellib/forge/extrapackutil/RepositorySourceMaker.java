@@ -9,8 +9,9 @@ import java.util.function.Consumer;
 
 public class RepositorySourceMaker implements RepositorySource {
 	public RepositorySourceMaker() {}
+
 	@Override
-	public void loadPacks(@NotNull Consumer<Pack> consumer) {
-		BuiltInDataPacks.getPacks(consumer);
+	public void loadPacks(Consumer<Pack> consumer, Pack.PackConstructor arg) {
+		BuiltInDataPacks.getPacks(consumer, arg);
 	}
 }

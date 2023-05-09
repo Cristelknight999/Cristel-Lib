@@ -1,52 +1,39 @@
 package net.cristellib.forge.extrapackutil;
 
 import com.google.common.base.Charsets;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import net.minecraft.FileUtil;
+import net.cristellib.CristelLibExpectPlatform;
+import net.minecraft.ResourceLocationException;
 import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.AbstractPackResources;
-import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
-import net.minecraft.server.packs.resources.IoSupplier;
-import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.forgespi.language.IModInfo;
 import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-public class ModResourcePack implements PackResources {
+public class ModResourcePack extends AbstractPackResources {
     private static final Logger LOGGER = LoggerFactory.getLogger(ModResourcePack.class);
     private static final Pattern RESOURCE_PACK_PATH = Pattern.compile("[a-z0-9-_.]+");
     private static final FileSystem DEFAULT_FS = FileSystems.getDefault();
 
-    private final ResourceLocation id;
-    private final Component name;
-    private final String modInfo;
+    private final String name;
+    private final IModInfo modInfo;
     private final List<Path> basePaths;
     private final AutoCloseable closer;
     private final Map<PackType, Set<String>> namespaces;
 
-    public static ModResourcePack create(ResourceLocation id, Component name, ModContainer mod, String subPath) {
-        List<Path> rootPaths = Collections.singletonList(mod.getModInfo().getOwningFile().getFile().getSecureJar().getRootPath());;
-        /*
-        try {
-            rootPaths = List.of(Path.of(ModResourcePack.class.getResource("/").toURI()));
-        } catch (URISyntaxException ignored) {
-            LOGGER.error("Couldn't translate the resource path");
-        }
-         */
+    public static ModResourcePack create(String name, IModInfo mod, String subPath) {
+        List<Path> rootPaths = CristelLibExpectPlatform.getRootPaths(mod.getModId());
         List<Path> paths;
 
         if (subPath == null) {
@@ -57,6 +44,7 @@ public class ModResourcePack implements PackResources {
             for (Path path : rootPaths) {
                 path = path.toAbsolutePath().normalize();
                 Path childPath = path.resolve(subPath.replace("/", path.getFileSystem().getSeparator())).normalize();
+
                 if (!childPath.startsWith(path) || !exists(childPath)) {
                     continue;
                 }
@@ -65,24 +53,23 @@ public class ModResourcePack implements PackResources {
             }
         }
 
-        if (paths.isEmpty()){
-            return null;
-        }
+        if (paths.isEmpty()) return null;
 
-        ModResourcePack ret = new ModResourcePack(id, name, mod.getModId(), paths, null);
+        ModResourcePack ret = new ModResourcePack(name, mod, paths, null);
+
         return ret.getNamespaces(PackType.SERVER_DATA).isEmpty() ? null : ret;
     }
 
-    private ModResourcePack(ResourceLocation id, Component name, String modInfo, List<Path> paths, AutoCloseable closer) {
-        this.id = id;
+    private ModResourcePack(String name, IModInfo modInfo, List<Path> paths, AutoCloseable closer) {
+        super(null);
         this.name = name;
         this.modInfo = modInfo;
         this.basePaths = paths;
         this.closer = closer;
-        this.namespaces = readNamespaces(paths, modInfo);
+        this.namespaces = readNamespaces(paths, modInfo.getModId());
     }
 
-    static Map<PackType, Set<String>> readNamespaces(List<Path> paths, String modId) {
+    private static Map<PackType, Set<String>> readNamespaces(List<Path> paths, String modId) {
         Map<PackType, Set<String>> ret = new EnumMap<>(PackType.class);
 
         for (PackType type : PackType.values()) {
@@ -136,8 +123,8 @@ public class ModResourcePack implements PackResources {
         return null;
     }
 
-    private static final String resPrefix = PackType.CLIENT_RESOURCES.getDirectory() + "/";
-    private static final String dataPrefix = PackType.SERVER_DATA.getDirectory() + "/";
+    private static final String resPrefix = PackType.CLIENT_RESOURCES.getDirectory()+"/";
+    private static final String dataPrefix = PackType.SERVER_DATA.getDirectory()+"/";
 
     private boolean hasAbsentNs(String filename) {
         int prefixLen;
@@ -159,58 +146,43 @@ public class ModResourcePack implements PackResources {
         return !namespaces.get(type).contains(filename.substring(prefixLen, nsEnd));
     }
 
-    private IoSupplier<InputStream> openFile(String filename) {
+    @Override
+    protected InputStream getResource(String filename) throws IOException {
+        InputStream stream;
+
         Path path = getPath(filename);
 
         if (path != null && Files.isRegularFile(path)) {
-            return () -> Files.newInputStream(path);
+            return Files.newInputStream(path);
         }
 
+        stream = openDefault(this.modInfo,  filename);
+
+        if (stream != null) {
+            return stream;
+        }
+
+        // ReloadableResourceManagerImpl gets away with FileNotFoundException.
+        throw new FileNotFoundException("\"" + filename + "\" in Fabric mod \"" + modInfo.getModId() + "\"");
+    }
+
+    @Override
+    protected boolean hasResource(String filename) {
         if ("pack.mcmeta".equals(filename)) {
-            return () -> openDefault(this.modInfo, filename);
+            return true;
         }
 
-        return null;
-    }
-
-    public static InputStream openDefault(String info, String filename) {
-        if (filename.equals("pack.mcmeta")) {
-            String description = Objects.requireNonNullElse(info, "");
-            String metadata = serializeMetadata(PackType.SERVER_DATA.getVersion(SharedConstants.getCurrentVersion()), description);
-            return IOUtils.toInputStream(metadata, Charsets.UTF_8);
-        }
-        return null;
-    }
-
-    public static String serializeMetadata(int packVersion, String description) {
-        JsonObject pack = new JsonObject();
-        pack.addProperty("pack_format", packVersion);
-        pack.addProperty("description", description);
-        JsonObject metadata = new JsonObject();
-        metadata.add("pack", pack);
-        return new Gson().toJson(metadata);
-    }
-
-    @Nullable
-    @Override
-    public IoSupplier<InputStream> getRootResource(String @NotNull ... pathSegments) {
-        FileUtil.validatePath(pathSegments);
-
-        return this.openFile(String.join("/", pathSegments));
+        Path path = getPath(filename);
+        return path != null && Files.isRegularFile(path);
     }
 
     @Override
-    @Nullable
-    public IoSupplier<InputStream> getResource(@NotNull PackType type, @NotNull ResourceLocation id) {
-        final Path path = getPath(getFilename(type, id));
-        return path == null ? null : IoSupplier.create(path);
-    }
-
-    @Override
-    public void listResources(@NotNull PackType type, @NotNull String namespace, @NotNull String path, @NotNull ResourceOutput visitor) {
-        if (!namespaces.getOrDefault(type, Collections.emptySet()).contains(namespace)) {
-            return;
+    public Collection<ResourceLocation> getResources(PackType type, String namespace, String path, int depth, Predicate<String> predicate) {
+        if (type.equals(PackType.CLIENT_RESOURCES) || !namespaces.getOrDefault(type, Collections.emptySet()).contains(namespace)) {
+            return Collections.emptyList();
         }
+
+        List<ResourceLocation> ids = new ArrayList<>();
 
         for (Path basePath : basePaths) {
             String separator = basePath.getFileSystem().getSeparator();
@@ -218,39 +190,35 @@ public class ModResourcePack implements PackResources {
             Path searchPath = nsPath.resolve(path.replace("/", separator)).normalize();
             if (!exists(searchPath)) continue;
 
-
             try {
-                Files.walkFileTree(searchPath, new SimpleFileVisitor<>() {
+                Files.walkFileTree(searchPath, new SimpleFileVisitor<Path>() {
                     @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                        String filename = nsPath.relativize(file).toString().replace(separator, "/");
-                        ResourceLocation identifier = ResourceLocation.tryBuild(namespace, filename);
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        String fileName = file.getFileName().toString();
 
-                        if (identifier == null) {
-                            LOGGER.error("Invalid path in mod resource-pack {}: {}:{}, ignoring", id, namespace, filename);
-                        } else {
-                            visitor.accept(identifier, IoSupplier.create(file));
+                        if (!fileName.endsWith(".mcmeta")
+                                && predicate.test(fileName)) {
+                            try {
+                                ids.add(new ResourceLocation(namespace, nsPath.relativize(file).toString().replace(separator, "/")));
+                            } catch (ResourceLocationException e) {
+                                LOGGER.error(e.getMessage());
+                            }
                         }
 
                         return FileVisitResult.CONTINUE;
                     }
                 });
             } catch (IOException e) {
-                LOGGER.warn("findResources at " + path + " in namespace " + namespace + ", mod " + modInfo + " failed!", e);
+                LOGGER.warn("findResources at " + path + " in namespace " + namespace + ", mod " + modInfo.getModId() + " failed!", e);
             }
         }
+
+        return ids;
     }
 
     @Override
-    public @NotNull Set<String> getNamespaces(@NotNull PackType type) {
+    public Set<String> getNamespaces(PackType type) {
         return namespaces.getOrDefault(type, Collections.emptySet());
-    }
-
-    @Override
-    public <T> T getMetadataSection(@NotNull MetadataSectionSerializer<T> metaReader) throws IOException {
-        try (InputStream is = openFile("pack.mcmeta").get()) {
-            return AbstractPackResources.getMetadataFromStream(metaReader, is);
-        }
     }
 
     @Override
@@ -265,12 +233,8 @@ public class ModResourcePack implements PackResources {
     }
 
     @Override
-    public @NotNull String packId() {
-        return name.getString();
-    }
-
-    public ResourceLocation getId() {
-        return id;
+    public String getName() {
+        return name;
     }
 
     private static boolean exists(Path path) {
@@ -278,7 +242,21 @@ public class ModResourcePack implements PackResources {
         return path.getFileSystem() == DEFAULT_FS ? path.toFile().exists() : Files.exists(path);
     }
 
-    private static String getFilename(PackType type, ResourceLocation id) {
-        return String.format(Locale.ROOT, "%s/%s/%s", type.getDirectory(), id.getNamespace(), id.getPath());
+    public static InputStream openDefault(IModInfo info, String filename) {
+        switch (filename) {
+            case "pack.mcmeta":
+                String description = info.getDisplayName();
+
+                if (description == null) {
+                    description = "";
+                } else {
+                    description = description.replaceAll("\"", "\\\"");
+                }
+
+                String pack = String.format("{\"pack\":{\"pack_format\":" + PackType.SERVER_DATA.getVersion(SharedConstants.getCurrentVersion()) + ",\"description\":\"%s\"}}", description);
+                return IOUtils.toInputStream(pack, Charsets.UTF_8);
+            default:
+                return null;
+        }
     }
 }

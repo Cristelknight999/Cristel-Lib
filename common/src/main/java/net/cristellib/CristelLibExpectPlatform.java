@@ -4,6 +4,7 @@ import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.repository.Pack;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
@@ -15,6 +16,11 @@ public class CristelLibExpectPlatform {
 
     @ExpectPlatform
     public static Path getConfigDirectory() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static @Nullable Pack createPack(String name, String subPath, String modId) {
         throw new AssertionError();
     }
 

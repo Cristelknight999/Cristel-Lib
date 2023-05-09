@@ -30,7 +30,7 @@ public class BuiltInDataPacks {
 
 	private static List<Tuple<Tuple<Component, PackResources>, Supplier<Boolean>>> list = new ArrayList<>();
 
-	public static void getPacks(Consumer<Pack> consumer){
+	public static void getPacks(Consumer<Pack> consumer, Pack.PackConstructor factory){
 		if(list.isEmpty()) return;
 		for (Tuple<Tuple<Component, PackResources>, Supplier<Boolean>> entry : list) {
 			if(entry.getB().get()){
@@ -41,17 +41,12 @@ public class BuiltInDataPacks {
 					continue;
 				}
 				if (!pack.getNamespaces(PackType.SERVER_DATA).isEmpty()) {
-					Pack profile = Pack.readMetaAndCreate(
-							pack.packId(),
-							displayName,
-							true,
-							ignored -> pack,
-							PackType.SERVER_DATA,
-							Pack.Position.TOP,
-							new BuiltinResourcePackSource()
-					);;
-					if (profile != null) {
-						consumer.accept(profile);
+
+					Pack resourcePackProfile = CristelLibExpectPlatform.createPack(pack.getName(), "subPath", "modid");
+
+
+					if (resourcePackProfile != null) {
+						consumer.accept(resourcePackProfile);
 					}
 					else CristelLib.LOGGER.error(pack + " couldn't be created");
 				}

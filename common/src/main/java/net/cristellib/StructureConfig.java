@@ -8,6 +8,7 @@ import net.cristellib.config.ConfigType;
 import net.cristellib.config.ConfigUtil;
 import net.cristellib.config.Placement;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class StructureConfig {
 
             ResourceLocation structureLocation = Util.getLocationForStructureSet(location);
 
-            if(CristelLib.DATA_PACK.hasResource(structureLocation)){
+            if(CristelLib.DATA_PACK.hasResource(PackType.SERVER_DATA, structureLocation)){
                 e = CristelLib.DATA_PACK.getResource(structureLocation);
             }
             if(e == null){

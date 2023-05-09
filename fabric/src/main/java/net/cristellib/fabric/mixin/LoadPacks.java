@@ -20,7 +20,7 @@ public class LoadPacks {
     private PackType type;
 
     @Inject(method = "loadPacks", at = @At("RETURN"))
-    private void loadPacks(Consumer<Pack> consumer, CallbackInfo ci) {
+    private void loadPacks(Consumer<Pack> consumer, Pack.PackConstructor factory, CallbackInfo ci) {
         if(type.equals(PackType.SERVER_DATA)){
             BuiltInDataPacks.getPacks(consumer);
         }

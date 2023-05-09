@@ -25,16 +25,6 @@ public class CristelLibFabricPlatform {
         return FabricLoader.getInstance().getConfigDir();
     }
 
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
-        ModContainer container = FabricLoader.getInstance().getModContainer(modid).orElse(null);
-        if(container != null){
-            return ModNioResourcePack.create(id, displayName, container, id.getPath(), PackType.SERVER_DATA, ResourcePackActivationType.ALWAYS_ENABLED);
-        }
-        else {
-            CristelLib.LOGGER.warn("Couldn't get mod container for modid: " + modid);
-            return null;
-        }
-    }
 
     public static @Nullable Path getResourceDirectory(String modid, String subPath) {
         ModContainer container = FabricLoader.getInstance().getModContainer(modid).orElse(null);

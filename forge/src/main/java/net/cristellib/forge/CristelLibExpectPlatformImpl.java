@@ -6,12 +6,12 @@ import net.cristellib.CristelLibRegistry;
 import net.cristellib.StructureConfig;
 import net.cristellib.Util;
 import net.cristellib.api.CristelLibAPI;
+import net.cristellib.builtinpacks.BuiltinResourcePackSource;
+import net.cristellib.builtinpacks.PackWithoutConstructor;
 import net.cristellib.data.ReadData;
 import net.cristellib.forge.extraapiutil.APIFinder;
 import net.cristellib.forge.extrapackutil.ModResourcePack;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.repository.Pack;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -28,16 +28,6 @@ public class CristelLibExpectPlatformImpl {
         return FMLPaths.CONFIGDIR.get();
     }
 
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
-        ModContainer container = ModList.get().getModContainerById(modid).orElse(null);
-        if(container != null){
-            return ModResourcePack.create(id, displayName, container, id.getPath());
-        }
-        else {
-            CristelLib.LOGGER.warn("Couldn't get mod container for modid: " + modid);
-            return null;
-        }
-    }
 
     public static @Nullable Path getResourceDirectory(String modid, String subPath) {
         IModFileInfo container = ModList.get().getModFileById(modid);
@@ -94,6 +84,19 @@ public class CristelLibExpectPlatformImpl {
 
     public static boolean isModLoaded(String modId) {
         return ModList.get().isLoaded(modId);
+    }
+
+    public static @Nullable Pack createPack(String name, String subPath, String modId) {
+        ModContainer container = ModList.get().getModContainerById(modId).orElse(null);
+        if(container != null){
+            ModResourcePack pack = ModResourcePack.create(name, container.getModInfo(), subPath);
+            if(pack == null) return null;
+            return PackWithoutConstructor.of(pack);
+        }
+        else {
+            CristelLib.LOGGER.warn("Couldn't get mod container for modid: " + modId);
+            return null;
+        }
     }
 
 
