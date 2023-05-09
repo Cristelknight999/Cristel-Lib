@@ -1,47 +1,44 @@
 {
   "schema_version": 1,
-  "mixin": [
-    "cristellib.mixins.json",
-    "cristellib-common.mixins.json"
-  ],
   "quilt_loader": {
     "group": "${group}",
     "id": "cristellib",
     "version": "${version}",
-    "name": "Cristel Lib",
-    "description": "This is an example description! Tell everyone what your mod is about!",
-    "authors": ["Cristelknight999"],
-    "contact": {
-      "sources": "https://github.com/architectury/architectury-templates"
+    "metadata": {
+      "name": "Cristel Lib",
+      "description": "A Library mod for easy structure config and runtime datapacks.",
+      "contributors": {
+        "Cristelknight999": "Owner"
+      },
+      "license": "CC-BY-ND-4.0",
+      "icon": "assets/cristellib/textures/icon.png",
+      "contact": {
+        "homepage": "https://modrinth.com/mod/cristel-lib",
+        "issues": "https://github.com/Cristelknight999/Cristel-Lib/issues"
+      }
     },
-    "license": "CC BY-NC-ND 4.0",
-    "icon": "assets/cristellib/textures/icon.png",
     "intermediate_mappings": "net.fabricmc:intermediary",
-    "environment": "*",
     "entrypoints": {
-      "init": [
-        "net.cristellib.quilt.CristelLibQuilt"
-      ],
-      "cristellib": [
-        "net.cristellib.api.BuiltInAPI"
-      ],
-      "preLaunch": [
-        "net.cristellib.fabriclike.CristelLibPreInit"
-      ]
+      "init": "net.cristellib.quilt.CristelLibQuilt",
+      "cristellib": "net.cristellib.api.BuiltInAPI"
     },
     "depends": [
       {
         "id": "quilt_loader",
-        "version": "*"
+        "versions": ">=0.17.0-"
       },
       {
-        "id": "quilt_base",
-        "version": "*"
+        "id": "quilted_fabric_api",
+        "versions": ">=5.0.0-"
       },
       {
         "id": "minecraft",
-        "version": ">=1.19"
+        "versions": ">=1.19.3"
       }
     ]
-  }
+  },
+  "mixin": [
+    "cristellib.mixins.json",
+    "cristellib-common.mixins.json"
+  ]
 }

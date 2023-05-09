@@ -6,6 +6,7 @@ import net.cristellib.StructureConfig;
 import net.cristellib.Util;
 import net.cristellib.api.CristelLibAPI;
 import net.cristellib.data.ReadData;
+import net.cristellib.fabriclike.CristelLibFabricPlatform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -44,6 +45,8 @@ public class CristelLibExpectPlatformImpl {
 
 
     public static @Nullable Path getResourceDirectory(String modid, String subPath) {
+        return CristelLibFabricPlatform.getResourceDirectory(modid, subPath);
+        /*
         ModContainer container = QuiltLoader.getModContainer(modid).orElse(null);
         if(container != null){
             Path path = container.getPath(subPath);
@@ -54,10 +57,14 @@ public class CristelLibExpectPlatformImpl {
         }
         CristelLib.LOGGER.warn("Mod container for modId:" + modid + " is null");
         return null;
+
+         */
     }
 
 
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
+        return CristelLibFabricPlatform.getConfigs(registry);
+        /*
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
         QuiltLoader.getEntrypointContainers("cristellib", CristelLibAPI.class).forEach(entrypoint -> {
             String modId = entrypoint.getProvider().metadata().id();
@@ -71,30 +78,23 @@ public class CristelLibExpectPlatformImpl {
                 CristelLib.LOGGER.error("Mod {} provides a broken implementation of CristelLibRegistry", modId, e);
             }
         });
-        Util.addAll(configs, data(registry));
+        Util.addAll(configs, CristelLibFabricPlatform.data(registry));
         return configs;
-    }
 
-    public static Map<String, Set<StructureConfig>> data(CristelLibRegistry registry) {
-        Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
-        for(ModContainer container : QuiltLoader.getAllMods()){
-            String modid = container.metadata().id();
-            //List<Path> dataPacks = getPathsInDir(modid, "data/cristellib/data_packs");
-
-            ReadData.getBuiltInPacks(modid);
-            ReadData.copyFile(modid);
-            ReadData.getStructureConfigs(modid, modidAndConfigs, registry);
-        }
-        return modidAndConfigs;
+         */
     }
 
     public static List<Path> getRootPaths(String modId) {
+        return CristelLibFabricPlatform.getRootPaths(modId);
+        /*
         ModContainer container = QuiltLoader.getModContainer(modId).orElse(null);
         List<Path> paths = new ArrayList<>();
         if(container != null){
             paths = Collections.singletonList(container.rootPath());
         }
         return paths;
+
+         */
     }
 
     public static boolean isModLoaded(String modId) {

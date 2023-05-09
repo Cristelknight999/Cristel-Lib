@@ -3,7 +3,6 @@ package net.cristellib.forge.extrapackutil;
 import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import net.cristellib.CristelLib;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -41,12 +39,14 @@ public class ModResourcePack implements PackResources {
     private final Map<PackType, Set<String>> namespaces;
 
     public static ModResourcePack create(ResourceLocation id, Component name, ModContainer mod, String subPath) {
-        List<Path> rootPaths = List.of();
+        List<Path> rootPaths = Collections.singletonList(mod.getModInfo().getOwningFile().getFile().getSecureJar().getRootPath());;
+        /*
         try {
             rootPaths = List.of(Path.of(ModResourcePack.class.getResource("/").toURI()));
         } catch (URISyntaxException ignored) {
             LOGGER.error("Couldn't translate the resource path");
         }
+         */
         List<Path> paths;
 
         if (subPath == null) {
@@ -70,7 +70,6 @@ public class ModResourcePack implements PackResources {
         }
 
         ModResourcePack ret = new ModResourcePack(id, name, mod.getModId(), paths, null);
-
         return ret.getNamespaces(PackType.SERVER_DATA).isEmpty() ? null : ret;
     }
 
