@@ -176,7 +176,7 @@ public class ModResourcePack implements PackResources {
     public static InputStream openDefault(String info, String filename) {
         if (filename.equals("pack.mcmeta")) {
             String description = Objects.requireNonNullElse(info, "");
-            String metadata = serializeMetadata(PackType.SERVER_DATA.getVersion(SharedConstants.getCurrentVersion()), description);
+            String metadata = serializeMetadata(SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), description);
             return IOUtils.toInputStream(metadata, Charsets.UTF_8);
         }
         return null;
