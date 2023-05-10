@@ -6,11 +6,11 @@ import net.cristellib.CristelLibRegistry;
 import net.cristellib.StructureConfig;
 import net.cristellib.Util;
 import net.cristellib.api.CristelLibAPI;
-import net.cristellib.builtinpacks.BuiltinResourcePackSource;
 import net.cristellib.builtinpacks.PackWithoutConstructor;
 import net.cristellib.data.ReadData;
 import net.cristellib.forge.extraapiutil.APIFinder;
 import net.cristellib.forge.extrapackutil.ModResourcePack;
+import net.minecraft.server.packs.AbstractPackResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
@@ -86,12 +86,15 @@ public class CristelLibExpectPlatformImpl {
         return ModList.get().isLoaded(modId);
     }
 
-    public static @Nullable Pack createPack(String name, String subPath, String modId) {
+    public static @Nullable AbstractPackResources createPack(String name, String subPath, String modId) {
         ModContainer container = ModList.get().getModContainerById(modId).orElse(null);
         if(container != null){
             ModResourcePack pack = ModResourcePack.create(name, container.getModInfo(), subPath);
+            return pack;
+            /*
             if(pack == null) return null;
             return PackWithoutConstructor.of(pack);
+             */
         }
         else {
             CristelLib.LOGGER.warn("Couldn't get mod container for modid: " + modId);

@@ -3,8 +3,7 @@ package net.cristellib;
 import com.google.common.collect.ImmutableMap;
 import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.cristellib.builtinpacks.RuntimePack;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.cristellib.config.ConfigUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,15 +14,16 @@ public class CristelLib {
 
     public static final Logger LOGGER = LogManager.getLogger("Cristel Lib");
 
-    public static RuntimePack DATA_PACK = new RuntimePack(new ResourceLocation(MOD_ID, "Runtime Pack") , 10, CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "assets/cristellib/textures/icon.png"));
+    public static RuntimePack DATA_PACK = new RuntimePack("Runtime Pack" , 9, CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "assets/cristellib/textures/icon.png"));
 
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 
     public static void init() {
+        DATA_PACK.dumpDirect(ConfigUtil.CONFIG_LIB.resolve("dumped_packs"));
     }
 
     public static void preInit(){
-        BuiltInDataPacks.registerPack(DATA_PACK, Component.nullToEmpty("Cristel Lib Config Pack"), () -> true);
+        BuiltInDataPacks.registerPack("Cristel Lib Config Pack", DATA_PACK, () -> true);
 
         CristelLibRegistry.configs = ImmutableMap.copyOf(CristelLibExpectPlatform.getConfigs(REGISTRY));
 

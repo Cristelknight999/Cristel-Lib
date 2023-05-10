@@ -10,6 +10,7 @@ import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.util.GsonHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
@@ -32,15 +33,15 @@ public class RuntimePack implements PackResources {
             .create();
 
     public final int packVersion;
-    private final ResourceLocation id;
+    private final String name;
     private final Lock waiting = new ReentrantLock();
     private final Map<ResourceLocation, Supplier<byte[]>> data = new ConcurrentHashMap<>();
     private final Map<String, Supplier<byte[]>> root = new ConcurrentHashMap<>();
 
 
-    public RuntimePack(ResourceLocation id, int version, @Nullable Path imageFile) {
+    public RuntimePack(String name, int version, @Nullable Path imageFile) {
         this.packVersion = version;
-        this.id = id;
+        this.name = name;
         if(imageFile != null){
             byte[] image = extractImageBytes(imageFile);
             if(image != null) this.addRootResource("pack.png", image);
@@ -130,7 +131,7 @@ public class RuntimePack implements PackResources {
 
 
     public void dumpDirect(Path output) {
-        CristelLib.LOGGER.info("dumping " + this.id + "'s assets and data");
+        CristelLib.LOGGER.info("dumping " + this.name + "'s assets and data");
         // data dump time
         try {
             for(Map.Entry<String, Supplier<byte[]>> e : this.root.entrySet()) {
@@ -169,12 +170,11 @@ public class RuntimePack implements PackResources {
     }
 
     @Override
-    public InputStream getResource(PackType packType, ResourceLocation resourceLocation) {
+    public InputStream getResource(PackType packType, @NotNull ResourceLocation id) {
         if(packType.equals(PackType.CLIENT_RESOURCES)) return null;
         this.lock();
         Supplier<byte[]> supplier = data.get(id);
         if(supplier == null) {
-            CristelLib.LOGGER.warn("No resource found for " + id);
             this.waiting.unlock();
             return null;
         }
@@ -205,7 +205,7 @@ public class RuntimePack implements PackResources {
     }
 
     @Override
-    public boolean hasResource(PackType packType, ResourceLocation resourceLocation) {
+    public boolean hasResource(PackType packType, ResourceLocation id) {
         if(packType.equals(PackType.CLIENT_RESOURCES)) return false;
         this.lock();
         boolean contains = data.containsKey(id);
@@ -231,23 +231,20 @@ public class RuntimePack implements PackResources {
         if(metaReader.getMetadataSectionName().equals("pack")) {
             JsonObject object = new JsonObject();
             object.addProperty("pack_format", this.packVersion);
-            object.addProperty("description", "runtime resource pack");
+            object.addProperty("description", this.name);
             return metaReader.fromJson(object);
         }
-        CristelLib.LOGGER.info("'" + metaReader.getMetadataSectionName() + "' is an unsupported metadata key!");
         return metaReader.fromJson(new JsonObject());
     }
 
     @Override
     public String getName() {
-        return "Runtime Resource Pack" + this.id;
+        return this.name;
     }
 
     @Override
     public void close() {
-        CristelLib.LOGGER.info("closing rrp " + this.id);
-        this.lock();
-        this.waiting.unlock();
+        CristelLib.LOGGER.debug("Closing RDP: " + this.name);
     }
 
 

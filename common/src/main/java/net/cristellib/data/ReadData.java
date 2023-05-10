@@ -1,5 +1,6 @@
 package net.cristellib.data;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.*;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -37,20 +38,11 @@ public class ReadData {
             }
             JsonElement element = JsonParser.parseReader(new InputStreamReader(stream));
             if(element instanceof JsonObject object){
-                String location = object.get("location").getAsString();
+                String subPath = object.get("sub_path").getAsString();
                 String name = object.get("display_name").getAsString();
 
-                ResourceLocation rl = ResourceLocation.tryParse(location);
-
-                Component component = Component.literal(name);
-                try {
-                    component = ComponentArgument.textComponent().parse(new StringReader(name));
-                } catch (CommandSyntaxException e) {
-                    CristelLib.LOGGER.debug("Couldn't parse: \"" + name + "\" to a component", e);
-                }
-
                 boolean b = Conditions.readConditions(object);
-                BuiltInDataPacks.registerPack(rl, modid, component, () -> b);
+                BuiltInDataPacks.registerPack(name, subPath, modid, () -> b);
             }
         }
         checkedConfigFiles = false;
@@ -134,7 +126,7 @@ public class ReadData {
                 if(object.has("comments")){
                     JsonObject comments = object.get("comments").getAsJsonObject();
                     HashMap<String, String> commentFinalMap = new HashMap<>();
-                    Map<String, JsonElement> commentMap = comments.asMap();
+                    Map<String, JsonElement> commentMap = comments.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
                     for(String s : commentMap.keySet()){
                         if(commentMap.get(s) instanceof JsonPrimitive p){
                             commentFinalMap.put(s, p.getAsString());

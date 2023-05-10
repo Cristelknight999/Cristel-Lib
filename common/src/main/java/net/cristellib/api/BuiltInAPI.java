@@ -34,25 +34,9 @@ public class BuiltInAPI implements CristelLibAPI {
 
     @Override
     public void registerStructureSets(CristelLibRegistry registry) {
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "ancient_cities"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "buried_treasures"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "desert_pyramids"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "end_cities"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "igloos"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "jungle_temples"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "mineshafts"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "nether_complexes"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "nether_fossils"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "ocean_monuments"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "ocean_ruins"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "pillager_outposts"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "ruined_portals"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "shipwrecks"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "swamp_huts"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "villages"), MINECRAFT_ED, MINECRAFT_P);
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "woodland_mansions"), MINECRAFT_ED, MINECRAFT_P);
+        registry.registerSetToConfig("t_and_t", new ResourceLocation("towns_and_towers", "towns"), MINECRAFT_ED, MINECRAFT_P);
 
-        //No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
-        registry.registerSetToConfig("minecraft", new ResourceLocation("minecraft", "strongholds"), MINECRAFT_ED);
+        registry.registerSetToConfig("t_and_t", new ResourceLocation("towns_and_towers", "other"), MINECRAFT_ED, MINECRAFT_P);
+        registry.registerSetToConfig("t_and_t", new ResourceLocation("towns_and_towers", "towers"), MINECRAFT_ED, MINECRAFT_P);
     }
 }
