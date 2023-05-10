@@ -19,8 +19,7 @@
     },
     "intermediate_mappings": "net.fabricmc:intermediary",
     "entrypoints": {
-      "init": "net.cristellib.quilt.CristelLibQuilt",
-      "cristellib": "net.cristellib.api.BuiltInAPI"
+      "init": "net.cristellib.quilt.CristelLibQuilt"
     },
     "depends": [
       {
