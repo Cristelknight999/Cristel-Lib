@@ -187,7 +187,7 @@ public class ReadData {
         }
     }
 
-    private static void walk(Path root, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) throws IOException {
+    public static void walk(Path root, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) throws IOException {
         if (root == null || !Files.exists(root) || !rootFilter.test(root)) {
             return;
         }
