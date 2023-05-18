@@ -1,24 +1,17 @@
 package net.cristellib.fabric;
 
-import net.cristellib.CristelLib;
 import net.cristellib.CristelLibRegistry;
-import net.cristellib.Util;
-import net.cristellib.api.CristelLibAPI;
 import net.cristellib.StructureConfig;
-import net.cristellib.data.ReadData;
 import net.cristellib.fabriclike.CristelLibFabricPlatform;
-import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
-import net.fabricmc.fabric.impl.resource.loader.ModNioResourcePack;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PackType;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class CristelLibExpectPlatformImpl {
 
