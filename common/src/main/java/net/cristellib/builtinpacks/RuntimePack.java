@@ -1,11 +1,10 @@
 package net.cristellib.builtinpacks;
 
-import com.google.gson.*;
-import com.google.gson.stream.JsonWriter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import net.cristellib.CristelLib;
-import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.config.ConfigUtil;
-import net.minecraft.FileUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.FeatureFlagsMetadataSection;
 import net.minecraft.server.packs.FilePackResources;
@@ -29,11 +28,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class RuntimePack implements PackResources {
-    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping()
-            .registerTypeAdapter(ResourceLocation.class, new ResourceLocation.Serializer())
-            .create();
+    public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private final Lock waiting = new ReentrantLock();
     private final Map<ResourceLocation, Supplier<byte[]>> data = new ConcurrentHashMap<>();
     private final Map<List<String>, Supplier<byte[]>> root = new ConcurrentHashMap<>();
@@ -54,8 +54,6 @@ public class RuntimePack implements PackResources {
     public byte[] addStructureSet(ResourceLocation identifier, JsonObject set) {
         return this.addDataForJsonLocation("worldgen/structure_set", identifier, set);
     }
-
-
 
 
     public byte[] addBiome(ResourceLocation identifier, JsonObject biome) {
@@ -237,12 +235,50 @@ public class RuntimePack implements PackResources {
         CristelLib.LOGGER.debug("Closing RDP: " + this.name);
     }
 
-    public void dump(){
-        if(data.isEmpty()) CristelLib.LOGGER.info("No data, that can be dumped");
-        for(ResourceLocation l : data.keySet()){
-            writeStreamToFile(l.getNamespace() + "/" + l.getPath(), l);
+    public void load(Path dir) throws IOException {
+        Stream<Path> stream = Files.walk(dir);
+        for(Path file : (Iterable<Path>) () -> stream.filter(Files::isRegularFile).map(dir::relativize).iterator()) {
+            String s = file.toString();
+            if(s.startsWith("data")) {
+                String path = s.substring("data".length() + 1);
+                this.load(path, this.data, Files.readAllBytes(file));
+            } else if(!s.startsWith("assets")) {
+                byte[] data = Files.readAllBytes(file);
+                this.root.put(Arrays.asList(s.split("/")), () -> data);
+            }
         }
     }
+
+
+    public void load(ZipInputStream stream) throws IOException {
+        ZipEntry entry;
+        while((entry = stream.getNextEntry()) != null) {
+            String s = entry.toString();
+            if(s.startsWith("data")) {
+                String path = s.substring("data".length() + 1);
+                this.load(path, this.data, this.read(entry, stream));
+            } else if(!s.startsWith("assets")){
+                byte[] data = this.read(entry, stream);
+                this.root.put(Arrays.asList(s.split("/")), () -> data);
+            }
+        }
+    }
+
+    protected byte[] read(ZipEntry entry, InputStream stream) throws IOException {
+        byte[] data = new byte[Math.toIntExact(entry.getSize())];
+        if(stream.read(data) != data.length) {
+            throw new IOException("Zip stream was cut off! (maybe incorrect zip entry length? maybe u didn't flush your stream?)");
+        }
+        return data;
+    }
+
+    protected void load(String fullPath, Map<ResourceLocation, Supplier<byte[]>> map, byte[] data) {
+        int sep = fullPath.indexOf('/');
+        String namespace = fullPath.substring(0, sep);
+        String path = fullPath.substring(sep + 1);
+        map.put(new ResourceLocation(namespace, path), () -> data);
+    }
+
 
     public @Nullable JsonObject getResource(ResourceLocation location){
         IoSupplier<InputStream> stream = this.getResource(PackType.SERVER_DATA, location);
@@ -254,31 +290,5 @@ public class RuntimePack implements PackResources {
             return null;
         }
         return jsonObject;
-    }
-
-    public void writeStreamToFile(String filename, ResourceLocation from){
-        JsonObject jsonObject = getResource(from);
-        if(jsonObject == null) return;
-
-        List<String> directory = new ArrayList<>(Arrays.stream(filename.split("/")).toList());
-        directory.remove(directory.size() - 1);
-        StringBuilder finalS = new StringBuilder();
-        for(String s : directory){
-            finalS.append(s).append("/");
-        }
-
-        Path path;
-        try {
-            FileUtil.createDirectoriesSafe(CristelLibExpectPlatform.getConfigDirectory().resolve(String.valueOf(finalS)));
-            path = CristelLibExpectPlatform.getConfigDirectory().resolve(filename);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (FileWriter fileWriter = new FileWriter(path.toFile()); JsonWriter jsonWriter = gson.newJsonWriter(fileWriter)) {
-            jsonWriter.jsonValue(gson.toJson(jsonObject));
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 }

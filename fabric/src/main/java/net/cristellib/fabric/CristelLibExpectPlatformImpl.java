@@ -2,7 +2,9 @@ package net.cristellib.fabric;
 
 import net.cristellib.CristelLibRegistry;
 import net.cristellib.StructureConfig;
-import net.cristellib.fabriclike.CristelLibFabricPlatform;
+import net.cristellib.fabriclike.CristelLibFabricLikePlatform;
+import net.cristellib.util.Platform;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -16,29 +18,37 @@ import java.util.Set;
 public class CristelLibExpectPlatformImpl {
 
     public static Path getConfigDirectory() {
-        return CristelLibFabricPlatform.getConfigDirectory();
+        return CristelLibFabricLikePlatform.getConfigDirectory();
     }
 
     public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
-        return CristelLibFabricPlatform.registerBuiltinResourcePack(id, displayName, modid);
+        return CristelLibFabricLikePlatform.registerBuiltinResourcePack(id, displayName, modid);
     }
 
     public static @Nullable Path getResourceDirectory(String modid, String subPath) {
-        return CristelLibFabricPlatform.getResourceDirectory(modid, subPath);
+        return CristelLibFabricLikePlatform.getResourceDirectory(modid, subPath);
     }
 
 
 
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
-        return CristelLibFabricPlatform.getConfigs(registry);
+        return CristelLibFabricLikePlatform.getConfigs(registry);
     }
 
     public static List<Path> getRootPaths(String modId) {
-        return CristelLibFabricPlatform.getRootPaths(modId);
+        return CristelLibFabricLikePlatform.getRootPaths(modId);
     }
 
     public static boolean isModLoaded(String modId) {
-        return CristelLibFabricPlatform.isModLoaded(modId);
+        return FabricLoader.getInstance().isModLoaded(modId);
+    }
+
+    public static boolean isModLoadedWithVersion(String modid, String minVersion) {
+        return CristelLibFabricLikePlatform.isModLoadedWithVersion(modid, minVersion);
+    }
+
+    public static Platform getPlatform() {
+        return Platform.FABRIC;
     }
 
 }

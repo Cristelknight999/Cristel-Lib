@@ -7,6 +7,7 @@ import com.mojang.datafixers.util.Pair;
 import net.cristellib.config.ConfigType;
 import net.cristellib.config.ConfigUtil;
 import net.cristellib.config.Placement;
+import net.cristellib.util.Util;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;

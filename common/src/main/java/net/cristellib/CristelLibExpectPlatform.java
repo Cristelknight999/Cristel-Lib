@@ -1,6 +1,7 @@
 package net.cristellib;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.cristellib.util.Platform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -34,7 +35,12 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static boolean isModLoaded(String modId) {
+    public static boolean isModLoadedWithVersion(String modid, String minVersion){
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static boolean isModLoaded(String modid){
         throw new AssertionError();
     }
 
@@ -42,5 +48,11 @@ public class CristelLibExpectPlatform {
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static Platform getPlatform(){
+        throw new AssertionError();
+    }
+
 
 }

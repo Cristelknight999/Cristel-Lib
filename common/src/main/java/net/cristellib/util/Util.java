@@ -1,4 +1,4 @@
-package net.cristellib;
+package net.cristellib.util;
 
 import net.minecraft.resources.ResourceLocation;
 

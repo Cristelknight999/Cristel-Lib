@@ -34,28 +34,28 @@ public class BuiltInDataPacks {
 		if(list.isEmpty()) return;
 		for (Tuple<Tuple<Component, PackResources>, Supplier<Boolean>> entry : list) {
 			if(entry.getB().get()){
-				PackResources pack = entry.getA().getB();
+				PackResources packResources = entry.getA().getB();
 				Component displayName = entry.getA().getA();
-				if(pack == null){
+				if(packResources == null){
 					CristelLib.LOGGER.error("Pack for " + displayName.getString() + " is null");
 					continue;
 				}
-				if (!pack.getNamespaces(PackType.SERVER_DATA).isEmpty()) {
-					Pack profile = Pack.readMetaAndCreate(
-							pack.packId(),
+				if (!packResources.getNamespaces(PackType.SERVER_DATA).isEmpty()) {
+					Pack pack = Pack.readMetaAndCreate(
+							packResources.packId(),
 							displayName,
 							true,
-							ignored -> pack,
+							ignored -> packResources,
 							PackType.SERVER_DATA,
 							Pack.Position.TOP,
 							new BuiltinResourcePackSource()
-					);;
-					if (profile != null) {
-						consumer.accept(profile);
+					);
+					if (pack != null) {
+						consumer.accept(pack);
 					}
-					else CristelLib.LOGGER.error(pack + " couldn't be created");
+					else CristelLib.LOGGER.error(packResources.packId() + " couldn't be created");
 				}
-				else CristelLib.LOGGER.debug(pack + " has no data");
+				else CristelLib.LOGGER.debug(packResources.packId() + " has no data");
 			}
 		}
 	}

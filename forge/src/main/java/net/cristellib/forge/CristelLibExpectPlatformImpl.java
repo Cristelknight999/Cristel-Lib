@@ -1,22 +1,25 @@
 package net.cristellib.forge;
 
 import com.mojang.datafixers.util.Pair;
-import net.cristellib.CristelLib;
-import net.cristellib.CristelLibRegistry;
-import net.cristellib.StructureConfig;
-import net.cristellib.Util;
+import net.cristellib.*;
 import net.cristellib.api.CristelLibAPI;
 import net.cristellib.data.ReadData;
 import net.cristellib.forge.extraapiutil.APIFinder;
-import net.cristellib.forge.extrapackutil.ModResourcePack;
+import net.cristellib.util.Platform;
+import net.cristellib.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PathPackResources;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.LoadingModList;
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.language.IModInfo;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
@@ -29,14 +32,11 @@ public class CristelLibExpectPlatformImpl {
     }
 
     public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
-        ModContainer container = ModList.get().getModContainerById(modid).orElse(null);
-        if(container != null){
-            return ModResourcePack.create(id, displayName, container, id.getPath());
+        Path path = getResourceDirectory(modid, id.getPath());
+        if(path != null){
+            return new PathPackResources(displayName.getString(), path, true);
         }
-        else {
-            CristelLib.LOGGER.warn("Couldn't get mod container for modid: " + modid);
-            return null;
-        }
+        return null;
     }
 
     public static @Nullable Path getResourceDirectory(String modid, String subPath) {
@@ -92,8 +92,46 @@ public class CristelLibExpectPlatformImpl {
         return paths;
     }
 
-    public static boolean isModLoaded(String modId) {
-        return ModList.get().isLoaded(modId);
+    public static boolean isModLoaded(String modid) {
+        ModList modList = ModList.get();
+        if(modList != null){
+            return modList.isLoaded(modid);
+        }
+        return isModPreLoaded(modid);
+    }
+
+    public static boolean isModPreLoaded(String modid) {
+        for(ModInfo info : LoadingModList.get().getMods()){
+            if(info.getModId().equals(modid)) return true;
+        }
+        return false;
+    }
+
+    public static boolean isModLoadedWithVersion(String modid, String minVersion) {
+        if(isModLoaded(modid)){
+            ModList modList = ModList.get();
+            ArtifactVersion version;
+            if(modList != null) version = modList.getModContainerById(modid).get().getModInfo().getVersion();
+            else version = getPreLoadedModVersion(modid);
+
+            ArtifactVersion min;
+            min = new DefaultArtifactVersion(minVersion);
+            return version.compareTo(min) >= 0;
+        }
+        return false;
+    }
+
+    public static ArtifactVersion getPreLoadedModVersion(String modid) {
+        for(ModInfo info : LoadingModList.get().getMods()){
+            if(info.getModId().equals(modid)) {
+                return info.getVersion();
+            }
+        }
+        throw new RuntimeException("Couldn't find mod: " + modid);
+    }
+
+    public static Platform getPlatform() {
+        return Platform.FORGE;
     }
 
 
