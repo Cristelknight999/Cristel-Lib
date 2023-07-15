@@ -93,6 +93,7 @@ public class CristelLibFabricLikePlatform {
 
             ReadData.getBuiltInPacks(modid);
             ReadData.copyFile(modid);
+            //ReadData.modifyJson5File(modid);
             ReadData.getStructureConfigs(modid, modidAndConfigs, registry);
         }
         return modidAndConfigs;

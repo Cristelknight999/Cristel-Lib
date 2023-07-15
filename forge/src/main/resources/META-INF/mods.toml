@@ -11,7 +11,7 @@ authors = "Cristelknight999"
 description = '''
 A Library mod for easy structure config and runtime datapacks.
 '''
-logoFile = "assets/cristellib/textures/icon.png"
+logoFile = "pack.png"
 
 [[dependencies.cristellib]]
 modId = "forge"

@@ -16,7 +16,7 @@ public class CristelLib {
 
     public static final Logger LOGGER = LogManager.getLogger("Cristel Lib");
 
-    public static RuntimePack DATA_PACK = new RuntimePack("Runtime Pack", SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "assets/cristellib/textures/icon.png"));
+    public static RuntimePack DATA_PACK = new RuntimePack("Runtime Pack", SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "pack.png"));
 
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 

@@ -5,7 +5,6 @@
   "client": [
   ],
   "mixins": [
-    "LoadConfig",
     "LoadPacks"
   ],
   "injectors": {

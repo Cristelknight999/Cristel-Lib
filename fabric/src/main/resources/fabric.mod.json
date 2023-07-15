@@ -11,7 +11,7 @@
     "homepage": "https://modrinth.com/mod/cristel-lib"
   },
   "license": "CC BY-NC-ND 4.0",
-  "icon": "assets/cristellib/textures/icon.png",
+  "icon": "pack.png",
   "environment": "*",
   "entrypoints": {
     "main": [

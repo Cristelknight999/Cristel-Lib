@@ -37,7 +37,8 @@ configurations {
 dependencies {
     forge "net.minecraftforge:forge:${rootProject.forge_version}"
 
-    /*library */shadowCommon("blue.endless:jankson:${rootProject.jankson_version}")
+    include(implementation("blue.endless:jankson:${rootProject.jankson_version}"))
+
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
 }
@@ -55,16 +56,8 @@ shadowJar {
     exclude "architectury.common.json"
 
     configurations = [project.configurations.shadowCommon]
-    relocate 'blue.endless.jankson', "${project.group}.shadow.blue.endless.jankson"
     classifier "dev-shadow"
 }
-/*
-reobf {
-    shadowJar {
-    }
-}
- */
-
 
 remapJar {
     input.set shadowJar.archiveFile

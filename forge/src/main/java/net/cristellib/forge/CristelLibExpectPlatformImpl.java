@@ -75,8 +75,9 @@ public class CristelLibExpectPlatformImpl {
         Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
         for(IModInfo container : ModList.get().getMods()){
             String modid = container.getModId();
-            //List<Path> dataPacks = getPathsInDir(modid, "data/cristellib/data_packs");
+
             ReadData.getBuiltInPacks(modid);
+            //ReadData.modifyJson5File(modid);
             ReadData.copyFile(modid);
             ReadData.getStructureConfigs(modid, modidAndConfigs, registry);
         }

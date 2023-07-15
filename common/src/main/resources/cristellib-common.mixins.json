@@ -6,6 +6,7 @@
   "client": [
   ],
   "mixins": [
+    "LoadConfig"
   ],
   "injectors": {
     "defaultRequire": 1

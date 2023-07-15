@@ -3,6 +3,7 @@ package net.cristellib.data;
 import com.google.gson.*;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Pair;
 import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.CristelLibRegistry;
@@ -10,6 +11,8 @@ import net.cristellib.StructureConfig;
 import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.cristellib.config.ConfigType;
 import net.cristellib.config.ConfigUtil;
+import net.cristellib.util.JanksonUtil;
+import net.cristellib.util.Util;
 import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -78,13 +81,59 @@ public class ReadData {
     }
 
 
+    public static void modifyJson5File(String modid){
+        for(Path path : getPathsInDir(modid, "modify_file")){
+            InputStream stream;
+            try {
+                stream = Files.newInputStream(path);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            JsonElement element = JsonParser.parseReader(new InputStreamReader(stream));
+            if(element instanceof JsonObject object && Conditions.readConditions(object)){
+                String location = object.get("location").getAsString();
+                String destination = object.get("path").getAsString();
+                JsonObject objects = object.get("objects").getAsJsonObject();
+
+                List<Pair<String, String>> strings = new ArrayList<>();
+                for(String s : objects.keySet()){
+                    JsonElement e = objects.get(s);
+                    strings.add(new Pair<>(s, e.getAsString()));
+                }
+                modifyObject(destination, strings, location);
+            }
+        }
+        checkedConfigFiles = false;
+    }
+
+
+    public static void modifyObject(String modifier, List<Pair<String, String>> strings, String at){
+        Path toFile = ConfigUtil.CONFIG_DIR.resolve(at);
+        if(!toFile.toFile().exists() || !toFile.endsWith("json5")) return;
+
+        try{
+            blue.endless.jankson.JsonObject load = ConfigUtil.JANKSON.load(toFile.toFile());
+            JanksonUtil.addToObject(load, modifier, strings);
+
+            Files.createDirectories(toFile.getParent());
+            String output = load.toJson(ConfigUtil.JSON_GRAMMAR);
+            Files.write(toFile, output.getBytes());
+
+        } catch (Exception errorMsg) {
+            CristelLib.LOGGER.error("Couldn't read " + toFile + "can't modify it");
+        }
+    }
+
+
+
+
 
     public static void copyFileFromJar(String from, String to, String fromModId){
         List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(fromModId);
         for(Path p : inputUrl){
             Path fromFile = p.resolve(from);
             File toFile = ConfigUtil.CONFIG_DIR.resolve(to).toFile();
-            if(fromFile == null || toFile == null || new File(to).exists()) continue;
+            if(fromFile == null || toFile == null || toFile.exists()) continue;
             try {
                 FileUtils.copyURLToFile(fromFile.toUri().toURL(), toFile);
             } catch (IOException e) {
