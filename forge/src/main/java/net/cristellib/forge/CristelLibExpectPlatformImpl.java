@@ -18,6 +18,7 @@ import net.minecraftforge.fml.loading.LoadingModList;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.language.IModInfo;
+import net.minecraftforge.forgespi.locating.IModFile;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
@@ -39,17 +40,31 @@ public class CristelLibExpectPlatformImpl {
         return null;
     }
 
-    public static @Nullable Path getResourceDirectory(String modid, String subPath) {
-        IModFileInfo container = ModList.get().getModFileById(modid);
-        if(container != null){
-            Path path = container.getFile().findResource(subPath);
-            if(path == null){
-                CristelLib.LOGGER.warn("Path for subPath: " + subPath + " in modId: " + modid + " is null");
+    public static @Nullable Path getResourceDirectory(String modId, String subPath) {
+        ModList modList = ModList.get();
+        IModFile file;
+        if(modList == null){
+            ModInfo info = getPreLoadedModInfo(modId);
+            if(info == null){
+                CristelLib.LOGGER.warn("Mod info for modId:" + modId + " is null");
+                return null;
             }
-            return path;
+            file = info.getOwningFile().getFile();
         }
-        CristelLib.LOGGER.warn("Mod container for modId:" + modid + " is null");
-        return null;
+        else {
+            ModContainer container = modList.getModContainerById(modId).orElse(null);
+            if(container == null){
+                CristelLib.LOGGER.warn("Mod container for modId:" + modId + " is null");
+                return null;
+            }
+            file = container.getModInfo().getOwningFile().getFile();
+        }
+
+        Path path = file.findResource(subPath);
+        if(path == null){
+            CristelLib.LOGGER.warn("Path for subPath: " + subPath + " in modId: " + modId + " is null");
+        }
+        return path;
     }
 
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
@@ -73,8 +88,7 @@ public class CristelLibExpectPlatformImpl {
 
     public static Map<String, Set<StructureConfig>> data(CristelLibRegistry registry) {
         Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
-        for(IModInfo container : ModList.get().getMods()){
-            String modid = container.getModId();
+        for(String modid : getModIds()){
 
             ReadData.getBuiltInPacks(modid);
             //ReadData.modifyJson5File(modid);
@@ -84,13 +98,39 @@ public class CristelLibExpectPlatformImpl {
         return modidAndConfigs;
     }
 
-    public static List<Path> getRootPaths(String modId) {
-        ModContainer container = ModList.get().getModContainerById(modId).orElse(null);
-        List<Path> paths = new ArrayList<>();
-        if(container != null){
-            paths = Collections.singletonList(container.getModInfo().getOwningFile().getFile().getSecureJar().getRootPath());
+
+    public static List<String> getModIds(){
+        ModList modList = ModList.get();
+        List<String> modIds = new ArrayList<>();
+        if(modList != null){
+            for(IModInfo modInfo : modList.getMods()){
+                modIds.add(modInfo.getModId());
+            }
         }
-        return paths;
+        else {
+            for(IModInfo modInfo : LoadingModList.get().getMods()){
+                modIds.add(modInfo.getModId());
+            }
+        }
+        return modIds;
+    }
+
+
+    public static List<Path> getRootPaths(String modId) {
+        ModList modList = ModList.get();
+        List<Path> paths = new ArrayList<>();
+        IModFile file;
+        if(modList == null){
+            ModInfo info = getPreLoadedModInfo(modId);
+            if(info == null) return paths;
+            file = info.getOwningFile().getFile();
+        }
+        else {
+            ModContainer container = modList.getModContainerById(modId).orElse(null);
+            if(container == null) return paths;
+            file = container.getModInfo().getOwningFile().getFile();
+        }
+        return Collections.singletonList(file.getSecureJar().getRootPath());
     }
 
     public static boolean isModLoaded(String modid) {
@@ -102,10 +142,16 @@ public class CristelLibExpectPlatformImpl {
     }
 
     public static boolean isModPreLoaded(String modid) {
+        return getPreLoadedModInfo(modid) != null;
+    }
+
+    public static @Nullable ModInfo getPreLoadedModInfo(String modId){
         for(ModInfo info : LoadingModList.get().getMods()){
-            if(info.getModId().equals(modid)) return true;
+            if(info.getModId().equals(modId)) {
+                return info;
+            }
         }
-        return false;
+        return null;
     }
 
     public static boolean isModLoadedWithVersion(String modid, String minVersion) {
@@ -123,12 +169,9 @@ public class CristelLibExpectPlatformImpl {
     }
 
     public static ArtifactVersion getPreLoadedModVersion(String modid) {
-        for(ModInfo info : LoadingModList.get().getMods()){
-            if(info.getModId().equals(modid)) {
-                return info.getVersion();
-            }
-        }
-        throw new RuntimeException("Couldn't find mod: " + modid);
+        ModInfo info = getPreLoadedModInfo(modid);
+        if(info == null) throw new RuntimeException("Couldn't find mod: " + modid);
+        return info.getVersion();
     }
 
     public static Platform getPlatform() {

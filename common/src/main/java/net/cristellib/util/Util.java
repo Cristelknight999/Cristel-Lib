@@ -1,5 +1,7 @@
 package net.cristellib.util;
 
+import net.cristellib.CristelLib;
+import net.cristellib.CristelLibExpectPlatform;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
@@ -18,6 +20,10 @@ public class Util {
                 addTo.put(string, addFrom.get(string));
             }
         }
+    }
+
+    public static boolean isTerrablenderLoaded(){
+        return CristelLibExpectPlatform.isModLoadedWithVersion("terrablender", CristelLib.minTerraBlenderVersion);
     }
 
     public static ResourceLocation getLocationForStructureSet(ResourceLocation location){

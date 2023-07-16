@@ -8,8 +8,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +28,6 @@ public class CristelLibExpectPlatformImpl {
     public static @Nullable Path getResourceDirectory(String modid, String subPath) {
         return CristelLibFabricLikePlatform.getResourceDirectory(modid, subPath);
     }
-
-
 
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
         return CristelLibFabricLikePlatform.getConfigs(registry);

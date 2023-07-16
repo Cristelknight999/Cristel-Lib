@@ -1,4 +1,4 @@
-package net.cristellib.mixin;
+package net.cristellib.fabric.mixin;
 
 import net.cristellib.CristelLib;
 import net.minecraft.server.Bootstrap;
