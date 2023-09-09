@@ -8,7 +8,8 @@
     "Cristelknight999"
   ],
   "contact": {
-    "homepage": "https://modrinth.com/mod/cristel-lib"
+    "homepage": "https://modrinth.com/mod/cristel-lib",
+    "sources": "https://github.com/Cristelknight999/Cristel-Lib"
   },
   "license": "CC BY-NC-ND 4.0",
   "icon": "pack.png",
@@ -27,6 +28,6 @@
   ],
   "depends": {
     "fabric": ">=0.81.0+1.19.4",
-    "minecraft": ">=1.19.4"
+    "minecraft": ">=1.20.1"
   }
 }

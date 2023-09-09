@@ -2,9 +2,6 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
-tasks.build.dependsOn(tasks.findByName("shadowJar"))
-
-
 architectury {
     platformSetupLoomIde()
     fabric()
@@ -16,9 +13,7 @@ loom {
 
 configurations {
     common
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
-    implementation.extendsFrom(shadowCommon)
-
+    shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
     developmentFabric.extendsFrom common
@@ -28,6 +23,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     include(implementation("blue.endless:jankson:${rootProject.jankson_version}"))
+
     modImplementation "com.github.glitchfiend:TerraBlender-fabric:${rootProject.minecraft_version}-${rootProject.terrablender_version}"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
@@ -35,7 +31,6 @@ dependencies {
     common(project(path: ":fabric-like", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":fabric-like", configuration: "transformProductionFabric")) { transitive false }
 }
-
 
 processResources {
     inputs.property "version", project.version
@@ -47,10 +42,10 @@ processResources {
 
 shadowJar {
     exclude "architectury.common.json"
+
     configurations = [project.configurations.shadowCommon]
     archiveClassifier.set("dev-shadow")
 }
-
 
 remapJar {
     injectAccessWidener = true

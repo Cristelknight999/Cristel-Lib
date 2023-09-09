@@ -19,16 +19,9 @@ loom {
     }
 }
 
-tasks.build.dependsOn(tasks.findByName("shadowJar"))
-
 configurations {
     common
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
-    implementation.extendsFrom shadowCommon
-
-    library
-    implementation.extendsFrom library
-
+    shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
     developmentForge.extendsFrom common
@@ -36,8 +29,9 @@ configurations {
 
 dependencies {
     forge "net.minecraftforge:forge:${rootProject.forge_version}"
-
     include(implementation("blue.endless:jankson:${rootProject.jankson_version}"))
+
+
     modImplementation "com.github.glitchfiend:TerraBlender-forge:${rootProject.minecraft_version}-${rootProject.terrablender_version}"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }

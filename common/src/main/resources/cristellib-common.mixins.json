@@ -1,9 +1,9 @@
 {
   "required": true,
-  "minVersion": "0.8.5",
-  "plugin": "net.cristellib.mixin.TerrablenderPlugin",
   "package": "net.cristellib.mixin",
+  "plugin": "net.cristellib.mixin.TerrablenderPlugin",
   "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
   "client": [
   ],
   "mixins": [

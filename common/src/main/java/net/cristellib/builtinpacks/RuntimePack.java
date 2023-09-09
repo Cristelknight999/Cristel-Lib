@@ -17,8 +17,6 @@ import net.minecraft.world.flag.FeatureFlags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -84,15 +82,23 @@ public class RuntimePack implements PackResources {
         return data;
     }
 
+    public void removeData(ResourceLocation path) {
+        this.data.remove(path);
+    }
+
     public static byte @Nullable [] extractImageBytes(Path imageName) {
         InputStream stream;
-        BufferedImage bufferedImage;
+        //BufferedImage bufferedImage;
         try {
             stream = Files.newInputStream(imageName.toAbsolutePath());
+            return stream.readAllBytes();
+            /*
             bufferedImage = ImageIO.read(stream);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(bufferedImage, "png", baos);
             return baos.toByteArray();
+
+             */
         } catch (IOException e) {
             CristelLib.LOGGER.warn("Couldn't get image for path: " + imageName, e);
             return null;

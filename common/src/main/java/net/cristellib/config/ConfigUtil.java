@@ -2,17 +2,10 @@ package net.cristellib.config;
 
 import blue.endless.jankson.*;
 import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.cristellib.StructureConfig;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.feature.foliageplacers.RandomSpreadFoliagePlacer;
-import net.minecraft.world.level.levelgen.structure.placement.*;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -23,7 +16,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public class ConfigUtil {

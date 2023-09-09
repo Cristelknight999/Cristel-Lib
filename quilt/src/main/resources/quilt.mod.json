@@ -1,5 +1,9 @@
 {
   "schema_version": 1,
+  "mixin": [
+    "cristellib.mixins.json",
+    "cristellib-common.mixins.json"
+  ],
   "quilt_loader": {
     "group": "${group}",
     "id": "cristellib",
@@ -25,20 +29,16 @@
     "depends": [
       {
         "id": "quilt_loader",
-        "versions": ">=0.17.0-"
+        "version": "*"
       },
       {
-        "id": "quilted_fabric_api",
-        "versions": ">=5.0.0-"
+        "id": "quilt_base",
+        "version": "*"
       },
       {
         "id": "minecraft",
-        "versions": ">=1.19.4"
+        "version": ">=1.20.1"
       }
     ]
-  },
-  "mixin": [
-    "cristellib.mixins.json",
-    "cristellib-common.mixins.json"
-  ]
+  }
 }

@@ -12,7 +12,6 @@ import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.cristellib.config.ConfigType;
 import net.cristellib.config.ConfigUtil;
 import net.cristellib.util.JanksonUtil;
-import net.cristellib.util.Util;
 import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

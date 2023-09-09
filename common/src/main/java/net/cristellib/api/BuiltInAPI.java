@@ -22,7 +22,7 @@ public class BuiltInAPI implements CristelLibAPI {
         MINECRAFT_ED.setHeader("""
                     This config file makes it possible to switch off any Minecraft structure.
                     To disable a structure, simply set the value of that structure to "false".
-                    To change the rarity of a structure category, use the other file in the config.
+                    To change the rarity of a structure category, use the other file in the folder.
                 """);
         MINECRAFT_P.setHeader("""
             This config file makes it possible to change the spacing, separation, salt (and frequency) of Minecraft's structure sets.

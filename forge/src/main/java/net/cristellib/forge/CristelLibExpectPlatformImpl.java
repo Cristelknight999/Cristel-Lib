@@ -1,7 +1,9 @@
 package net.cristellib.forge;
 
 import com.mojang.datafixers.util.Pair;
-import net.cristellib.*;
+import net.cristellib.CristelLib;
+import net.cristellib.CristelLibRegistry;
+import net.cristellib.StructureConfig;
 import net.cristellib.api.CristelLibAPI;
 import net.cristellib.data.ReadData;
 import net.cristellib.forge.extraapiutil.APIFinder;
@@ -16,7 +18,6 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.LoadingModList;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
-import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.language.IModInfo;
 import net.minecraftforge.forgespi.locating.IModFile;
 import org.apache.maven.artifact.versioning.ArtifactVersion;

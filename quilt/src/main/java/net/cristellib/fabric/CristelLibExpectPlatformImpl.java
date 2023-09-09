@@ -17,7 +17,9 @@ import org.quiltmc.qsl.resource.loader.impl.ModNioResourcePack;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class CristelLibExpectPlatformImpl {
 
