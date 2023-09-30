@@ -3,7 +3,9 @@ package net.cristellib.builtinpacks;
 import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.CompositePackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
@@ -21,14 +23,14 @@ public class BuiltInDataPacks {
 	}
 
 	public static void registerPack(ResourceLocation path, String modid, Component displayName, Supplier<Boolean> supplier){
-		list.add(new Tuple<>(new Tuple<>(displayName, CristelLibExpectPlatform.registerBuiltinResourcePack(path, displayName, modid)), supplier));
+		registerPack(CristelLibExpectPlatform.registerBuiltinResourcePack(path, displayName, modid), displayName, supplier);
 	}
 
 	public static void registerPack(PackResources packResource, Component displayName, Supplier<Boolean> supplier){
 		list.add(new Tuple<>(new Tuple<>(displayName, packResource), supplier));
 	}
 
-	private static List<Tuple<Tuple<Component, PackResources>, Supplier<Boolean>>> list = new ArrayList<>();
+	private static final List<Tuple<Tuple<Component, PackResources>, Supplier<Boolean>>> list = new ArrayList<>();
 
 	public static void getPacks(Consumer<Pack> consumer){
 		if(list.isEmpty()) return;
@@ -45,7 +47,18 @@ public class BuiltInDataPacks {
 							packResources.packId(),
 							displayName,
 							true,
-							ignored -> packResources,
+							new Pack.ResourcesSupplier() {
+								@Override
+								public PackResources openPrimary(String name) {
+									return packResources;
+								}
+
+								@Override
+								public PackResources openFull(String string, Pack.Info metadata) {
+									// Don't support overlays in builtin res packs.
+									return packResources;
+								}
+							},
 							PackType.SERVER_DATA,
 							Pack.Position.TOP,
 							new BuiltinResourcePackSource()
