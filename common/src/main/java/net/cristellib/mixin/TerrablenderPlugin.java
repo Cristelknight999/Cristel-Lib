@@ -1,6 +1,6 @@
 package net.cristellib.mixin;
 
-import net.cristellib.util.Util;
+import net.cristellib.util.TerrablenderUtil;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -21,7 +21,7 @@ public class TerrablenderPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return Util.isTerrablenderLoaded();
+        return TerrablenderUtil.isModLoaded();
     }
 
     @Override

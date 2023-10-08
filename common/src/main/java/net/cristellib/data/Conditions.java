@@ -3,7 +3,7 @@ package net.cristellib.data;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.cristellib.CristelLibExpectPlatform;
+import net.cristellib.ModLoadingUtil;
 
 public class Conditions {
 
@@ -23,7 +23,7 @@ public class Conditions {
     public static boolean readCondition(JsonObject object){
         String type = object.get("type").getAsString();
         if(type.equals("mod_loaded")){
-            return CristelLibExpectPlatform.isModLoaded(object.get("mod").getAsString());
+            return ModLoadingUtil.isModLoaded(object.get("mod").getAsString());
         }
 
         return false;

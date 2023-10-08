@@ -4,7 +4,6 @@ import net.cristellib.CristelLibRegistry;
 import net.cristellib.StructureConfig;
 import net.cristellib.fabriclike.CristelLibFabricLikePlatform;
 import net.cristellib.util.Platform;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -35,14 +34,6 @@ public class CristelLibExpectPlatformImpl {
 
     public static List<Path> getRootPaths(String modId) {
         return CristelLibFabricLikePlatform.getRootPaths(modId);
-    }
-
-    public static boolean isModLoaded(String modId) {
-        return FabricLoader.getInstance().isModLoaded(modId);
-    }
-
-    public static boolean isModLoadedWithVersion(String modid, String minVersion) {
-        return CristelLibFabricLikePlatform.isModLoadedWithVersion(modid, minVersion);
     }
 
     public static Platform getPlatform() {

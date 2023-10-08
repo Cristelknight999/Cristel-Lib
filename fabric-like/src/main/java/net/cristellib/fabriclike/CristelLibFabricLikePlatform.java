@@ -1,9 +1,6 @@
 package net.cristellib.fabriclike;
 
-import net.cristellib.CristelLib;
-import net.cristellib.CristelLibExpectPlatform;
-import net.cristellib.CristelLibRegistry;
-import net.cristellib.StructureConfig;
+import net.cristellib.*;
 import net.cristellib.api.CristelLibAPI;
 import net.cristellib.data.ReadData;
 import net.cristellib.util.Util;
@@ -11,8 +8,6 @@ import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.fabric.impl.resource.loader.ModNioResourcePack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -37,21 +32,6 @@ public class CristelLibFabricLikePlatform {
             CristelLib.LOGGER.warn("Couldn't get mod container for modid: " + modid);
             return null;
         }
-    }
-
-    public static boolean isModLoadedWithVersion(String modid, String minVersion) {
-        if(CristelLibExpectPlatform.isModLoaded(modid)){
-            Version version = FabricLoader.getInstance().getModContainer(modid).get().getMetadata().getVersion();
-            Version min;
-            try {
-                min = Version.parse(minVersion);
-            } catch (VersionParsingException e) {
-                CristelLib.LOGGER.error("Couldn't parse version: " + minVersion);
-                return false;
-            }
-            return version.compareTo(min) >= 0;
-        }
-        return false;
     }
 
     public static @Nullable Path getResourceDirectory(String modid, String subPath) {

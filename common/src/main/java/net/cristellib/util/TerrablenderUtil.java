@@ -1,5 +1,8 @@
 package net.cristellib.util;
 
+import net.cristellib.CristelLib;
+import net.cristellib.ModLoadingUtil;
+
 public class TerrablenderUtil {
 
     private static boolean enableMixin = false;
@@ -12,4 +15,7 @@ public class TerrablenderUtil {
         enableMixin = bl;
     }
 
+    public static boolean isModLoaded(){
+        return ModLoadingUtil.isModLoadedWithVersion("terrablender", CristelLib.minTerraBlenderVersion);
+    }
 }

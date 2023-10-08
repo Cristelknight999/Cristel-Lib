@@ -35,16 +35,6 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static boolean isModLoadedWithVersion(String modid, String minVersion){
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
-    public static boolean isModLoaded(String modid){
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
         throw new AssertionError();
     }
