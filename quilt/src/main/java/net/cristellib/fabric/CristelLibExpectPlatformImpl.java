@@ -97,14 +97,6 @@ public class CristelLibExpectPlatformImpl {
          */
     }
 
-    public static boolean isModLoaded(String modId) {
-        return QuiltLoader.isModLoaded(modId);
-    }
-
-    public static boolean isModLoadedWithVersion(String modid, String minVersion) {
-        return CristelLibFabricLikePlatform.isModLoadedWithVersion(modid, minVersion);
-    }
-
     public static Platform getPlatform() {
         return Platform.QUILT;
     }
