@@ -3,13 +3,12 @@ package net.cristellib.builtinpacks;
 import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.CompositePackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.util.Tuple;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,12 +48,12 @@ public class BuiltInDataPacks {
 							true,
 							new Pack.ResourcesSupplier() {
 								@Override
-								public PackResources openPrimary(String name) {
+								public @NotNull PackResources openPrimary(@NotNull String name) {
 									return packResources;
 								}
 
 								@Override
-								public PackResources openFull(String string, Pack.Info metadata) {
+								public @NotNull PackResources openFull(@NotNull String string, Pack.@NotNull Info metadata) {
 									// Don't support overlays in builtin res packs.
 									return packResources;
 								}

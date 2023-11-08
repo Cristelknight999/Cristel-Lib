@@ -8,7 +8,7 @@ import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
 public class CristelLibQuilt implements ModInitializer {
     @Override
     public void onInitialize(ModContainer mod) {
-        CristelLibFabricLike.init();
         CristelLib.preInit();
+        CristelLibFabricLike.init();
     }
 }

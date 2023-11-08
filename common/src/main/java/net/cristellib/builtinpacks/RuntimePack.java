@@ -182,7 +182,7 @@ public class RuntimePack implements PackResources {
     }
 
     @Override
-    public Set<String> getNamespaces(@NotNull PackType packType) {
+    public @NotNull Set<String> getNamespaces(@NotNull PackType packType) {
         this.lock();
         Set<String> namespaces = new HashSet<>();
         for(ResourceLocation identifier : this.data.keySet()) {
@@ -232,7 +232,7 @@ public class RuntimePack implements PackResources {
     }
 
     @Override
-    public String packId() {
+    public @NotNull String packId() {
         return this.name;
     }
 
