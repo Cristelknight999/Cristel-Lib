@@ -26,11 +26,11 @@ public class StructureConfig {
 
     private final ConfigType type;
 
-    private Map<ResourceLocation, List<String>> structures = new HashMap<>();
+    private final Map<ResourceLocation, List<String>> structures = new HashMap<>();
 
-    private Map<ResourceLocation, Placement> structurePlacement = new HashMap<>();
+    private final Map<ResourceLocation, Placement> structurePlacement = new HashMap<>();
 
-    private List<Pair<String, ResourceLocation>> structureSets = new ArrayList<>();
+    private final List<Pair<String, ResourceLocation>> structureSets = new ArrayList<>();
 
     private StructureConfig(Path path, ConfigType type) {
         this.path = path;

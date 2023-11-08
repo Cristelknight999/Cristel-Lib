@@ -3,9 +3,7 @@ package net.cristellib.builtinpacks;
 import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.CompositePackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
@@ -47,18 +45,7 @@ public class BuiltInDataPacks {
 							packResources.packId(),
 							displayName,
 							true,
-							new Pack.ResourcesSupplier() {
-								@Override
-								public PackResources openPrimary(String name) {
-									return packResources;
-								}
-
-								@Override
-								public PackResources openFull(String string, Pack.Info metadata) {
-									// Don't support overlays in builtin res packs.
-									return packResources;
-								}
-							},
+							ignored -> packResources,
 							PackType.SERVER_DATA,
 							Pack.Position.TOP,
 							new BuiltinResourcePackSource()

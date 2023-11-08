@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[48,)"
+loaderVersion = "[47,)"
 #issueTrackerURL = ""
 license = "CC BY-NC-ND 4.0"
 
@@ -16,13 +16,13 @@ logoFile = "pack.png"
 [[dependencies.cristellib]]
 modId = "forge"
 mandatory = true
-versionRange = "[48,)"
+versionRange = "[47.2.0,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.cristellib]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.2,)"
+versionRange = "[1.20.1,)"
 ordering = "NONE"
 side = "BOTH"

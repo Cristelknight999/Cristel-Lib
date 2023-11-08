@@ -35,7 +35,7 @@ public class UnsafeByteArrayOutputStream extends OutputStream implements AutoClo
     }
 
     @Override
-    public void write(@NotNull byte b[], int off, int len) {
+    public void write(byte @NotNull [] b, int off, int len) {
         if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) - b.length > 0)) {
             throw new IndexOutOfBoundsException();
         }
