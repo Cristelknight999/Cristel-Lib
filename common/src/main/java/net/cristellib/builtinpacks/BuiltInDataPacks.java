@@ -52,11 +52,13 @@ public class BuiltInDataPacks {
 					);
 					if (pack != null) {
 						consumer.accept(pack);
+						CristelLib.LOGGER.warn(displayName.getString() + " accepted!");
 					}
-					else CristelLib.LOGGER.error(packResources.packId() + " couldn't be created");
+					else CristelLib.LOGGER.error(displayName.getString() + " couldn't be created");
 				}
-				else CristelLib.LOGGER.debug(packResources.packId() + " has no data");
+				else CristelLib.LOGGER.error(displayName.getString() + " has no data");
 			}
+			else CristelLib.LOGGER.error(entry.getA().getA().getString() + " condition is false, skipping");
 		}
 	}
 }
