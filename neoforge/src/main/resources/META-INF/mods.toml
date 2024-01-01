@@ -1,0 +1,28 @@
+modLoader = "javafml"
+loaderVersion = "[2,)"
+#issueTrackerURL = ""
+license = "CC BY-NC-ND 4.0"
+
+[[mods]]
+modId = "cristellib"
+version = "${version}"
+displayName = "Cristel Lib"
+authors = "Cristelknight999"
+description = '''
+A Library mod for easy structure config and runtime datapacks.
+'''
+logoFile = "pack.png"
+
+[[dependencies.cristellib]]
+modId = "neoforge"
+type="required"
+versionRange = "[20.4,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.cristellib]]
+modId = "minecraft"
+type="required"
+versionRange = "[1.20.4,)"
+ordering = "NONE"
+side = "BOTH"
