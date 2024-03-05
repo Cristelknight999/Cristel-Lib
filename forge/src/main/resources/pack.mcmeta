@@ -1,6 +1,7 @@
 {
   "pack": {
-    "description": "Example Mod",
-    "pack_format": 13
+    "description": "Cristel Lib",
+    "pack_format": 26,
+    "formats": {"min_inclusive": 26, "max_inclusive": 1000}
   }
 }
