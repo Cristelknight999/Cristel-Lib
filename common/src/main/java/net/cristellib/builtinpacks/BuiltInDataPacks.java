@@ -1,14 +1,14 @@
 package net.cristellib.builtinpacks;
 
-import net.cristellib.CristelLib;
 import net.cristellib.CristelLibExpectPlatform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.util.Tuple;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,39 +35,37 @@ public class BuiltInDataPacks {
 		if(list.isEmpty()) return;
 		for (Tuple<Tuple<Component, PackResources>, Supplier<Boolean>> entry : list) {
 			if(entry.getB().get()){
-				PackResources packResources = entry.getA().getB();
-				Component displayName = entry.getA().getA();
-				if(packResources == null){
-					CristelLib.LOGGER.error("Pack for " + displayName.getString() + " is null");
-					continue;
-				}
-				if (!packResources.getNamespaces(PackType.SERVER_DATA).isEmpty()) {
-					Pack pack = Pack.readMetaAndCreate(
-							packResources.packId(),
-							displayName,
-							true,
-							new Pack.ResourcesSupplier() {
-								@Override
-								public @NotNull PackResources openPrimary(@NotNull String name) {
-									return packResources;
-								}
+				PackResources pack = entry.getA().getB();
 
-								@Override
-								public @NotNull PackResources openFull(@NotNull String string, Pack.@NotNull Info metadata) {
-									// Don't support overlays in builtin res packs.
-									return packResources;
-								}
-							},
-							PackType.SERVER_DATA,
-							Pack.Position.TOP,
-							new BuiltinResourcePackSource()
+				// Add the built-in pack only if namespaces for the specified resource type are present.
+				if (!pack.getNamespaces(PackType.SERVER_DATA).isEmpty()) {
+					// Make the resource pack profile for built-in pack, should never be always enabled.
+					PackLocationInfo info = new PackLocationInfo(
+							pack.packId(),
+							entry.getA().getA(),
+							new BuiltinResourcePackSource(),
+							pack.knownPackInfo()
 					);
-					if (pack != null) {
-						consumer.accept(pack);
-					}
-					else CristelLib.LOGGER.error(packResources.packId() + " couldn't be created");
+					PackSelectionConfig info2 = new PackSelectionConfig(
+							true,
+							Pack.Position.TOP,
+							false
+					);
+
+					Pack profile = Pack.readMetaAndCreate(info, new Pack.ResourcesSupplier() {
+						@Override
+						public PackResources openPrimary(PackLocationInfo var1) {
+							return pack;
+						}
+
+						@Override
+						public PackResources openFull(PackLocationInfo var1, Pack.Metadata metadata) {
+							// Don't support overlays in builtin res packs.
+							return pack;
+						}
+					}, PackType.SERVER_DATA, info2);
+					consumer.accept(profile);
 				}
-				else CristelLib.LOGGER.debug(packResources.packId() + " has no data");
 			}
 		}
 	}

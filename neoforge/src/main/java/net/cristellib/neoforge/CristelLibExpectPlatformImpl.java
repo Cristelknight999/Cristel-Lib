@@ -5,14 +5,17 @@ import net.cristellib.CristelLib;
 import net.cristellib.CristelLibRegistry;
 import net.cristellib.StructureConfig;
 import net.cristellib.api.CristelLibAPI;
+import net.cristellib.builtinpacks.BuiltinResourcePackSource;
 import net.cristellib.data.ReadData;
 import net.cristellib.neoforge.extraapiutil.APIFinder;
 import net.cristellib.util.Platform;
 import net.cristellib.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PathPackResources;
+import net.minecraft.server.packs.repository.KnownPack;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLPaths;
@@ -36,7 +39,13 @@ public class CristelLibExpectPlatformImpl {
     public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
         Path path = getResourceDirectory(modid, id.getPath());
         if (path != null) {
-            return new PathPackResources(displayName.getString(), path, true);
+            PackLocationInfo metadata = new PackLocationInfo(
+                    id.getPath(),
+                    displayName,
+                    new BuiltinResourcePackSource(),
+                    Optional.of(new KnownPack(id.getNamespace(), id.getPath(), ModList.get().getModFileById(modid).versionString()))
+            );
+            return new PathPackResources(metadata, path);
         }
         return null;
     }

@@ -12,9 +12,22 @@ import net.cristellib.builtinpacks.BuiltInDataPacks;
 import net.cristellib.config.ConfigType;
 import net.cristellib.config.ConfigUtil;
 import net.cristellib.util.JanksonUtil;
+import net.cristellib.util.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.ParserUtils;
 import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.Level;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -23,6 +36,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class ReadData {
 
@@ -45,11 +59,19 @@ public class ReadData {
                 ResourceLocation rl = ResourceLocation.tryParse(location);
 
                 Component component = Component.literal(name);
-                try {
-                    component = ComponentArgument.textComponent().parse(new StringReader(name));
-                } catch (CommandSyntaxException e) {
-                    CristelLib.LOGGER.debug("Couldn't parse: \"" + name + "\" to a component", e);
+
+                /*
+                LocalPlayer access = Minecraft.getInstance().player;
+                if(access != null){
+                    try {
+                        component = ComponentArgument.textComponent(CommandBuildContext.simple(access.registryAccess(), FeatureFlags.VANILLA_SET)).parse(new StringReader(name));
+                    } catch (CommandSyntaxException e) {
+                        CristelLib.LOGGER.debug("Couldn't parse: \"" + name + "\" to a component", e);
+                    }
                 }
+
+                 */
+
 
                 boolean b = Conditions.readConditions(object);
                 BuiltInDataPacks.registerPack(rl, modid, component, () -> b);
@@ -57,6 +79,7 @@ public class ReadData {
         }
         checkedConfigFiles = false;
     }
+
 
     public static void copyFile(String modid){
         for(Path path : getPathsInDir(modid, "copy_file")){

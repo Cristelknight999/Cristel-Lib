@@ -1,11 +1,31 @@
 package net.cristellib.util;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.packs.repository.PackSource;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class Util {
+
+    public static final PackSource RESOURCE_PACK_SOURCE = new PackSource() {
+        @Override
+        public Component decorate(Component packName) {
+            return Component.translatable("cristellib.nameAndSource", packName, Component.translatable("pack.source.fabricmod"));
+        }
+
+        @Override
+        public boolean shouldAddAutomatically() {
+            return true;
+        }
+    };
+
+
 
     public static <V, S> void addAll(Map<V, Set<S>> addTo, Map<V, Set<S>> addFrom){
         for(V string : addFrom.keySet()){

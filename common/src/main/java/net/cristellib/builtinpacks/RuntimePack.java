@@ -5,12 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.cristellib.CristelLib;
 import net.cristellib.config.ConfigUtil;
+import net.cristellib.util.Util;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.FeatureFlagsMetadataSection;
-import net.minecraft.server.packs.FilePackResources;
-import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.*;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.flag.FeatureFlags;
@@ -38,9 +38,19 @@ public class RuntimePack implements PackResources {
     public final int packVersion;
     private final String name;
 
+    private final PackLocationInfo metadata;
+
 
     public RuntimePack(String name, int version, @Nullable Path imageFile) {
         this.packVersion = version;
+
+        metadata = new PackLocationInfo(
+                name,
+                Component.literal("Cristel Lib Config Pack"),
+                Util.RESOURCE_PACK_SOURCE,
+                Optional.of(new KnownPack("cristellib", name, String.valueOf(version)))
+        );
+
         this.name = name;
         if(imageFile != null){
             byte[] image = extractImageBytes(imageFile);
@@ -222,14 +232,15 @@ public class RuntimePack implements PackResources {
         }
     }
 
+    @Override
+    public PackLocationInfo location() {
+        return metadata;
+    }
+
     public boolean hasResource(ResourceLocation location){
         return data.containsKey(location);
     }
 
-    @Override
-    public boolean isBuiltin() {
-        return true;
-    }
 
     @Override
     public @NotNull String packId() {
