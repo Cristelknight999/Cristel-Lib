@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.cristellib.CristelLib;
 import net.cristellib.config.ConfigUtil;
+import net.cristellib.util.UnsafeByteArrayOutputStream;
 import net.cristellib.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -47,7 +48,7 @@ public class RuntimePack implements PackResources {
         metadata = new PackLocationInfo(
                 name,
                 Component.literal("Cristel Lib Config Pack"),
-                Util.RESOURCE_PACK_SOURCE,
+                new BuiltinResourcePackSource(),
                 Optional.of(new KnownPack("cristellib", name, String.valueOf(version)))
         );
 

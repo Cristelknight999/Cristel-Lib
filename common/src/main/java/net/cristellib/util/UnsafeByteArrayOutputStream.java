@@ -1,4 +1,4 @@
-package net.cristellib.builtinpacks;
+package net.cristellib.util;
 
 import org.jetbrains.annotations.NotNull;
 
