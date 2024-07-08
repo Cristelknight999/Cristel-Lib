@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "id": "cristellib",
+  "id": "${mod_id}",
   "version": "${version}",
-  "name": "Cristel Lib",
-  "description": "A Library mod for easy structure config and runtime datapacks.",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
   "authors": [
-    "Cristelknight999"
+    "Cristelknight"
   ],
   "contact": {
-    "homepage": "https://modrinth.com/mod/cristel-lib",
-    "sources": "https://github.com/Cristelknight999/Cristel-Lib"
+    "homepage": "${homepage}",
+    "sources": "${sources}"
   },
-  "license": "CC BY-NC-ND 4.0",
+  "license": "${mod_license}",
   "icon": "pack.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.cristellib.fabric.CristelLibFabric"
+      "de.cristelknight.cristellib.fabric.CristelLibFabric"
     ],
     "cristellib": [
-      "net.cristellib.api.BuiltInAPI"
+      "de.cristelknight.cristellib.api.BuiltInAPI"
     ]
   },
   "mixins": [
@@ -27,8 +27,8 @@
     "cristellib-common.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.15.11",
-    "fabric": ">=0.98.0+1.20.6",
-    "minecraft": ">=1.20.6"
+    "fabricloader": ">=${fabric_loader_min_version}",
+    "fabric": ">=${fabric_api_version}",
+    "minecraft": ">=${minecraft_version}"
   }
 }

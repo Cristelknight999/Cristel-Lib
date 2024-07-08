@@ -13,9 +13,11 @@ allprojects {
     version = rootProject.mod_version
 }
 
+/*
 configurations.all {
     resolutionStrategy.force("net.sf.jopt-simple:jopt-simple:5.0.4")
 }
+ */
 
 subprojects {
     apply plugin: 'dev.architectury.loom'
@@ -38,6 +40,8 @@ subprojects {
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
         mappings loom.officialMojangMappings()
+
+        implementation("blue.endless:jankson:${rootProject.jankson_version}")
     }
 
     java {
@@ -48,6 +52,35 @@ subprojects {
 
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.withType(ProcessResources).configureEach {
+        var replaceProperties = [
+                minecraft_version   : minecraft_version,
+                neo_version         : neoforge_version,
+
+                version: mod_version,
+
+
+                neo_loader_version_range: neo_loader_version_range,
+                neo_version_range: neo_version_range,
+
+                forge_loader_version_range: forge_loader_version_range,
+                forge_version_range: forge_version_range,
+
+                fabric_loader_min_version: fabric_loader_min_version,
+                fabric_api_version: fabric_api_version,
+
+                mod_id              : archives_name, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version, mod_description: mod_description, homepage: homepage, sources: sources
+        ]
+        inputs.properties replaceProperties
+
+        filesMatching(['META-INF/neoforge.mods.toml']) {
+            expand replaceProperties + [project: project]
+        }
+        filesMatching(['fabric.mod.json']) {
+            expand replaceProperties + [project: project]
+        }
     }
 
     tasks.withType(JavaCompile).configureEach {
