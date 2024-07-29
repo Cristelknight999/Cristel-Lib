@@ -29,10 +29,10 @@ public class CristelLibExpectPlatformImpl {
     public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
         ModContainer container = FabricLoader.getInstance().getModContainer(modid).orElse(null);
         if(container != null){
-            return ModNioResourcePack.create(id.getPath(), container, id.getPath(), PackType.SERVER_DATA, ResourcePackActivationType.ALWAYS_ENABLED, true);
+            return ModNioResourcePack.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, ResourcePackActivationType.ALWAYS_ENABLED, false);
         }
         else {
-            CristelLib.LOGGER.warn("Couldn't get mod container for modid: " + modid);
+            CristelLib.LOGGER.warn("Couldn't get mod container for modid: {}", modid);
             return null;
         }
     }
@@ -41,10 +41,10 @@ public class CristelLibExpectPlatformImpl {
         ModContainer container = FabricLoader.getInstance().getModContainer(modid).orElse(null);
         if(container != null){
             Path path = container.findPath(subPath).orElse(null);
-            if(path == null) CristelLib.LOGGER.debug("Path for subPath: " + subPath + " in modId: " + modid + " is null");
+            if(path == null) CristelLib.LOGGER.debug("Path for subPath: {} in modId: {} is null", subPath, modid);
             return path;
         }
-        CristelLib.LOGGER.debug("Mod container for modId:" + modid + " is null");
+        CristelLib.LOGGER.debug("Mod container for modId: {} is null", modid);
         return null;
     }
 

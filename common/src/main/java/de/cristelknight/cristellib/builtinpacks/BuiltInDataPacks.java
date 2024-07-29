@@ -9,6 +9,7 @@ import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.util.Tuple;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,13 +55,13 @@ public class BuiltInDataPacks {
 
 					Pack profile = Pack.readMetaAndCreate(info, new Pack.ResourcesSupplier() {
 						@Override
-						public PackResources openPrimary(PackLocationInfo var1) {
+						public @NotNull PackResources openPrimary(PackLocationInfo var1) {
 							return pack;
 						}
 
 						@Override
-						public PackResources openFull(PackLocationInfo var1, Pack.Metadata metadata) {
-							// Don't support overlays in builtin res packs.
+						public @NotNull PackResources openFull(PackLocationInfo var1, Pack.Metadata metadata) {
+							// Don't support overlays in builtin packs.
 							return pack;
 						}
 					}, PackType.SERVER_DATA, info2);

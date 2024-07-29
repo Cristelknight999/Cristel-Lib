@@ -77,6 +77,7 @@ public class ReadData {
             String name = object.get("display_name").getAsString();
 
             ResourceLocation rl = ResourceLocation.tryParse(location);
+            CristelLib.LOGGER.error(rl);
 
             Component component = Component.literal(name);
 
@@ -97,7 +98,7 @@ public class ReadData {
         }
     }
 
-
+    /*
     public static void modifyJson5File(String modId){
         for(Path path : getPathsInDir(modId, "modify_file")){
             InputStream stream;
@@ -140,6 +141,7 @@ public class ReadData {
             CristelLib.LOGGER.error("Couldn't read " + toFile + "can't modify it");
         }
     }
+     */
 
 
 

@@ -43,7 +43,7 @@ public class CristelLibExpectPlatformImpl {
                     id.getPath(),
                     displayName,
                     new BuiltinResourcePackSource(),
-                    Optional.of(new KnownPack(id.getNamespace(), id.getPath(), ModList.get().getModFileById(modid).versionString()))
+                    Optional.of(new KnownPack(id.getNamespace(), id.toString(), ModList.get().getModFileById(modid).versionString()))
             );
             return new PathPackResources(metadata, path);
         }
