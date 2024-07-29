@@ -19,7 +19,7 @@ public class LoadPacks {
     @Final
     private PackType type;
 
-    @Inject(method = "loadPacks", at = @At("RETURN"))
+    @Inject(method = "loadPacks", at = @At("TAIL"))
     private void loadPacks(Consumer<Pack> consumer, CallbackInfo ci) {
         if(type.equals(PackType.SERVER_DATA)){
             BuiltInDataPacks.getPacks(consumer);

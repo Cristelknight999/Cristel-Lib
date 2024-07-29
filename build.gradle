@@ -13,12 +13,6 @@ allprojects {
     version = rootProject.mod_version
 }
 
-/*
-configurations.all {
-    resolutionStrategy.force("net.sf.jopt-simple:jopt-simple:5.0.4")
-}
- */
-
 subprojects {
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'

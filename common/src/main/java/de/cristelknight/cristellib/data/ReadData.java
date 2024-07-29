@@ -25,9 +25,8 @@ public class ReadData {
 
     private static boolean checkedConfigFiles = false;
 
-
-    public static void getBuiltInPacks(String modid){
-        for(Path path : getPathsInDir(modid, "data_packs")){
+    public static void getBuiltInPacks(String modId){
+        for(Path path : getPathsInDir(modId, "data_packs")){
             InputStream stream;
             try {
                 stream = Files.newInputStream(path);
@@ -36,36 +35,23 @@ public class ReadData {
             }
             JsonElement element = JsonParser.parseReader(new InputStreamReader(stream));
             if(element instanceof JsonObject object){
-                String location = object.get("location").getAsString();
-                String name = object.get("display_name").getAsString();
-
-                ResourceLocation rl = ResourceLocation.tryParse(location);
-
-                Component component = Component.literal(name);
-
-                /*
-                LocalPlayer access = Minecraft.getInstance().player;
-                if(access != null){
-                    try {
-                        component = ComponentArgument.textComponent(CommandBuildContext.simple(access.registryAccess(), FeatureFlags.VANILLA_SET)).parse(new StringReader(name));
-                    } catch (CommandSyntaxException e) {
-                        CristelLib.LOGGER.debug("Couldn't parse: \"" + name + "\" to a component", e);
+                if(object.has("packs")){
+                    JsonArray array = object.getAsJsonArray("packs");
+                    for(int i = array.size() - 1; i >= 0; i--){
+                        JsonElement jsonElement = array.get(i);
+                        loadPack(jsonElement, modId);
                     }
                 }
+                else loadPack(object, modId);
 
-                 */
-
-
-                boolean b = Conditions.readConditions(object);
-                BuiltInDataPacks.registerPack(rl, modid, component, () -> b);
             }
         }
         checkedConfigFiles = false;
     }
 
 
-    public static void copyFile(String modid){
-        for(Path path : getPathsInDir(modid, "copy_file")){
+    public static void copyFile(String modId){
+        for(Path path : getPathsInDir(modId, "copy_file")){
             InputStream stream;
             try {
                 stream = Files.newInputStream(path);
@@ -78,16 +64,42 @@ public class ReadData {
                 String destination = object.get("destination").getAsString();
 
                 if(Conditions.readConditions(object)){
-                    copyFileFromJar(location, destination, modid);
+                    copyFileFromJar(location, destination, modId);
                 }
             }
         }
         checkedConfigFiles = false;
     }
+    
+    public static void loadPack(JsonElement element, String modId){
+        if(element instanceof JsonObject object){
+            String location = object.get("location").getAsString();
+            String name = object.get("display_name").getAsString();
+
+            ResourceLocation rl = ResourceLocation.tryParse(location);
+
+            Component component = Component.literal(name);
+
+                /*
+                LocalPlayer access = Minecraft.getInstance().player;
+                if(access != null){
+                    try {
+                        component = ComponentArgument.textComponent(CommandBuildContext.simple(access.registryAccess(), FeatureFlags.VANILLA_SET)).parse(new StringReader(name));
+                    } catch (CommandSyntaxException e) {
+                        CristelLib.LOGGER.debug("Couldn't parse: \"" + name + "\" to a component", e);
+                    }
+                }
+                 */
 
 
-    public static void modifyJson5File(String modid){
-        for(Path path : getPathsInDir(modid, "modify_file")){
+            boolean b = Conditions.readConditions(object);
+            BuiltInDataPacks.registerPack(rl, modId, component, () -> b);
+        }
+    }
+
+
+    public static void modifyJson5File(String modId){
+        for(Path path : getPathsInDir(modId, "modify_file")){
             InputStream stream;
             try {
                 stream = Files.newInputStream(path);
@@ -133,8 +145,8 @@ public class ReadData {
 
 
 
-    public static void copyFileFromJar(String from, String to, String fromModId){
-        List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(fromModId);
+    public static void copyFileFromJar(String from, String to, String frommodId){
+        List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(frommodId);
         for(Path p : inputUrl){
             Path fromFile = p.resolve(from);
             File toFile = ConfigUtil.CONFIG_DIR.resolve(to).toFile();
@@ -148,9 +160,9 @@ public class ReadData {
     }
 
 
-    public static void getStructureConfigs(String modid, Map<String, Set<StructureConfig>> modidAndConfigs, CristelLibRegistry registry){
+    public static void getStructureConfigs(String modId, Map<String, Set<StructureConfig>> modIdAndConfigs, CristelLibRegistry registry){
         Set<StructureConfig> configs = new HashSet<>();
-        for(Path path : getPathsInDir(modid, "structure_configs")){
+        for(Path path : getPathsInDir(modId, "structure_configs")){
             InputStream stream;
             try {
                 stream = Files.newInputStream(path);
@@ -166,8 +178,8 @@ public class ReadData {
                 StructureConfig config = StructureConfig.createWithDefaultConfigPath(subPath, name, ConfigType.valueOf(object.get("config_type").getAsString().toUpperCase()));
                 JsonArray sets = object.get("structure_sets").getAsJsonArray();
                 for(JsonElement e : sets){
-                    if(e instanceof JsonObject o && o.has("structure_set") && o.has("modid")){
-                        String mS = o.get("modid").getAsString();
+                    if(e instanceof JsonObject o && o.has("structure_set") && o.has("modId")){
+                        String mS = o.get("modId").getAsString();
                         JsonArray array = o.get("structure_set").getAsJsonArray();
                         for(JsonElement s : array){
                             if(s instanceof JsonPrimitive primitive){
@@ -204,12 +216,12 @@ public class ReadData {
         }
         checkedConfigFiles = false;
         if(configs.isEmpty()) return;
-        modidAndConfigs.put(modid, configs);
+        modIdAndConfigs.put(modId, configs);
     }
 
-    public static List<Path> getPathsInDir(String modid, String subPath){
+    public static List<Path> getPathsInDir(String modId, String subPath){
         List<Path> paths = new ArrayList<>();
-        findFiles(CristelLibExpectPlatform.getRootPaths(modid), modid, subPath, Files::exists, (path, file) -> {
+        findFiles(CristelLibExpectPlatform.getRootPaths(modId), modId, subPath, Files::exists, (path, file) -> {
             if (Files.isRegularFile(file) && file.getFileName().toString().endsWith(".json")) {
                 paths.add(file);
             }
@@ -220,13 +232,13 @@ public class ReadData {
 
     /**
      *
-     * Find all files in data/modid/subPath
-     * @param modid the modid
-     * @param subPath the subPath in data/modid/ where the returned files are
+     * Find all files in data/modId/subPath
+     * @param modId the modId
+     * @param subPath the subPath in data/modId/ where the returned files are
      *
      */
-    public static void findFiles(List<Path> rootPaths, String modid, String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
-        if (modid.equals("minecraft")) return;
+    public static void findFiles(List<Path> rootPaths, String modId, String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
+        if (modId.equals("minecraft")) return;
         if(!checkedConfigFiles){
             findInConfigFiles(subPath, rootFilter, processor, visitAllFiles, maxDepth);
             checkedConfigFiles = true;
