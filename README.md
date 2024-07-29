@@ -53,3 +53,32 @@ The file structure should look like this:
 - **"name"** changes the name of the config file.
 - **"header"** is the text, which will be at the top of your config file.
 - **"comments"** is a map where the keys indicate the location where the comment should appear.
+
+### Loading a datapack
+In your folder you'll have to make another called `data_packs`. In this folder you will create files which will load the datapacks you want.
+
+The file structure should look like this:
+```
+{
+  "location": "modid:a_folder/pack_folder_name",
+  "display_name": "T&T WWOO Tag Patch Pack",
+  "condition": [
+    {
+      "type": "mod_loaded",
+      "mod": "wwoo"
+    }
+  ]
+}
+```
+#### Required Fields
+- **"location"** specifies the mod file and the folder where the datapack is located. E.g. if you put there "towns_and_towers:resources/t_and_t_wwoo_tag_patch" cristellib will try to load a pack in the mod file "towns_and_towers" and in it's subfolder "resources/t_and_t_wwoo_tag_patch".
+- **"display_name"** specifies the name of the pack shown in the datapack selection screen.
+
+#### Optional Fields
+- **"condition"** in this array you put every condition which is required for the pack to load. **"type"** defines which type of condion comes next.
+
+##### **List of all current conditions:**
+- **"mod_loaded":**
+  - **"mod"** is the modid of the mod that must be present for this condition to be true.
+
+If you need more conditions or you have other feature suggestions contact me!
