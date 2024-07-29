@@ -61,7 +61,7 @@ The file structure should look like this:
 ```
 {
   "location": "modid:a_folder/pack_folder_name",
-  "display_name": "T&T WWOO Tag Patch Pack",
+  "display_name": "Display Name of your Pack",
   "condition": [
     {
       "type": "mod_loaded",
