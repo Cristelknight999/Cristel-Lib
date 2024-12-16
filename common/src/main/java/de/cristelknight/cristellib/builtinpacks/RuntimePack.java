@@ -5,20 +5,18 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.config.ConfigUtil;
-import de.cristelknight.cristellib.util.UnsafeByteArrayOutputStream;
+import de.cristelknight.cristellib.util.RuntimePackUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.*;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.flag.FeatureFlags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -30,6 +28,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class RuntimePack implements PackResources {
     public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private final Lock waiting = new ReentrantLock();
@@ -53,8 +52,17 @@ public class RuntimePack implements PackResources {
 
         this.name = name;
         if(imageFile != null){
-            byte[] image = extractImageBytes(imageFile);
+            byte[] image = RuntimePackUtil.extractImageBytes(imageFile);
             if(image != null) this.addRootResource("pack.png", image);
+        }
+
+        if(!hasRootResource("pack.mcmeta")){
+            JsonObject object = new JsonObject();
+            JsonObject pack = new JsonObject();
+            pack.addProperty("pack_format", this.packVersion);
+            pack.addProperty("description", this.name);
+            object.add("pack", pack);
+            this.addRootResource("pack.mcmeta", RuntimePackUtil.serializeJson(object));
         }
     }
 
@@ -85,7 +93,7 @@ public class RuntimePack implements PackResources {
         return this.addAndSerializeDataForLocation(prefix, "json", identifier, object);
     }
     public byte[] addAndSerializeDataForLocation(String prefix, String end, ResourceLocation identifier, JsonObject object) {
-        return this.addData(ResourceLocation.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), serializeJson(object));
+        return this.addData(ResourceLocation.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), RuntimePackUtil.serializeJson(object));
     }
     public byte[] addData(ResourceLocation path, byte[] data) {
         this.data.put(path, () -> data);
@@ -96,37 +104,6 @@ public class RuntimePack implements PackResources {
         this.data.remove(path);
     }
 
-    public static byte @Nullable [] extractImageBytes(Path imageName) {
-        InputStream stream;
-        //BufferedImage bufferedImage;
-        try {
-            stream = Files.newInputStream(imageName.toAbsolutePath());
-            return stream.readAllBytes();
-            /*
-            bufferedImage = ImageIO.read(stream);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "png", baos);
-            return baos.toByteArray();
-
-             */
-        } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't get image for path: " + imageName, e);
-            return null;
-        }
-    }
-
-
-    public static byte[] serializeJson(JsonObject object) {
-        UnsafeByteArrayOutputStream ubaos = new UnsafeByteArrayOutputStream();
-        OutputStreamWriter writer = new OutputStreamWriter(ubaos, StandardCharsets.UTF_8);
-        GSON.toJson(object, writer);
-        try {
-            writer.close();
-        } catch(IOException e) {
-            throw new RuntimeException(e);
-        }
-        return ubaos.getBytes();
-    }
 
     public byte[] addRootResource(String path, byte[] data) {
         this.root.put(Arrays.asList(path.split("/")), () -> data);
@@ -147,11 +124,10 @@ public class RuntimePack implements PackResources {
         return () -> new ByteArrayInputStream(supplier.get());
     }
 
-    private void lock() {
-        if(!this.waiting.tryLock()) {
-            this.waiting.lock();
-        }
+    public boolean hasRootResource(String @NotNull ... strings){
+        return this.root.containsKey(Arrays.asList(strings));
     }
+
 
     @Nullable
     @Override
@@ -166,6 +142,9 @@ public class RuntimePack implements PackResources {
         return () -> new ByteArrayInputStream(supplier.get());
     }
 
+    public boolean hasResource(ResourceLocation location){
+        return data.containsKey(location);
+    }
 
     @Override
     public void listResources(@NotNull PackType packType, @NotNull String namespace, @NotNull String prefix, @NotNull ResourceOutput resourceOutput) {
@@ -202,10 +181,9 @@ public class RuntimePack implements PackResources {
         return namespaces;
     }
 
-
     @Nullable
     @Override
-    public <T> T getMetadataSection(@NotNull MetadataSectionSerializer<T> metadataSectionSerializer) {
+    public <T> T getMetadataSection(MetadataSectionType<T> metadataSectionType) {
         InputStream stream = null;
         try {
             IoSupplier<InputStream> supplier = this.getRootResource("pack.mcmeta");
@@ -215,30 +193,13 @@ public class RuntimePack implements PackResources {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        if(stream != null) {
-            return FilePackResources.getMetadataFromStream(metadataSectionSerializer, stream);
-        } else {
-            if(metadataSectionSerializer.getMetadataSectionName().equals("pack")) {
-                JsonObject object = new JsonObject();
-                object.addProperty("pack_format", this.packVersion);
-                object.addProperty("description", this.name);
-                return metadataSectionSerializer.fromJson(object);
-            }
-            else if(metadataSectionSerializer.getMetadataSectionName().equals("features")){
-                return metadataSectionSerializer.fromJson(FeatureFlagsMetadataSection.TYPE.toJson(new FeatureFlagsMetadataSection(FeatureFlags.DEFAULT_FLAGS)));
-            }
-            CristelLib.LOGGER.debug("'" + metadataSectionSerializer.getMetadataSectionName() + "' is an unsupported metadata key");
-            return null;
-        }
+        if(stream == null) CristelLib.LOGGER.error("Couldn't find pack.mcmeta of the Runtime Pack: {}", name);
+        return FilePackResources.getMetadataFromStream(metadataSectionType, stream);
     }
 
     @Override
-    public PackLocationInfo location() {
+    public @NotNull PackLocationInfo location() {
         return metadata;
-    }
-
-    public boolean hasResource(ResourceLocation location){
-        return data.containsKey(location);
     }
 
 
@@ -247,9 +208,15 @@ public class RuntimePack implements PackResources {
         return this.name;
     }
 
+    private void lock() {
+        if(!this.waiting.tryLock()) {
+            this.waiting.lock();
+        }
+    }
+
     @Override
     public void close() {
-        CristelLib.LOGGER.debug("Closing RDP: " + this.name);
+        CristelLib.LOGGER.debug("Closing RDP: {}", this.name);
     }
 
     public void load(Path dir) throws IOException {
@@ -297,13 +264,13 @@ public class RuntimePack implements PackResources {
     }
 
 
-    public @Nullable JsonObject getResource(ResourceLocation location){
+    public @Nullable JsonObject getResource(ResourceLocation location) {
         IoSupplier<InputStream> stream = this.getResource(PackType.SERVER_DATA, location);
         JsonObject jsonObject;
         try {
             jsonObject = GsonHelper.parse(new BufferedReader(new InputStreamReader(stream.get())));
         } catch (IOException | NullPointerException ex) {
-            CristelLib.LOGGER.error("Couldn't get JsonObject from location: " + location, ex);
+            CristelLib.LOGGER.error("Couldn't get JsonObject from location: {}", location, ex);
             return null;
         }
         return jsonObject;

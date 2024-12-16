@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.Placement;
-import de.cristelknight.cristellib.util.Util;
+import de.cristelknight.cristellib.util.RuntimePackUtil;
 import de.cristelknight.cristellib.config.ConfigUtil;
 import net.minecraft.resources.ResourceLocation;
 
@@ -51,7 +51,7 @@ public class StructureConfig {
 
             JsonElement e = null;
 
-            ResourceLocation structureLocation = Util.getLocationForStructureSet(location);
+            ResourceLocation structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
 
             if(CristelLib.DATA_PACK.hasResource(structureLocation)){
                 e = CristelLib.DATA_PACK.getResource(structureLocation);
