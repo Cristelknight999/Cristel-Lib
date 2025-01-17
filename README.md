@@ -18,10 +18,10 @@ To create a config create a new json file. The name of this file will be the nam
 The file structure should look like this:
 ```
 {
-  "name": "",
-  "subPath": "",
-  "header": "",
-  "config_type": "",
+  "name": "a_different_file_name",
+  "subPath": "cristellib",
+  "header": "Welcome to my cool config, which lets you disable the structures you don't like!",
+  "config_type": "ENABLE_DISABLE",
   "comments": {
     "ancient_cities": "A dark city at the bottom of the World",
     "buried_treasures.spacing": "Set the spacing of the buried treasure structure set"
@@ -92,7 +92,7 @@ or like this:
       "condition": [
         {
           "type": "mod_loaded",
-          "mod": "waystones"
+          "mod": "wwoo"
         }
       ]
     }
