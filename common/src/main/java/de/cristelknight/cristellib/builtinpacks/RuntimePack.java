@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.config.ConfigUtil;
+import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -83,7 +84,7 @@ public class RuntimePack implements PackResources {
     }
 
     public byte @Nullable [] addDataForJsonLocationFromPath(String prefix, ResourceLocation identifier, String fromSubPath, String fromModID) {
-        if(ConfigUtil.getElement(fromModID, fromSubPath) instanceof JsonObject object){
+        if(JanksonUtil.getElement(fromModID, fromSubPath) instanceof JsonObject object){
             return addDataForJsonLocation(prefix, identifier, object);
         }
         return null;

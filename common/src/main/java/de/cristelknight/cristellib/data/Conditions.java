@@ -24,6 +24,9 @@ public class Conditions {
         if(type.equals("mod_loaded")){
             return ModLoadingUtil.isModLoaded(object.get("mod").getAsString());
         }
+        else if(type.equals("mod_loaded_with_version")){
+            return ModLoadingUtil.isModLoadedWithVersion(object.get("mod").getAsString(), object.get("min_version").getAsString());
+        }
 
         return false;
     }

@@ -1,16 +1,13 @@
 package de.cristelknight.cristellib.config;
 
 import blue.endless.jankson.*;
-import com.google.gson.JsonParser;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.util.JanksonUtil;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -32,7 +29,7 @@ public class ConfigUtil {
 
 
 
-    public static void createConfig(StructureConfig config) {
+    public static void createEDConfig(StructureConfig config) {
         Path path = config.getPath();
         if(path.toFile().exists()) return;
 
@@ -59,13 +56,13 @@ public class ConfigUtil {
             object.put(location.toString().split(":")[1], inObjectObject);
         }
 
-        addComments(config.getComments(), object, "");
+        JanksonUtil.addComments(config.getComments(), object, "");
         try {
             Files.createDirectories(path.getParent());
             String output = config.getHeader() + "\n" + object.toJson(JSON_GRAMMAR);
             Files.write(path, output.getBytes());
         } catch (IOException e) {
-            CristelLib.LOGGER.error("Couldn't create Enable Disable Config for Path: " + path, e);
+            CristelLib.LOGGER.error("Couldn't create Enable Disable Config for Path: {}", path, e);
         }
     }
 
@@ -85,13 +82,13 @@ public class ConfigUtil {
             }
             object.put(location.toString().split(":")[1], element);
         }
-        addComments(config.getComments(), object, "");
+        JanksonUtil.addComments(config.getComments(), object, "");
         try {
             Files.createDirectories(path.getParent());
             String output = config.getHeader() + "\n" + object.toJson(JSON_GRAMMAR);
             Files.write(path, output.getBytes());
         } catch (IOException e) {
-            CristelLib.LOGGER.error("Couldn't create Placement Config for Path: " + path, e);
+            CristelLib.LOGGER.error("Couldn't create Placement Config for Path: {}", path, e);
         }
     }
 
@@ -111,15 +108,6 @@ public class ConfigUtil {
         Map<String, Placement> map = new HashMap<>();
         for(Map.Entry<String, JsonElement> entry : object.entrySet()){
             if(entry.getValue() instanceof JsonObject jsonObject){
-                /*
-                StructurePlacement placement = StructurePlacement.CODEC.decode(JsonOps.INSTANCE, object).result().get().getFirst();
-                if(placement.type().equals(StructurePlacementType.RANDOM_SPREAD)){
-                    RandomSpreadStructurePlacement placement1 = RandomSpreadStructurePlacement.CODEC.decode(JsonOps.INSTANCE, object).result().get().getFirst();
-                }
-                else if(placement.type().equals(StructurePlacementType.CONCENTRIC_RINGS)){
-                    ConcentricRingsStructurePlacement placement1 = ConcentricRingsStructurePlacement.CODEC.decode(JsonOps.INSTANCE, object).result().get().getFirst();
-                }
-                 */
                 map.put(entry.getKey(), JANKSON.fromJson(jsonObject, Placement.class));
             }
 
@@ -137,28 +125,10 @@ public class ConfigUtil {
         }
     }
 
-    /*
-    public static Map<String, Boolean> stringBooleanMap(JsonObject object){
-        Map<String, Boolean> map = new HashMap<>();
-        for(Map.Entry<String, JsonElement> entry : object.entrySet()){
-            String key = entry.getKey();
-            JsonElement e = entry.getValue();
-            if(e instanceof JsonPrimitive primitive && primitive.getValue() instanceof Boolean bool){
-                CristelLib.LOGGER.error("Normal: " + key);
-                map.put(key, bool);
-            }
-            else if(e instanceof JsonObject jsonObject){
-                map.putAll(stringBooleanMap(jsonObject));
-            }
-        }
-        return map;
-    }
-     */
-
     public static Map<String, Boolean> stringBooleanMap(JsonObject object, String parent){
         Map<String, Boolean> map = new HashMap<>();
         for(Map.Entry<String, JsonElement> entry : object.entrySet()){
-            String key = parent.equals("") ? entry.getKey() : parent + "/" + entry.getKey();
+            String key = parent.isEmpty() ? entry.getKey() : parent + "/" + entry.getKey();
             JsonElement e = entry.getValue();
             if(e instanceof JsonPrimitive primitive && primitive.getValue() instanceof Boolean bool){
                 map.put(key, bool);
@@ -181,61 +151,27 @@ public class ConfigUtil {
         return map;
     }
 
-    public static @Nullable  com.google.gson.JsonElement getSetElement(String getDataFromModId, ResourceLocation location) {
-        return getElement(getDataFromModId, "data/" + location.getNamespace() + "/worldgen/structure_set/" + location.getPath() + ".json");
-    }
-    public static @Nullable com.google.gson.JsonElement getElement(String getDataFromModId, String location) {
-        InputStream im;
-        Path pathC = CristelLibExpectPlatform.getResourceDirectory(getDataFromModId, location);
-        //CristelLib.LOGGER.warn("PathC: " + pathC + " Location Path: " + location);
 
-        if(pathC == null) return null;
+    public static void writeFile(StructureConfig config, JsonObject object){
+        writeFile(config.getComments(), config.getPath(), config.getHeader(), object);
+    }
+
+    public static void writeFile(Map<String, String> comments, Path path, String header, JsonObject object){
+        JanksonUtil.addComments(comments, object, "");
         try {
-            im = Files.newInputStream(pathC);
+            Files.createDirectories(path.getParent());
+            String output = header + "\n" + object.toJson(JSON_GRAMMAR);
+            Files.write(path, output.getBytes());
         } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't create Input Stream for Path " + pathC, e);
-            return null;
-        }
-        try (InputStreamReader reader = new InputStreamReader(im)) {
-            return JsonParser.parseReader(reader);
-        } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't read " + location + " from mod: " + getDataFromModId, e);
-            return null;
+            CristelLib.LOGGER.error("Couldn't create Config for Path: {}", path, e);
         }
     }
 
-    public static JsonObject addComments(Map<String, String> comments, JsonObject object, String parentKey) {
-        for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
-            String objectKey = entry.getKey();
-            String commentsKey = parentKey + objectKey;
-            String comment = object.getComment(entry.getKey());
-            if (comments.containsKey(commentsKey) && comment == null) {
-                String commentToAdd = comments.get(commentsKey);
-                object.setComment(objectKey, commentToAdd);
-                comment = commentToAdd;
-            }
-
-            JsonElement value = entry.getValue();
-            if (value instanceof JsonArray array) {
-                JsonArray sortedJsonElements = new JsonArray();
-                for (JsonElement element : array) {
-                    if (element instanceof JsonObject nestedObject) {
-                        sortedJsonElements.add(addComments(comments, nestedObject, entry.getKey() + "."));
-                    } else if (element instanceof JsonArray array1) {
-                        JsonArray arrayOfArrays = new JsonArray();
-                        arrayOfArrays.addAll(array1);
-                        sortedJsonElements.add(arrayOfArrays);
-                    }
-                }
-                if (!sortedJsonElements.isEmpty()) {
-                    object.put(objectKey, sortedJsonElements, comment);
-                }
-            }
-
-            if (value instanceof JsonObject nestedObject) {
-                object.put(objectKey, addComments(comments, nestedObject, entry.getKey() + "."), comment);
-            }
+    public static JsonObject readFile(Path path) {
+        try{
+            return JANKSON.load(path.toFile());
+        } catch (Exception errorMsg) {
+            throw new IllegalArgumentException("Couldn't read " + path + ", crashing instead. Maybe try to delete the config files!");
         }
-        return object;
     }
 }
