@@ -3,6 +3,8 @@ package de.cristelknight.cristellib;
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPacks;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
+import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
+import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackType;
@@ -26,6 +28,9 @@ public class CristelLib {
 
 
     public static void preInit(){
+        NestedEDConfig.loadClass();
+        PlacementConfig.loadClass();
+
         BuiltInDataPacks.registerPack(DATA_PACK, Component.literal("Cristel Lib Config Pack"), () -> true);
         CristelLibRegistry.configs = ImmutableMap.copyOf(CristelLibExpectPlatform.getConfigs(REGISTRY));
 

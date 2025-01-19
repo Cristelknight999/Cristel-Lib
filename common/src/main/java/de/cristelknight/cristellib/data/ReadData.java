@@ -154,7 +154,7 @@ public class ReadData {
             try {
                 FileUtils.copyURLToFile(fromFile.toUri().toURL(), toFile);
             } catch (IOException e) {
-                CristelLib.LOGGER.error("Couldn't copy file from: " + fromFile + " to: " + toFile, e);
+                CristelLib.LOGGER.error("Couldn't copy file from: {} to: {}", fromFile, toFile, e);
             }
         }
     }

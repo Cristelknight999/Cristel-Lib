@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class JanksonUtil {
     public static @Nullable com.google.gson.JsonElement getSetElement(String getDataFromModId, ResourceLocation location) {
@@ -44,10 +45,11 @@ public class JanksonUtil {
         }
     }
 
-    public static JsonObject addComments(Map<String, String> comments, JsonObject object, String parentKey) {
+    public static JsonObject addCommentsAndAlphabeticallySortRecursively(Map<String, String> comments, JsonObject object, String parentKey, boolean alphabeticallySorted) {
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             String objectKey = entry.getKey();
             String commentsKey = parentKey + objectKey;
+
             String comment = object.getComment(entry.getKey());
             if (comments.containsKey(commentsKey) && comment == null) {
                 String commentToAdd = comments.get(commentsKey);
@@ -60,7 +62,7 @@ public class JanksonUtil {
                 JsonArray sortedJsonElements = new JsonArray();
                 for (JsonElement element : array) {
                     if (element instanceof JsonObject nestedObject) {
-                        sortedJsonElements.add(addComments(comments, nestedObject, entry.getKey() + "."));
+                        sortedJsonElements.add(addCommentsAndAlphabeticallySortRecursively(comments, nestedObject, entry.getKey() + ".", alphabeticallySorted));
                     } else if (element instanceof JsonArray array1) {
                         JsonArray arrayOfArrays = new JsonArray();
                         arrayOfArrays.addAll(array1);
@@ -73,8 +75,20 @@ public class JanksonUtil {
             }
 
             if (value instanceof JsonObject nestedObject) {
-                object.put(objectKey, addComments(comments, nestedObject, entry.getKey() + "."), comment);
+                object.put(objectKey, addCommentsAndAlphabeticallySortRecursively(comments, nestedObject, entry.getKey() + ".", alphabeticallySorted), comment);
             }
+        }
+
+        if (alphabeticallySorted) {
+            JsonObject alphabeticallySortedJsonObject = new JsonObject();
+            TreeMap<String, JsonElement> map = new TreeMap<>(String::compareTo);
+            map.putAll(object);
+            alphabeticallySortedJsonObject.putAll(map);
+            alphabeticallySortedJsonObject.forEach((key, entry) -> {
+                alphabeticallySortedJsonObject.setComment(key, object.getComment(key));
+            });
+
+            return alphabeticallySortedJsonObject;
         }
         return object;
     }

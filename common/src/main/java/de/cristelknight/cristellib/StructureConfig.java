@@ -7,7 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.config.ConfigType;
-import de.cristelknight.cristellib.config.Placement;
+import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.registry.ReadStructureSets;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
@@ -29,14 +29,16 @@ public class StructureConfig {
 
     private final List<Pair<String, ResourceLocation>> structureSets = new ArrayList<>();
 
+    // default values
     private final Supplier<Map<ResourceLocation, List<String>>> structuresForED =
             Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSets));
 
-    private final Supplier<Map<ResourceLocation, Placement>> structurePlacement =
+    private final Supplier<Map<String, PlacementConfig>> structurePlacement =
             Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSets));
 
-    public Map<String, Boolean> enableDisableConfig = null;
-    public Map<String, Placement> placementConfig = null;
+    // current values
+    private Map<String, Boolean> enableDisableConfig = null;
+    private Map<String, PlacementConfig> placementConfig = null;
 
 
     private StructureConfig(Path path, ConfigType type) {
@@ -49,8 +51,8 @@ public class StructureConfig {
     }
 
     void addSetsToRuntimePack() {
-        enableDisableConfig = ConfigUtil.readConfig(path);
-        placementConfig = ConfigUtil.readPlacementConfig(path);
+        if(type.equals(ConfigType.ENABLE_DISABLE)) enableDisableConfig = ConfigUtil.readEDConfig(this);
+        else placementConfig = ConfigUtil.readPlacementConfig(this);
 
         for(Pair<String, ResourceLocation> s : structureSets) {
             String modID = s.getFirst();
@@ -65,9 +67,9 @@ public class StructureConfig {
             JsonObject originalSet = structureSet.deepCopy();
 
             if(type.equals(ConfigType.ENABLE_DISABLE)) {
-                removeStructureInSets(structureSet, enableDisableConfig);
+                removeStructureInSets(structureSet);
             } else if(type.equals(ConfigType.PLACEMENT)) {
-                updatePlacementsInSet(structureSet, setLocation, placementConfig);
+                updatePlacementsInSet(structureSet, setLocation);
             }
 
             if(!structureSet.equals(originalSet)){
@@ -76,28 +78,28 @@ public class StructureConfig {
         }
     }
 
-    private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation, Map<String, Placement> placementMap){
-        String structureSetName = setLocation.getPath();
-        if(placementMap.containsKey(structureSetName)) {
-            JsonObject a = structureSet.get("placement").getAsJsonObject();
-            Placement p = placementMap.get(structureSetName);
-            a.addProperty("salt", p.salt);
-            a.addProperty("spacing", p.spacing);
-            a.addProperty("separation", p.separation);
-
-            double f = p.frequency;
-
-            if(f != 0 && a.has("frequency") && (a.get("frequency").getAsFloat() != f)) a.addProperty("frequency", f);
-        }
-    }
-
-    private void removeStructureInSets(JsonObject structureSet, Map<String, Boolean> enableDisableMap){
+    private void removeStructureInSets(JsonObject structureSet){
         JsonArray array = structureSet.get("structures").getAsJsonArray();
         Iterator<JsonElement> structureIterator = array.iterator();
         while (structureIterator.hasNext()){
             JsonElement structure = structureIterator.next();
             String structureName = structure.getAsJsonObject().get("structure").getAsString().split(":")[1];
-            if(enableDisableMap.containsKey(structureName) && !enableDisableMap.get(structureName)) structureIterator.remove();
+            if(enableDisableConfig.containsKey(structureName) && !enableDisableConfig.get(structureName)) structureIterator.remove();
+        }
+    }
+
+    private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation){
+        String structureSetName = setLocation.getPath();
+        if(placementConfig.containsKey(structureSetName)) {
+            JsonObject a = structureSet.get("placement").getAsJsonObject();
+            PlacementConfig p = placementConfig.get(structureSetName);
+            a.addProperty("salt", p.salt());
+            a.addProperty("spacing", p.spacing());
+            a.addProperty("separation", p.separation());
+
+            double f = p.frequency();
+
+            if(f != 0 && a.has("frequency") && (a.get("frequency").getAsFloat() != f)) a.addProperty("frequency", f);
         }
     }
 
@@ -116,10 +118,10 @@ public class StructureConfig {
      */
     void writeConfig() {
         if(type.equals(ConfigType.ENABLE_DISABLE)){
-            ConfigUtil.createEDConfig(this);
+            ConfigUtil.createEDConfig(this, false);
         }
         else if(type.equals(ConfigType.PLACEMENT)){
-            ConfigUtil.createPlacementConfig(this);
+            ConfigUtil.createPlacementConfig(this, false);
         }
     }
 
@@ -156,7 +158,7 @@ public class StructureConfig {
         return structuresForED.get();
     }
 
-    public Map<ResourceLocation, Placement> getStructurePlacement() {
+    public Map<String, PlacementConfig> getStructurePlacement() {
         return structurePlacement.get();
     }
 
