@@ -100,7 +100,7 @@ or like this:
 ```
 
 #### Required Fields
-- **"location"** specifies the mod file and the folder where the datapack is located. E.g. if you put there "towns_and_towers:resources/t_and_t_wwoo_tag_patch" cristellib will try to load a pack in the mod file "towns_and_towers" and in it's subfolder "resources/t_and_t_wwoo_tag_patch".
+- **"location"** specifies the mod file and the folder where the datapack is located. E.g. if you put there "towns_and_towers:resources/t_and_t_wwoo_tag_patch" cristellib will try to load a pack in your mod file and in it's subfolder "resources/t_and_t_wwoo_tag_patch".
 - **"display_name"** specifies the name of the pack shown in the datapack selection screen.
 
 #### Optional Fields
