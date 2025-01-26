@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.config.ConfigUtil;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
 import net.minecraft.network.chat.Component;

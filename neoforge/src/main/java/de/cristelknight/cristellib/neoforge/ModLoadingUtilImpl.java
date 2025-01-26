@@ -1,5 +1,7 @@
 package de.cristelknight.cristellib.neoforge;
 
+import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.ModLoadingUtil;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
@@ -7,6 +9,7 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class ModLoadingUtilImpl {
 
@@ -31,19 +34,21 @@ public class ModLoadingUtilImpl {
         return null;
     }
 
-    public static boolean isModLoadedWithVersion(String modid, String minVersion) {
+
+    public static Optional<Integer> compare(String modid, String version) {
         if (isModLoaded(modid)) {
             ModList modList = ModList.get();
-            ArtifactVersion version;
-            if (modList != null) version = modList.getModContainerById(modid).get().getModInfo().getVersion();
-            else version = getPreLoadedModVersion(modid);
+            ArtifactVersion modVersion;
+            if (modList != null) modVersion = modList.getModContainerById(modid).get().getModInfo().getVersion();
+            else modVersion = getPreLoadedModVersion(modid);
 
             ArtifactVersion min;
-            min = new DefaultArtifactVersion(minVersion);
-            return version.compareTo(min) >= 0;
+            min = new DefaultArtifactVersion(version);
+            return Optional.of(modVersion.compareTo(min));
         }
-        return false;
+        return Optional.empty();
     }
+
 
     public static ArtifactVersion getPreLoadedModVersion(String modid) {
         ModInfo info = getPreLoadedModInfo(modid);

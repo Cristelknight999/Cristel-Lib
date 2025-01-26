@@ -16,6 +16,6 @@ public class TerrablenderUtil {
     }
 
     public static boolean isModLoaded(){
-        return ModLoadingUtil.isModLoadedWithVersion("terrablender", CristelLib.minTerraBlenderVersion);
+        return ModVersionComparator.GREATER_EQUAL.test("terrablender", CristelLib.minTerraBlenderVersion);
     }
 }

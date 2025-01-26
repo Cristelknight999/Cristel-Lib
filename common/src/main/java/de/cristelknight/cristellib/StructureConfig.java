@@ -2,16 +2,21 @@ package de.cristelknight.cristellib;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.data.StructureSetHolder;
 import de.cristelknight.cristellib.registry.ReadStructureSets;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
-import de.cristelknight.cristellib.config.ConfigUtil;
+import de.cristelknight.cristellib.util.Util;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;
@@ -19,22 +24,30 @@ import java.util.*;
 
 public class StructureConfig {
 
+    public static final Codec<StructureConfig> CODEC = RecordCodecBuilder.create(builder ->
+            builder.group(
+                    Codec.STRING.fieldOf("name").forGetter(config -> Util.fileName(config.getPath())),
+                    Codec.STRING.fieldOf("path").forGetter(config -> String.valueOf(config.path.getParent())),
+                    Codec.STRING.optionalFieldOf("header", "").forGetter(config -> config.header),
+                    ConfigType.CODEC.fieldOf("config_type").forGetter(config -> config.type),
+                    Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("comments", new HashMap<>()).forGetter(config -> config.comments),
+                    Codec.list(StructureSetHolder.CODEC).fieldOf("structure_sets").forGetter(config -> config.structureSetHolders)
+            ).apply(builder, StructureConfig::new)
+    );
+
     private final Path path;
 
     private String header = "";
 
-    private Map<String, String> comments = new HashMap<>();
+    private Map<String, String> comments;
 
     private final ConfigType type;
 
-    private final List<Pair<String, ResourceLocation>> structureSets = new ArrayList<>();
+    private final List<StructureSetHolder> structureSetHolders;
 
     // default values
-    private final Supplier<Map<ResourceLocation, List<String>>> structuresForED =
-            Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSets));
-
-    private final Supplier<Map<String, PlacementConfig>> structurePlacement =
-            Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSets));
+    private final Supplier<Map<ResourceLocation, List<String>>> structuresForED;
+    private final Supplier<Map<String, PlacementConfig>> structurePlacement;
 
     // current values
     private Map<String, Boolean> enableDisableConfig = null;
@@ -42,55 +55,72 @@ public class StructureConfig {
 
 
     private StructureConfig(Path path, ConfigType type) {
-        this.path = path;
-        this.type = type;
+        this(path, null, new HashMap<>(), type, new ArrayList<>());
     }
 
-    void addSet(Pair<String, ResourceLocation> set) {
-        structureSets.add(set);
+    private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetHolder> structureSetHolders) { // for CODEC
+        this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type, ImmutableList.copyOf(structureSetHolders));
+        //CristelLib.LOGGER.error("name: {}, path {}, type {}, structureSetHolders {}", name, path, type, structureSetHolders);
+    }
+
+    private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetHolder> structureSetHolders) {
+        this.path = path;
+        if (header != null && !header.isEmpty()) setHeader(header);
+        this.comments = comments;
+        this.type = type;
+        this.structureSetHolders = structureSetHolders;
+
+        this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
+        this.structurePlacement = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSetHolders));
+    }
+
+    void addSet(StructureSetHolder set) {
+        structureSetHolders.add(set);
     }
 
     void addSetsToRuntimePack() {
-        if(type.equals(ConfigType.ENABLE_DISABLE)) enableDisableConfig = ConfigUtil.readEDConfig(this);
-        else placementConfig = ConfigUtil.readPlacementConfig(this);
+        if (type.equals(ConfigType.ENABLE_DISABLE)) enableDisableConfig = ConfigManager.readEDConfig(this);
+        else placementConfig = ConfigManager.readPlacementConfig(this);
 
-        for(Pair<String, ResourceLocation> s : structureSets) {
-            String modID = s.getFirst();
-            ResourceLocation setLocation = s.getSecond();
+        structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
+            String modID = holder.modID();
 
             JsonElement structureSetElement = getStructureSet(setLocation, modID);
             if (!(structureSetElement instanceof JsonObject structureSet)) {
                 CristelLib.LOGGER.warn("Set for {} {} is not a JsonObject, skipping...", modID, setLocation);
-                continue;
+                return;
             }
 
             JsonObject originalSet = structureSet.deepCopy();
 
-            if(type.equals(ConfigType.ENABLE_DISABLE)) {
+            if (type.equals(ConfigType.ENABLE_DISABLE)) {
                 removeStructureInSets(structureSet);
-            } else if(type.equals(ConfigType.PLACEMENT)) {
+            } else if (type.equals(ConfigType.PLACEMENT)) {
                 updatePlacementsInSet(structureSet, setLocation);
             }
 
-            if(!structureSet.equals(originalSet)){
+            if (!structureSet.equals(originalSet)) {
                 CristelLib.DATA_PACK.addStructureSet(setLocation, structureSet);
             }
-        }
+
+        }));
+
     }
 
-    private void removeStructureInSets(JsonObject structureSet){
+    private void removeStructureInSets(JsonObject structureSet) {
         JsonArray array = structureSet.get("structures").getAsJsonArray();
         Iterator<JsonElement> structureIterator = array.iterator();
-        while (structureIterator.hasNext()){
+        while (structureIterator.hasNext()) {
             JsonElement structure = structureIterator.next();
             String structureName = structure.getAsJsonObject().get("structure").getAsString().split(":")[1];
-            if(enableDisableConfig.containsKey(structureName) && !enableDisableConfig.get(structureName)) structureIterator.remove();
+            if (enableDisableConfig.containsKey(structureName) && !enableDisableConfig.get(structureName))
+                structureIterator.remove();
         }
     }
 
-    private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation){
+    private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation) {
         String structureSetName = setLocation.getPath();
-        if(placementConfig.containsKey(structureSetName)) {
+        if (placementConfig.containsKey(structureSetName)) {
             JsonObject a = structureSet.get("placement").getAsJsonObject();
             PlacementConfig p = placementConfig.get(structureSetName);
             a.addProperty("salt", p.salt());
@@ -99,7 +129,7 @@ public class StructureConfig {
 
             double f = p.frequency();
 
-            if(f != 0 && a.has("frequency") && (a.get("frequency").getAsFloat() != f)) a.addProperty("frequency", f);
+            if (f != 0 && a.has("frequency") && (a.get("frequency").getAsFloat() != f)) a.addProperty("frequency", f);
         }
     }
 
@@ -117,11 +147,10 @@ public class StructureConfig {
      * This method initializes the structures or placements depending on the {@link ConfigType}.
      */
     void writeConfig() {
-        if(type.equals(ConfigType.ENABLE_DISABLE)){
-            ConfigUtil.createEDConfig(this, false);
-        }
-        else if(type.equals(ConfigType.PLACEMENT)){
-            ConfigUtil.createPlacementConfig(this, false);
+        if (type.equals(ConfigType.ENABLE_DISABLE)) {
+            ConfigManager.createEDConfig(this, false);
+        } else if (type.equals(ConfigType.PLACEMENT)) {
+            ConfigManager.createPlacementConfig(this, false);
         }
     }
 
@@ -134,19 +163,20 @@ public class StructureConfig {
     public static StructureConfig createWithDefaultConfigPath(String subPath, String name, ConfigType type) {
         return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(subPath).resolve(name + ".json5"), type);
     }
+
     public static StructureConfig createWithDefaultConfigPath(String name, ConfigType type) {
         return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(name + ".json5"), type);
     }
 
-    public void setComments(Map<String, String> comments){
+    public void setComments(Map<String, String> comments) {
         this.comments = comments;
     }
 
-    public void setHeader(String header){
+    public void setHeader(String header) {
         this.header = "/*\n" + header + "*/";
     }
 
-    public String getHeader(){
+    public String getHeader() {
         return header;
     }
 

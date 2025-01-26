@@ -1,7 +1,7 @@
 package de.cristelknight.cristellib.config;
 
 import blue.endless.jankson.*;
-import blue.endless.jankson.api.SyntaxError;
+import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -10,7 +10,7 @@ import com.mojang.serialization.JsonOps;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.config.serialize.ed.EDUtil;
+import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
 import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.util.JanksonUtil;
@@ -18,12 +18,14 @@ import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.ResourceLocation;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Supplier;
 
-public class ConfigUtil {
+public class ConfigManager {
 
     public static final Path CONFIG_DIR = CristelLibExpectPlatform.getConfigDirectory();
 
@@ -37,42 +39,44 @@ public class ConfigUtil {
 
     public static void createEDConfig(StructureConfig config, boolean override) {
         Map<ResourceLocation, List<String>> sets = config.getStructures();
-        Map<String, NestedEDConfig> nestedStructureMap = EDUtil.mapToNestedStructures(sets);
+        Map<String, NestedEDConfig> nestedStructureMap = EDConfigTransformer.mapToNestedStructures(sets);
 
         writeConfig(config, NestedEDConfig.ED_CODEC, nestedStructureMap, override);
     }
 
     public static Map<String, Boolean> readEDConfig(StructureConfig config) {
-        Map<String, NestedEDConfig> configMap = readConfig(config, NestedEDConfig.ED_CODEC);
+        Map<String, NestedEDConfig> configMap = readConfig(config.getPath(), NestedEDConfig.ED_CODEC);
 
         Map<String, Boolean> map = new HashMap<>();
-        for(NestedEDConfig edConfig : configMap.values()){
-            map.putAll(EDUtil.stringBooleanMap(edConfig, ""));
+        for (NestedEDConfig edConfig : configMap.values()) {
+            map.putAll(EDConfigTransformer.stringBooleanMap(edConfig, ""));
         }
         return map;
     }
 
-
     public static void createPlacementConfig(StructureConfig config, boolean override) {
         Map<String, PlacementConfig> sets = config.getStructurePlacement();
-        //CristelLib.LOGGER.error(sets.toString());
         writeConfig(config, PlacementConfig.PLACEMENT_CODEC, sets, override);
     }
 
     public static Map<String, PlacementConfig> readPlacementConfig(StructureConfig config) {
-        return readConfig(config, PlacementConfig.PLACEMENT_CODEC);
+        return readConfig(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
     }
 
 
-    public static <T>  void writeConfig(StructureConfig config, Codec<T> codec, T from, boolean override){
+
+    // File and Codec Util
+
+    // Write
+    public static <T> void writeConfig(StructureConfig config, Codec<T> codec, T from, boolean override) {
         Path path = config.getPath();
-        if(!override && path.toFile().exists()) return;
+        if (!override && path.toFile().exists()) return;
 
         writeFile(config.getPath(), codec, config.getComments(), JanksonOps.INSTANCE, from, config.getHeader());
     }
 
     public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, DynamicOps<JsonElement> ops, T from, String header) {
-        JsonElement jsonElement = readElement(path, codec, ops, from);
+        JsonElement jsonElement = createElement(path, codec, ops, from);
 
         if (jsonElement instanceof JsonObject jsonObject) {
             jsonElement = JanksonUtil.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", true);
@@ -86,7 +90,7 @@ public class ConfigUtil {
         }
     }
 
-    public static <T> JsonElement readElement(Path path, Codec<T> codec, DynamicOps<JsonElement> ops, T from){
+    public static <T> JsonElement createElement(Path path, Codec<T> codec, DynamicOps<JsonElement> ops, T from) {
         DataResult<JsonElement> dataResult = codec.encodeStart(ops, from);
         Optional<DataResult.Error<JsonElement>> error = dataResult.error();
         if (error.isPresent()) {
@@ -96,24 +100,34 @@ public class ConfigUtil {
         return dataResult.result().orElseThrow();
     }
 
-
-    public static <T> T readConfig(StructureConfig config, Codec<T> codec){
+    // Read
+    public static <T> T readConfig(Path path, Codec<T> codec) {
         JsonElement load;
         try {
-            load = JANKSON.load(config.getPath().toFile());
+            load = JANKSON.load(path.toFile());
         } catch (Exception errorMsg) {
-            throw new IllegalArgumentException("["+CristelLib.MOD_ID+"] Couldn't read " + config.getPath() + ", crashing instead. Maybe try to delete the config files!");
+            throw new IllegalArgumentException("[" + CristelLib.MOD_ID + "] Couldn't load " + path + ", crashing instead. Maybe try to delete the config files!");
         }
-        return readElement(config.getPath().toString(), codec, JanksonOps.INSTANCE, load);
+        return readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
     }
 
-    public static <T> T readElement(String path, Codec<T> codec, DynamicOps<JsonElement> ops, JsonElement load) {
-        CristelLib.LOGGER.error(load.toJson());
-        DataResult<Pair<T, JsonElement>> decode = codec.decode(ops, load);
-        Optional<DataResult.Error<Pair<T, JsonElement>>> error = decode.error();
+    public static <T> T readFromJsonPath(String errorMsg, Path path, Codec<T> codec) {
+        InputStream stream;
+        try {
+            stream = Files.newInputStream(path);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("[" + CristelLib.MOD_ID + "] Couldn't load " + path + ", crashing instead. Maybe try to delete the config files!");
+        }
+        com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream));
+        return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
+    }
+
+    public static <T, K> T readElement(String errorMsg, Codec<T> codec, DynamicOps<K> ops, K load) {
+        DataResult<Pair<T, K>> decode = codec.decode(ops, load);
+        Optional<DataResult.Error<Pair<T, K>>> error = decode.error();
 
         if (error.isPresent()) {
-            throw new IllegalArgumentException("["+CristelLib.MOD_ID+"] Couldn't read " + path + ", crashing instead. Maybe try to delete the config files! " + error.get().message());
+            throw new IllegalArgumentException(String.format("[%s] %s", CristelLib.MOD_ID, errorMsg));
         }
         return decode.result().orElseThrow().getFirst();
     }

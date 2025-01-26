@@ -6,24 +6,26 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
 
+import java.util.Optional;
+
 public class ModLoadingUtilImpl {
 
     public static boolean isModLoaded(String modId) {
         return FabricLoader.getInstance().isModLoaded(modId);
     }
 
-    public static boolean isModLoadedWithVersion(String modid, String minVersion) {
+    public static Optional<Integer> compare(String modid, String version) {
         if (ModLoadingUtil.isModLoaded(modid)) {
-            Version version = FabricLoader.getInstance().getModContainer(modid).get().getMetadata().getVersion();
+            Version modVersion = FabricLoader.getInstance().getModContainer(modid).get().getMetadata().getVersion();
             Version min;
             try {
-                min = Version.parse(minVersion);
+                min = Version.parse(version);
             } catch (VersionParsingException e) {
-                CristelLib.LOGGER.error("Couldn't parse version: {}", minVersion);
-                return false;
+                CristelLib.LOGGER.error("Couldn't parse version: {}", version);
+                return Optional.empty();
             }
-            return version.compareTo(min) >= 0;
+            return Optional.of(modVersion.compareTo(min));
         }
-        return false;
+        return Optional.empty();
     }
 }

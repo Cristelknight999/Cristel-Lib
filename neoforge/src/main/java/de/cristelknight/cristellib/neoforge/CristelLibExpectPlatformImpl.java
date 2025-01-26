@@ -102,7 +102,7 @@ public class CristelLibExpectPlatformImpl {
             ReadData.getBuiltInPacks(modid);
             //ReadData.modifyJson5File(modid);
             ReadData.copyFile(modid);
-            ReadData.getStructureConfigs(modid, modidAndConfigs, registry);
+            ReadData.getStructureConfigs(modid, modidAndConfigs);
         }
         return modidAndConfigs;
     }

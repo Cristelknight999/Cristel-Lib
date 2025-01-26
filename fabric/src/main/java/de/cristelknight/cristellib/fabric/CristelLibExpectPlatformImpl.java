@@ -61,7 +61,7 @@ public class CristelLibExpectPlatformImpl {
                 configs.put(modId, set);
                 api.registerStructureSets(registry);
             } catch (Throwable e) {
-                CristelLib.LOGGER.error("Mod: " + modId + " provides a broken implementation of CristelLibAPI", e);
+                CristelLib.LOGGER.error("Mod: {} provides a broken implementation of CristelLibAPI", modId, e);
             }
         });
         Util.addAll(configs, data(registry));
@@ -77,7 +77,7 @@ public class CristelLibExpectPlatformImpl {
             ReadData.getBuiltInPacks(modid);
             ReadData.copyFile(modid);
             //ReadData.modifyJson5File(modid);
-            ReadData.getStructureConfigs(modid, modidAndConfigs, registry);
+            ReadData.getStructureConfigs(modid, modidAndConfigs);
         }
         return modidAndConfigs;
     }

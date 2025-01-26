@@ -1,17 +1,19 @@
 package de.cristelknight.cristellib.data;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.ModLoadingUtil;
+import de.cristelknight.cristellib.util.ModVersionComparator;
+import net.minecraft.util.GsonHelper;
+
+import java.util.List;
 
 public class Conditions {
 
-    public static boolean readConditions(JsonObject object){
-        if(!object.has("condition")) return true;
-        JsonArray array = object.get("condition").getAsJsonArray();
+    public static boolean readConditions(List<JsonElement> jsonElements){
         boolean bl = true;
-        for(JsonElement e : array){
+        for(JsonElement e : jsonElements){
             if(!(e instanceof JsonObject o)) continue;
             if(!readCondition(o)) bl = false;
         }
@@ -20,12 +22,19 @@ public class Conditions {
     }
 
     public static boolean readCondition(JsonObject object){
-        String type = object.get("type").getAsString();
+        String type = GsonHelper.getAsString(object, "type");
         if(type.equals("mod_loaded")){
-            return ModLoadingUtil.isModLoaded(object.get("mod").getAsString());
+            return ModLoadingUtil.isModLoaded(GsonHelper.getAsString(object, "mod"));
         }
         else if(type.equals("mod_loaded_with_version")){
-            return ModLoadingUtil.isModLoadedWithVersion(object.get("mod").getAsString(), object.get("min_version").getAsString());
+            String version = GsonHelper.getAsString(object, "min_version");
+            for (ModVersionComparator comparator : ModVersionComparator.values()){
+                String sign = comparator.getSerialized();
+                if(!version.startsWith(sign)) continue;
+
+                return comparator.test(GsonHelper.getAsString(object, "mod"), version.replaceFirst(sign, ""));
+            }
+            CristelLib.LOGGER.warn("Couldn't compare \"min_version\" value: {}", version);
         }
 
         return false;

@@ -28,53 +28,52 @@ public class BuiltInDataPacks {
 	}
 
 	public static void registerPack(PackResources packResource, Component displayName, Supplier<Boolean> supplier){
-		list.add(new Tuple<>(new Tuple<>(displayName, packResource), supplier));
+		PACK_LIST.add(new Tuple<>(new Tuple<>(displayName, packResource), supplier));
 	}
 
-	private static final List<Tuple<Tuple<Component, PackResources>, Supplier<Boolean>>> list = new ArrayList<>();
+	private static final List<Tuple<Tuple<Component, PackResources>, Supplier<Boolean>>> PACK_LIST = new ArrayList<>();
 
 	public static void getPacks(Consumer<Pack> consumer){
-		if(list.isEmpty()) return;
-		for (Tuple<Tuple<Component, PackResources>, Supplier<Boolean>> entry : list) {
-			if(entry.getB().get()){
-				PackResources pack = entry.getA().getB();
+		if(PACK_LIST.isEmpty()) return;
+		for (Tuple<Tuple<Component, PackResources>, Supplier<Boolean>> entry : PACK_LIST) {
 
-				// Add the built-in pack only if namespaces for the specified resource type are present.
-				if (!pack.getNamespaces(PackType.SERVER_DATA).isEmpty()) {
-					// Make the resource pack profile for built-in pack, should never be always enabled.
-					Component displayName = entry.getA().getA();
-					PackLocationInfo info = new PackLocationInfo(
-							pack.packId(),
-							displayName,
-							new BuiltinResourcePackSource(),
-							pack.knownPackInfo()
-					);
-					PackSelectionConfig info2 = new PackSelectionConfig(
-							true,
-							Pack.Position.TOP,
-							false
-					);
+			// Check conditions
+			if(!entry.getB().get()) continue;
 
-					Pack profile = Pack.readMetaAndCreate(info, new Pack.ResourcesSupplier() {
-						@Override
-						public @NotNull PackResources openPrimary(PackLocationInfo var1) {
-							return pack;
-						}
+			PackResources pack = entry.getA().getB();
+			if (pack.getNamespaces(PackType.SERVER_DATA).isEmpty()) continue;
 
-						@Override
-						public @NotNull PackResources openFull(PackLocationInfo var1, Pack.Metadata metadata) {
-							// Don't support overlays in builtin packs.
-							return pack;
-						}
-					}, PackType.SERVER_DATA, info2);
+			Component displayName = entry.getA().getA();
+			PackLocationInfo metadata = new PackLocationInfo(
+					pack.packId(),
+					displayName,
+					new BuiltinResourcePackSource(),
+					pack.knownPackInfo()
+			);
+			PackSelectionConfig info2 = new PackSelectionConfig(
+					true,
+					Pack.Position.TOP,
+					true
+			);
 
-					if(profile == null){
-                        CristelLib.LOGGER.error("Pack Profile with display name: {} is null", displayName);
-						return;
-					}
-					consumer.accept(profile);
+			Pack profile = Pack.readMetaAndCreate(metadata, new Pack.ResourcesSupplier() {
+				@Override
+				public @NotNull PackResources openPrimary(PackLocationInfo var1) {
+					return pack;
 				}
+
+				@Override
+				public @NotNull PackResources openFull(PackLocationInfo var1, Pack.Metadata metadata) {
+					// Don't support overlays in builtin packs.
+					return pack;
+				}
+			}, PackType.SERVER_DATA, info2);
+
+			if(profile == null){
+				CristelLib.LOGGER.error("Pack Profile with display name: {} is null", displayName);
+				continue;
 			}
+			consumer.accept(profile);
 		}
 	}
 }

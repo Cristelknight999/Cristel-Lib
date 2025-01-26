@@ -9,6 +9,7 @@ import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.util.jankson.CommentArray;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,6 +47,7 @@ public class JanksonUtil {
     }
 
     public static JsonObject addCommentsAndAlphabeticallySortRecursively(Map<String, String> comments, JsonObject object, String parentKey, boolean alphabeticallySorted) {
+        if(comments.isEmpty()) return object;
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             String objectKey = entry.getKey();
             String commentsKey = parentKey + objectKey;
@@ -64,9 +66,9 @@ public class JanksonUtil {
                     if (element instanceof JsonObject nestedObject) {
                         sortedJsonElements.add(addCommentsAndAlphabeticallySortRecursively(comments, nestedObject, entry.getKey() + ".", alphabeticallySorted));
                     } else if (element instanceof JsonArray array1) {
-                        JsonArray arrayOfArrays = new JsonArray();
-                        arrayOfArrays.addAll(array1);
-                        sortedJsonElements.add(arrayOfArrays);
+                        CommentArray commentArray = new CommentArray();
+                        commentArray.addAll(array1);
+                        sortedJsonElements.add(commentArray);
                     }
                 }
                 if (!sortedJsonElements.isEmpty()) {

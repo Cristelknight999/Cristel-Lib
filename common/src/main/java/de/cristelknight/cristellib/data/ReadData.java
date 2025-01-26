@@ -1,15 +1,12 @@
 package de.cristelknight.cristellib.data;
 
-import com.google.gson.*;
-import com.mojang.datafixers.util.Pair;
+import com.mojang.datafixers.util.Either;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPacks;
-import de.cristelknight.cristellib.config.ConfigType;
-import de.cristelknight.cristellib.config.ConfigUtil;
-import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.io.FileUtils;
@@ -25,76 +22,72 @@ public class ReadData {
 
     private static boolean checkedConfigFiles = false;
 
-    public static void getBuiltInPacks(String modId){
-        for(Path path : getPathsInDir(modId, "data_packs")){
-            InputStream stream;
-            try {
-                stream = Files.newInputStream(path);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            JsonElement element = JsonParser.parseReader(new InputStreamReader(stream));
-            if(element instanceof JsonObject object){
-                if(object.has("packs")){
-                    JsonArray array = object.getAsJsonArray("packs");
-                    for(int i = array.size() - 1; i >= 0; i--){
-                        JsonElement jsonElement = array.get(i);
-                        loadPack(jsonElement, modId);
-                    }
-                }
-                else loadPack(object, modId);
+    public static void getStructureConfigs(String modId, Map<String, Set<StructureConfig>> modIdAndConfigs) {
+        Set<StructureConfig> configs = new HashSet<>();
+        for (Path path : getPathsInDir(modId, "structure_configs")) {
+            StructureConfig config = ConfigManager.readFromJsonPath(String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
+                    path, StructureConfig.CODEC);
 
+            configs.add(config);
+        }
+        checkedConfigFiles = false;
+        if (configs.isEmpty()) return;
+        modIdAndConfigs.put(modId, configs);
+    }
+
+    public static void getBuiltInPacks(String modId) {
+        for (Path path : getPathsInDir(modId, "data_packs")) {
+
+            Either<BuiltInPackData, List<BuiltInPackData>> either = ConfigManager.readFromJsonPath(
+                    String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
+                    path, BuiltInPackData.PACKS_CODEC);
+
+            either.left().ifPresent(pack -> loadPack(pack, modId));
+            either.right().ifPresent(packs -> packs.forEach(pack -> loadPack(pack, modId)));
+
+        }
+        checkedConfigFiles = false;
+    }
+
+    public static void loadPack(BuiltInPackData pack, String modId) {
+        boolean b = pack.conditions().isEmpty() || Conditions.readConditions(pack.conditions().get());
+        BuiltInDataPacks.registerPack(pack.location(), modId, Component.nullToEmpty(pack.displayName()), () -> b);
+    }
+
+
+    public static void copyFile(String modId) {
+        for (Path path : getPathsInDir(modId, "copy_file")) {
+
+            CopyFileData copyFileData = ConfigManager.readFromJsonPath(String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
+                    path, CopyFileData.CODEC);
+
+            if (copyFileData.conditions().isEmpty() || Conditions.readConditions(copyFileData.conditions().get())) {
+                copyFileFromJar(copyFileData.location(), copyFileData.destination());
             }
         }
         checkedConfigFiles = false;
     }
 
+    public static void copyFileFromJar(ResourceLocation from, String to) {
+        String modID = from.getNamespace();
+        String location = from.getPath();
 
-    public static void copyFile(String modId){
-        for(Path path : getPathsInDir(modId, "copy_file")){
-            InputStream stream;
+        List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(modID);
+        for (Path p : inputUrl) {
+            Path fromFile = p.resolve(location);
+            File toFile = Util.pathFromString(to).toFile();
+            if (fromFile == null || toFile == null || toFile.exists()) continue;
             try {
-                stream = Files.newInputStream(path);
+                FileUtils.copyURLToFile(fromFile.toUri().toURL(), toFile);
             } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            JsonElement element = JsonParser.parseReader(new InputStreamReader(stream));
-            if(element instanceof JsonObject object){
-                String location = object.get("location").getAsString();
-                String destination = object.get("destination").getAsString();
-
-                if(Conditions.readConditions(object)){
-                    copyFileFromJar(location, destination, modId);
-                }
+                CristelLib.LOGGER.error("Couldn't copy file from: {} to: {}", fromFile, toFile, e);
             }
         }
-        checkedConfigFiles = false;
     }
+
+
     
-    public static void loadPack(JsonElement element, String modId){
-        if(element instanceof JsonObject object){
-            String location = object.get("location").getAsString();
-            String name = object.get("display_name").getAsString();
 
-            ResourceLocation rl = ResourceLocation.tryParse(location);
-            Component component = Component.literal(name);
-
-                /*
-                LocalPlayer access = Minecraft.getInstance().player;
-                if(access != null){
-                    try {
-                        component = ComponentArgument.textComponent(CommandBuildContext.simple(access.registryAccess(), FeatureFlags.VANILLA_SET)).parse(new StringReader(name));
-                    } catch (CommandSyntaxException e) {
-                        CristelLib.LOGGER.debug("Couldn't parse: \"" + name + "\" to a component", e);
-                    }
-                }
-                 */
-
-
-            boolean b = Conditions.readConditions(object);
-            BuiltInDataPacks.registerPack(rl, modId, component, () -> b);
-        }
-    }
 
     /*
     public static void modifyJson5File(String modId){
@@ -142,84 +135,7 @@ public class ReadData {
      */
 
 
-
-
-
-    public static void copyFileFromJar(String from, String to, String frommodId){
-        List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(frommodId);
-        for(Path p : inputUrl){
-            Path fromFile = p.resolve(from);
-            File toFile = ConfigUtil.CONFIG_DIR.resolve(to).toFile();
-            if(fromFile == null || toFile == null || toFile.exists()) continue;
-            try {
-                FileUtils.copyURLToFile(fromFile.toUri().toURL(), toFile);
-            } catch (IOException e) {
-                CristelLib.LOGGER.error("Couldn't copy file from: {} to: {}", fromFile, toFile, e);
-            }
-        }
-    }
-
-
-    public static void getStructureConfigs(String modId, Map<String, Set<StructureConfig>> modIdAndConfigs, CristelLibRegistry registry){
-        Set<StructureConfig> configs = new HashSet<>();
-        for(Path path : getPathsInDir(modId, "structure_configs")){
-            InputStream stream;
-            try {
-                stream = Files.newInputStream(path);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            JsonElement element = JsonParser.parseReader(new InputStreamReader(stream));
-            if(element instanceof JsonObject object){
-                String subPath = object.get("subPath").getAsString();
-                String name = object.get("name").getAsString();
-
-
-                StructureConfig config = StructureConfig.createWithDefaultConfigPath(subPath, name, ConfigType.valueOf(object.get("config_type").getAsString().toUpperCase()));
-                JsonArray sets = object.get("structure_sets").getAsJsonArray();
-                for(JsonElement e : sets){
-                    if(e instanceof JsonObject o && o.has("structure_set") && o.has("modid")){
-                        String mS = o.get("modid").getAsString();
-                        JsonArray array = o.get("structure_set").getAsJsonArray();
-                        for(JsonElement s : array){
-                            if(s instanceof JsonPrimitive primitive){
-                                registry.registerSetToConfig(mS, ResourceLocation.tryParse(primitive.getAsString()), config);
-                            }
-                        }
-                    }
-                }
-
-
-                if(object.has("header")){
-                    String header = object.get("header").getAsString();
-                    if(!header.isEmpty()){
-                        config.setHeader(header + "\n");
-                    }
-                }
-
-                if(object.has("comments")){
-                    JsonObject comments = object.get("comments").getAsJsonObject();
-                    HashMap<String, String> commentFinalMap = new HashMap<>();
-                    Map<String, JsonElement> commentMap = comments.asMap();
-                    for(String s : commentMap.keySet()){
-                        if(commentMap.get(s) instanceof JsonPrimitive p){
-                            commentFinalMap.put(s, p.getAsString());
-                        }
-                    }
-                    if(!commentFinalMap.isEmpty()){
-                        config.setComments(commentFinalMap);
-                    }
-                }
-
-                configs.add(config);
-            }
-        }
-        checkedConfigFiles = false;
-        if(configs.isEmpty()) return;
-        modIdAndConfigs.put(modId, configs);
-    }
-
-    public static List<Path> getPathsInDir(String modId, String subPath){
+    public static List<Path> getPathsInDir(String modId, String subPath) {
         List<Path> paths = new ArrayList<>();
         findFiles(CristelLibExpectPlatform.getRootPaths(modId), modId, subPath, Files::exists, (path, file) -> {
             if (Files.isRegularFile(file) && file.getFileName().toString().endsWith(".json")) {
@@ -231,15 +147,12 @@ public class ReadData {
     }
 
     /**
-     *
-     * Find all files in data/modId/subPath
-     * @param modId the modId
-     * @param subPath the subPath in data/modId/ where the returned files are
-     *
+     * @param modId   the modId
+     * @param subPath the subPath where the requested files are
      */
     public static void findFiles(List<Path> rootPaths, String modId, String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
         if (modId.equals("minecraft")) return;
-        if(!checkedConfigFiles){
+        if (!checkedConfigFiles) {
             findInConfigFiles(subPath, rootFilter, processor, visitAllFiles, maxDepth);
             checkedConfigFiles = true;
         }
@@ -255,7 +168,7 @@ public class ReadData {
 
     public static void findInConfigFiles(String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
         try {
-            walk(ConfigUtil.CONFIG_LIB.resolve(String.format("data/%s", subPath)), rootFilter, processor, visitAllFiles, maxDepth);
+            walk(ConfigManager.CONFIG_LIB.resolve(String.format("data/%s", subPath)), rootFilter, processor, visitAllFiles, maxDepth);
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
@@ -265,18 +178,16 @@ public class ReadData {
         if (root == null || !Files.exists(root) || !rootFilter.test(root)) {
             return;
         }
-        if (processor != null) {
-            try (var stream = Files.walk(root, maxDepth)) {
-                Iterator<Path> itr = stream.iterator();
+        if (processor == null) return;
+        try (var stream = Files.walk(root, maxDepth)) {
+            Iterator<Path> itr = stream.iterator();
 
-                while (itr.hasNext()) {
-                    boolean keepGoing = processor.apply(root, itr.next());
-                    if (!visitAllFiles && !keepGoing) {
-                        return;
-                    }
+            while (itr.hasNext()) {
+                boolean keepGoing = processor.apply(root, itr.next());
+                if (!visitAllFiles && !keepGoing) {
+                    return;
                 }
             }
         }
     }
-
 }

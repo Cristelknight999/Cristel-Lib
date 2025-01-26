@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EDUtil {
+public class EDConfigTransformer {
 
     public static Map<String, Boolean> stringBooleanMap(NestedEDConfig edConfig, String parent) {
         Map<String, Boolean> map = new HashMap<>();
