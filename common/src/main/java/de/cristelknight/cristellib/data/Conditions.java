@@ -2,14 +2,24 @@ package de.cristelknight.cristellib.data;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.util.ModVersionComparator;
 import net.minecraft.util.GsonHelper;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Conditions {
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public static boolean readConditions(Optional<List<JsonElement>> conditions){
+        return conditions.isEmpty() || readConditions(conditions.get());
+    }
 
     public static boolean readConditions(List<JsonElement> jsonElements){
         boolean bl = true;
@@ -27,7 +37,7 @@ public class Conditions {
             return ModLoadingUtil.isModLoaded(GsonHelper.getAsString(object, "mod"));
         }
         else if(type.equals("mod_loaded_with_version")){
-            String version = GsonHelper.getAsString(object, "min_version");
+            String version = GsonHelper.getAsString(object, "version");
             for (ModVersionComparator comparator : ModVersionComparator.values()){
                 String sign = comparator.getSerialized();
                 if(!version.startsWith(sign)) continue;
@@ -39,5 +49,10 @@ public class Conditions {
 
         return false;
     }
+
+    public static MapCodec<Optional<List<JsonElement>>> CODEC = Codec.list(Codec.PASSTHROUGH.xmap(
+            dynamic -> dynamic.convert(JsonOps.INSTANCE).getValue(),
+            jsonObject -> new Dynamic<>(JsonOps.INSTANCE, jsonObject)
+    )).optionalFieldOf("conditions");
 
 }

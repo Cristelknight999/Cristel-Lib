@@ -7,8 +7,6 @@ import java.util.Map;
 
 public record PlacementConfig(int spacing, int separation, double frequency, int salt) {
 
-    public static void loadClass(){}
-
     public PlacementConfig {
         // Ensure spacing is greater than or equal to separation
         if (spacing < separation) {

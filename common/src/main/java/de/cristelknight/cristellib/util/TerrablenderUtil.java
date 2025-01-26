@@ -1,7 +1,6 @@
 package de.cristelknight.cristellib.util;
 
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.ModLoadingUtil;
 
 public class TerrablenderUtil {
 

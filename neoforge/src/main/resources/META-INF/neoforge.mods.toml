@@ -36,3 +36,11 @@ type="required"
 versionRange="[${minecraft_version},)"
 ordering="NONE"
 side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="t_and_t"
+type="incompatible"
+versionRange="(,1.13.3]"
+ordering="NONE"
+side="BOTH"
+

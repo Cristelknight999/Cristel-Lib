@@ -1,7 +1,5 @@
 package de.cristelknight.cristellib.neoforge;
 
-import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.ModLoadingUtil;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;

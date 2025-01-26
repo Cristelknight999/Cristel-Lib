@@ -36,17 +36,20 @@ public class CristelLibExpectPlatformImpl {
         return FMLPaths.CONFIGDIR.get();
     }
 
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
-        Path path = getResourceDirectory(modid, id.getPath());
-        if (path != null) {
+    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
+        String modID = id.getNamespace();
+        String path = id.getPath();
+        Path totalPath = getResourceDirectory(modID, id.getPath());
+        if (totalPath != null) {
             PackLocationInfo metadata = new PackLocationInfo(
-                    id.getPath(),
+                    id.toString(),
                     displayName,
                     new BuiltinResourcePackSource(),
-                    Optional.of(new KnownPack(id.getNamespace(), id.toString(), ModList.get().getModFileById(modid).versionString()))
+                    Optional.of(new KnownPack(CristelLib.MOD_ID, id.toString(), ModList.get().getModFileById(modID).versionString()))
             );
-            return new PathPackResources(metadata, path);
+            return new PathPackResources(metadata, totalPath);
         }
+        CristelLib.LOGGER.debug("Couldn't find path: {} in container for modID: {} for pack with display name: {}", path, modID, displayName);
         return null;
     }
 
@@ -140,6 +143,7 @@ public class CristelLibExpectPlatformImpl {
         return Collections.singletonList(file.getSecureJar().getRootPath());
     }
 
+    @SuppressWarnings("SameReturnValue")
     public static Platform getPlatform() {
         return Platform.FORGE;
     }

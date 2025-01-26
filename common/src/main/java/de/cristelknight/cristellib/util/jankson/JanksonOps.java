@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unchecked")
 public record JanksonOps(boolean compressed) implements DynamicOps<JsonElement> {
     public static final JanksonOps INSTANCE = new JanksonOps(false);
     public static final JanksonOps COMPRESSED = new JanksonOps(true);

@@ -3,8 +3,6 @@ package de.cristelknight.cristellib.data;
 import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 
@@ -17,15 +15,10 @@ public record BuiltInPackData(ResourceLocation location, String displayName, Opt
             builder.group(
                     ResourceLocation.CODEC.fieldOf("location").forGetter(config -> config.location),
                     Codec.STRING.fieldOf("display_name").forGetter(config -> config.displayName),
-                    Codec.list(Codec.PASSTHROUGH.xmap(
-                            dynamic -> dynamic.convert(JsonOps.INSTANCE).getValue(),
-                            jsonObject -> new Dynamic<>(JsonOps.INSTANCE, jsonObject)
-                    )).optionalFieldOf("conditions").forGetter(config -> config.conditions)
+                    Conditions.CODEC.forGetter(config -> config.conditions)
             ).apply(builder, BuiltInPackData::new)
     );
 
     public static final Codec<Either<BuiltInPackData, List<BuiltInPackData>>> PACKS_CODEC = Codec.either(CODEC, Codec.list(CODEC));
 
 }
-
-

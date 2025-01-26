@@ -25,6 +25,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static de.cristelknight.cristellib.CristelLib.getWithPrefix;
+
 public class ConfigManager {
 
     public static final Path CONFIG_DIR = CristelLibExpectPlatform.getConfigDirectory();
@@ -72,29 +74,37 @@ public class ConfigManager {
         Path path = config.getPath();
         if (!override && path.toFile().exists()) return;
 
-        writeFile(config.getPath(), codec, config.getComments(), JanksonOps.INSTANCE, from, config.getHeader());
+        writeFile(config.getPath(), codec, config.getComments(), from, config.getHeader(), true);
     }
 
-    public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, DynamicOps<JsonElement> ops, T from, String header) {
-        JsonElement jsonElement = createElement(path, codec, ops, from);
+    public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, T from, String header, boolean isSorted) {
+        JsonElement jsonElement = createElement(path, codec, JanksonOps.INSTANCE, from);
 
         if (jsonElement instanceof JsonObject jsonObject) {
-            jsonElement = JanksonUtil.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", true);
+            jsonElement = JanksonUtil.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
         }
         try {
             Files.createDirectories(path.getParent());
-            String output = header + "\n" + jsonElement.toJson(JSON_GRAMMAR);
+            String output = header + jsonElement.toJson(JSON_GRAMMAR);
             Files.write(path, output.getBytes());
         } catch (IOException e) {
             CristelLib.LOGGER.error(e.toString());
         }
     }
 
-    public static <T> JsonElement createElement(Path path, Codec<T> codec, DynamicOps<JsonElement> ops, T from) {
-        DataResult<JsonElement> dataResult = codec.encodeStart(ops, from);
-        Optional<DataResult.Error<JsonElement>> error = dataResult.error();
+    public static String createHeader(String header) {
+        if(header == null || header.isEmpty()) return "";
+        if (!header.endsWith("\n")) {
+            header += "\n";
+        }
+        return "/*\n" + header + "*/\n";
+    }
+
+    public static <T, K> K createElement(Path path, Codec<T> codec, DynamicOps<K> ops, T from) {
+        DataResult<K> dataResult = codec.encodeStart(ops, from);
+        Optional<DataResult.Error<K>> error = dataResult.error();
         if (error.isPresent()) {
-            throw new IllegalArgumentException(String.format("Jankson file creation for \"%s\" failed due to the following error(s):\n%s", path.toString(), error.get().message()));
+            throw new IllegalArgumentException(getWithPrefix(String.format("Jankson file creation for \"%s\" failed due to the following error(s):\n%s", path.toString(), error.get().message())));
         }
 
         return dataResult.result().orElseThrow();
@@ -106,7 +116,7 @@ public class ConfigManager {
         try {
             load = JANKSON.load(path.toFile());
         } catch (Exception errorMsg) {
-            throw new IllegalArgumentException("[" + CristelLib.MOD_ID + "] Couldn't load " + path + ", crashing instead. Maybe try to delete the config files!");
+            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
         }
         return readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
     }
@@ -116,7 +126,7 @@ public class ConfigManager {
         try {
             stream = Files.newInputStream(path);
         } catch (IOException e) {
-            throw new IllegalArgumentException("[" + CristelLib.MOD_ID + "] Couldn't load " + path + ", crashing instead. Maybe try to delete the config files!");
+            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
         }
         com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream));
         return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
@@ -127,7 +137,7 @@ public class ConfigManager {
         Optional<DataResult.Error<Pair<T, K>>> error = decode.error();
 
         if (error.isPresent()) {
-            throw new IllegalArgumentException(String.format("[%s] %s", CristelLib.MOD_ID, errorMsg));
+            throw new IllegalArgumentException(getWithPrefix(errorMsg));
         }
         return decode.result().orElseThrow().getFirst();
     }

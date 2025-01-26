@@ -4,7 +4,7 @@ import com.mojang.datafixers.util.Either;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.StructureConfig;
-import de.cristelknight.cristellib.builtinpacks.BuiltInDataPacks;
+import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.network.chat.Component;
@@ -42,16 +42,16 @@ public class ReadData {
                     String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
                     path, BuiltInPackData.PACKS_CODEC);
 
-            either.left().ifPresent(pack -> loadPack(pack, modId));
-            either.right().ifPresent(packs -> packs.forEach(pack -> loadPack(pack, modId)));
+            either.left().ifPresent(ReadData::loadPack);
+            either.right().ifPresent(packs -> packs.forEach(ReadData::loadPack));
 
         }
         checkedConfigFiles = false;
     }
 
-    public static void loadPack(BuiltInPackData pack, String modId) {
-        boolean b = pack.conditions().isEmpty() || Conditions.readConditions(pack.conditions().get());
-        BuiltInDataPacks.registerPack(pack.location(), modId, Component.nullToEmpty(pack.displayName()), () -> b);
+    public static void loadPack(BuiltInPackData pack) {
+        boolean bl = Conditions.readConditions(pack.conditions());
+        BuiltInDataPackLoader.registerPack(pack.location(), Component.nullToEmpty(pack.displayName()), () -> bl);
     }
 
 
@@ -61,7 +61,7 @@ public class ReadData {
             CopyFileData copyFileData = ConfigManager.readFromJsonPath(String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
                     path, CopyFileData.CODEC);
 
-            if (copyFileData.conditions().isEmpty() || Conditions.readConditions(copyFileData.conditions().get())) {
+            if (Conditions.readConditions(copyFileData.conditions())) {
                 copyFileFromJar(copyFileData.location(), copyFileData.destination());
             }
         }

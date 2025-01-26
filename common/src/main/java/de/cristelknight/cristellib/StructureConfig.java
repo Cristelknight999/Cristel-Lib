@@ -173,7 +173,7 @@ public class StructureConfig {
     }
 
     public void setHeader(String header) {
-        this.header = "/*\n" + header + "*/";
+        this.header = ConfigManager.createHeader(header);
     }
 
     public String getHeader() {

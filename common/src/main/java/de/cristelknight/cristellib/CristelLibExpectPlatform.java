@@ -25,7 +25,7 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
+    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
         throw new AssertionError();
     }
 

@@ -35,13 +35,13 @@ public class JanksonUtil {
         try {
             im = Files.newInputStream(pathC);
         } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't create Input Stream for Path " + pathC, e);
+            CristelLib.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
             return null;
         }
         try (InputStreamReader reader = new InputStreamReader(im)) {
             return JsonParser.parseReader(reader);
         } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't read " + location + " from mod: " + getDataFromModId, e);
+            CristelLib.LOGGER.warn("Couldn't read {} from mod: {}", location, getDataFromModId, e);
             return null;
         }
     }

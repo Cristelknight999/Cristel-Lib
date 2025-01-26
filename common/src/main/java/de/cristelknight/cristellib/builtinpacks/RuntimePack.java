@@ -35,22 +35,23 @@ public class RuntimePack implements PackResources {
     private final Map<ResourceLocation, Supplier<byte[]>> data = new ConcurrentHashMap<>();
     private final Map<List<String>, Supplier<byte[]>> root = new ConcurrentHashMap<>();
     public final int packVersion;
-    private final String name;
+    private final String id;
 
     private final PackLocationInfo metadata;
 
 
-    public RuntimePack(String name, int version, @Nullable Path imageFile) {
+    public RuntimePack(ResourceLocation id, int version, String description, @Nullable Path imageFile) {
         this.packVersion = version;
+        this.id = id.toString();
 
-        metadata = new PackLocationInfo(
-                name,
-                Component.literal("Cristel Lib Config Pack"),
+        this.metadata = new PackLocationInfo(
+                this.id,
+                Component.literal(description),
                 new BuiltinResourcePackSource(),
-                Optional.of(new KnownPack("cristellib", name, String.valueOf(version)))
+                Optional.of(new KnownPack(CristelLib.MOD_ID, this.id, String.valueOf(version)))
         );
 
-        this.name = name;
+
         if(imageFile != null){
             byte[] image = RuntimePackUtil.extractImageBytes(imageFile);
             if(image != null) this.addRootResource("pack.png", image);
@@ -60,7 +61,7 @@ public class RuntimePack implements PackResources {
             JsonObject object = new JsonObject();
             JsonObject pack = new JsonObject();
             pack.addProperty("pack_format", this.packVersion);
-            pack.addProperty("description", this.name);
+            pack.addProperty("description", description);
             object.add("pack", pack);
             this.addRootResource("pack.mcmeta", RuntimePackUtil.serializeJson(object));
         }
@@ -193,7 +194,7 @@ public class RuntimePack implements PackResources {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        if(stream == null) CristelLib.LOGGER.error("Couldn't find pack.mcmeta of the Runtime Pack: {}", name);
+        if(stream == null) CristelLib.LOGGER.error("Couldn't find pack.mcmeta of the Runtime Pack: {}", id);
         return FilePackResources.getMetadataFromStream(metadataSectionType, stream);
     }
 
@@ -205,7 +206,7 @@ public class RuntimePack implements PackResources {
 
     @Override
     public @NotNull String packId() {
-        return this.name;
+        return this.id;
     }
 
     private void lock() {
@@ -216,7 +217,7 @@ public class RuntimePack implements PackResources {
 
     @Override
     public void close() {
-        CristelLib.LOGGER.debug("Closing RDP: {}", this.name);
+        CristelLib.LOGGER.debug("Closing RDP: {}", this.id);
     }
 
     public void load(Path dir) throws IOException {

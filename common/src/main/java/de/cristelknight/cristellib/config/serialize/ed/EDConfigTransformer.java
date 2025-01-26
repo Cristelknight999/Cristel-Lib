@@ -10,15 +10,15 @@ public class EDConfigTransformer {
 
     public static Map<String, Boolean> stringBooleanMap(NestedEDConfig edConfig, String parent) {
         Map<String, Boolean> map = new HashMap<>();
-        for (Map.Entry<String, NestedEDConfig.Entry> entry : edConfig.getEntries().entrySet()) {
+        for (Map.Entry<String, NestedEDConfig.Entry> entry : edConfig.entries().entrySet()) {
             String key = entry.getKey();
             NestedEDConfig.Entry object = entry.getValue();
 
             String finalKey = parent.isEmpty() ? key : parent + "/" + key;
             if (object.isBoolean()) {
-                map.put(finalKey, object.getValue());
+                map.put(finalKey, object.value());
             } else {
-                map.putAll(stringBooleanMap(object.getNested(), key));
+                map.putAll(stringBooleanMap(object.nested(), key));
             }
         }
         return map;
@@ -57,7 +57,7 @@ public class EDConfigTransformer {
 
             boolean containsNestedStructure = entries.containsKey(key);
             Map<String, NestedEDConfig.Entry> nestedEntries;
-            if(containsNestedStructure) nestedEntries = entries.get(key).getNested().getEntries();
+            if(containsNestedStructure) nestedEntries = entries.get(key).nested().entries();
             else nestedEntries = new HashMap<>();
 
             putStructureName(restOfStructureName, nestedEntries);

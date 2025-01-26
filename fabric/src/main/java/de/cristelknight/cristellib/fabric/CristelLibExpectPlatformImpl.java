@@ -26,13 +26,14 @@ public class CristelLibExpectPlatformImpl {
         return FabricLoader.getInstance().getConfigDir();
     }
 
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
-        ModContainer container = FabricLoader.getInstance().getModContainer(modid).orElse(null);
+    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
+        String modID = id.getNamespace();
+        ModContainer container = FabricLoader.getInstance().getModContainer(modID).orElse(null);
         if(container != null){
             return ModNioResourcePack.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, ResourcePackActivationType.ALWAYS_ENABLED, false);
         }
         else {
-            CristelLib.LOGGER.warn("Couldn't get mod container for modid: {}", modid);
+            CristelLib.LOGGER.warn("Couldn't get mod container for modID: {}", modID);
             return null;
         }
     }
@@ -64,12 +65,12 @@ public class CristelLibExpectPlatformImpl {
                 CristelLib.LOGGER.error("Mod: {} provides a broken implementation of CristelLibAPI", modId, e);
             }
         });
-        Util.addAll(configs, data(registry));
+        Util.addAll(configs, data());
         return configs;
     }
 
 
-    public static Map<String, Set<StructureConfig>> data(CristelLibRegistry registry){
+    public static Map<String, Set<StructureConfig>> data(){
         Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
         for(ModContainer container : FabricLoader.getInstance().getAllMods()){
             String modid = container.getMetadata().getId();
@@ -93,6 +94,7 @@ public class CristelLibExpectPlatformImpl {
         return paths;
     }
 
+    @SuppressWarnings("SameReturnValue")
     public static Platform getPlatform() {
         return Platform.FABRIC;
     }
