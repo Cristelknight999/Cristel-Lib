@@ -13,6 +13,7 @@ dependencies {
     implementation("blue.endless:jankson:${rootProject.jankson_version}")
 
     modImplementation "com.github.glitchfiend:TerraBlender-fabric:${rootProject.minecraft_version}-${rootProject.terrablender_version}"
+    compileOnly("com.electronwill.night-config:core:3.6.7")
 }
 
 publishing {
