@@ -24,7 +24,7 @@ public class ReadData {
 
     public static void getStructureConfigs(String modId, Map<String, Set<StructureConfig>> modIdAndConfigs) {
         Set<StructureConfig> configs = new HashSet<>();
-        for (Path path : getPathsInDir(modId, "structure_configs")) {
+        for (Path path : getPathsInDir(modId, "structure_config")) {
             StructureConfig config = ConfigManager.readFromJsonPath(String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
                     path, StructureConfig.CODEC);
 
@@ -36,15 +36,18 @@ public class ReadData {
     }
 
     public static void getBuiltInPacks(String modId) {
-        for (Path path : getPathsInDir(modId, "data_packs")) {
+        for (Path path : getPathsInDir(modId, "data_pack")) {
 
-            Either<BuiltInPackData, List<BuiltInPackData>> either = ConfigManager.readFromJsonPath(
+            Either<BuiltInPackData, BuiltInPackDataWrapper> either = ConfigManager.readFromJsonPath(
                     String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
                     path, BuiltInPackData.PACKS_CODEC);
 
             either.left().ifPresent(ReadData::loadPack);
-            either.right().ifPresent(packs -> packs.forEach(ReadData::loadPack));
-
+            either.right().ifPresent(wrapper -> {
+                List<BuiltInPackData> packs = new ArrayList<>(wrapper.packs());
+                Collections.reverse(packs);
+                packs.forEach(ReadData::loadPack);
+            });
         }
         checkedConfigFiles = false;
     }
@@ -85,59 +88,11 @@ public class ReadData {
         }
     }
 
-
-    
-
-
-    /*
-    public static void modifyJson5File(String modId){
-        for(Path path : getPathsInDir(modId, "modify_file")){
-            InputStream stream;
-            try {
-                stream = Files.newInputStream(path);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            JsonElement element = JsonParser.parseReader(new InputStreamReader(stream));
-            if(element instanceof JsonObject object && Conditions.readConditions(object)){
-                String location = object.get("location").getAsString();
-                String destination = object.get("path").getAsString();
-                JsonObject objects = object.get("objects").getAsJsonObject();
-
-                List<Pair<String, String>> strings = new ArrayList<>();
-                for(String s : objects.keySet()){
-                    JsonElement e = objects.get(s);
-                    strings.add(new Pair<>(s, e.getAsString()));
-                }
-                modifyObject(destination, strings, location);
-            }
-        }
-        checkedConfigFiles = false;
-    }
-
-
-    public static void modifyObject(String modifier, List<Pair<String, String>> strings, String at){
-        Path toFile = ConfigUtil.CONFIG_DIR.resolve(at);
-        if(!toFile.toFile().exists() || !toFile.endsWith("json5")) return;
-
-        try{
-            blue.endless.jankson.JsonObject load = ConfigUtil.JANKSON.load(toFile.toFile());
-            JanksonUtil.addToObject(load, modifier, strings);
-
-            Files.createDirectories(toFile.getParent());
-            String output = load.toJson(ConfigUtil.JSON_GRAMMAR);
-            Files.write(toFile, output.getBytes());
-
-        } catch (Exception errorMsg) {
-            CristelLib.LOGGER.error("Couldn't read " + toFile + "can't modify it");
-        }
-    }
-     */
-
-
     public static List<Path> getPathsInDir(String modId, String subPath) {
         List<Path> paths = new ArrayList<>();
-        findFiles(CristelLibExpectPlatform.getRootPaths(modId), modId, subPath, Files::exists, (path, file) -> {
+
+
+        findFiles(CristelLibExpectPlatform.getRootPaths(modId), modId, String.format("data/cristellib/%s", subPath), Files::exists, (path, file) -> {
             if (Files.isRegularFile(file) && file.getFileName().toString().endsWith(".json")) {
                 paths.add(file);
             }
@@ -157,9 +112,19 @@ public class ReadData {
             checkedConfigFiles = true;
         }
         try {
+            boolean hasOldPath = false;
+            boolean hasNewPath = false;
             for (var root : rootPaths) {
-                walk(root.resolve(String.format("data/cristellib/%s", subPath)), rootFilter, processor, visitAllFiles, maxDepth);
+                Path newPath = root.resolve(subPath);
+
+                if (!hasOldPath) hasOldPath = Files.exists(root.resolve(subPath + "s"));
+                if (!hasNewPath) hasNewPath = Files.exists(newPath);
+
+                walk(newPath, rootFilter, processor, visitAllFiles, maxDepth);
             }
+            if (hasOldPath && !hasNewPath)
+                CristelLib.LOGGER.error("Mod with id {} only has an old path for subPath {}. New Path for Cristel Lib >=2.0.1 is missing! Maybe contact the mod author to let them know.", modId, subPath);
+
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
@@ -168,7 +133,7 @@ public class ReadData {
 
     public static void findInConfigFiles(String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
         try {
-            walk(ConfigManager.CONFIG_LIB.resolve(String.format("data/%s", subPath)), rootFilter, processor, visitAllFiles, maxDepth);
+            walk(ConfigManager.CONFIG_LIB.resolve(subPath), rootFilter, processor, visitAllFiles, maxDepth);
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }

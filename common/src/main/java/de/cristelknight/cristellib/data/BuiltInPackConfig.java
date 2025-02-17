@@ -52,7 +52,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
 
     @Override
     public String getSubPath() {
-        return CristelLib.MOD_ID + "/packs";
+        return CristelLib.MOD_ID + "/built_in_packs";
     }
 
     @Override
