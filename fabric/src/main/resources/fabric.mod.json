@@ -28,7 +28,7 @@
   ],
   "depends": {
     "fabricloader": ">=${fabric_loader_min_version}",
-    "fabric": ">=${fabric_api_version}",
+    "fabric-api": ">=${fabric_api_version}",
     "minecraft": ">=${minecraft_version}"
   },
   "breaks": {

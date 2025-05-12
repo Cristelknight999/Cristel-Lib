@@ -91,7 +91,7 @@ public class CristelLibExpectPlatformImpl {
 
             Set<StructureConfig> set = new HashSet<>();
             api.registerConfigs(set);
-            configs.put(modIds.get(0), set);
+            configs.put(modIds.getFirst(), set);
             api.registerStructureSets(registry);
         }
         Util.addAll(configs, data(registry));

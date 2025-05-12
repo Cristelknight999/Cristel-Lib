@@ -38,19 +38,20 @@ public class Conditions {
         }
         else if(type.equals("mod_loaded_with_version")){
             String version = GsonHelper.getAsString(object, "version");
+            String mod = GsonHelper.getAsString(object, "mod");
             for (ModVersionComparator comparator : ModVersionComparator.values()){
                 String sign = comparator.getSerialized();
                 if(!version.startsWith(sign)) continue;
 
-                return comparator.test(GsonHelper.getAsString(object, "mod"), version.replaceFirst(sign, ""));
+                return comparator.test(mod, version.replaceFirst(sign, ""));
             }
-            CristelLib.LOGGER.warn("Couldn't compare \"min_version\" value: {}", version);
+            CristelLib.LOGGER.warn("Couldn't compare \"version\": \"{}\" of \"mod\": \"{}\"", version, mod);
         }
 
         return false;
     }
 
-    public static MapCodec<Optional<List<JsonElement>>> CODEC = Codec.list(Codec.PASSTHROUGH.xmap(
+    public static final MapCodec<Optional<List<JsonElement>>> CODEC = Codec.list(Codec.PASSTHROUGH.xmap(
             dynamic -> dynamic.convert(JsonOps.INSTANCE).getValue(),
             jsonObject -> new Dynamic<>(JsonOps.INSTANCE, jsonObject)
     )).optionalFieldOf("conditions");

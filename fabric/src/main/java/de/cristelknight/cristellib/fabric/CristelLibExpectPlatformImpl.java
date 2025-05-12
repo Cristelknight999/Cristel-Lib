@@ -20,6 +20,8 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Path;
 import java.util.*;
 
+import static com.mojang.text2speech.Narrator.LOGGER;
+
 public class CristelLibExpectPlatformImpl {
 
     public static Path getConfigDirectory() {

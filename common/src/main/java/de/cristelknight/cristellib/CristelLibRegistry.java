@@ -1,7 +1,7 @@
 package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
-import de.cristelknight.cristellib.data.StructureSetHolder;
+import de.cristelknight.cristellib.data.codec.StructureSetData;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -30,11 +30,11 @@ public class CristelLibRegistry {
     }
 
     public void registerSetToConfig(String modID, List<ResourceLocation> sets, StructureConfig... configs) {
-        for (StructureConfig config : configs) config.addSet(new StructureSetHolder(modID, sets));
+        for (StructureConfig config : configs) config.addSet(new StructureSetData(modID, sets));
     }
 
     public void registerSetToConfig(String modID, ResourceLocation set, StructureConfig... configs) {
-        for (StructureConfig config : configs) config.addSet(new StructureSetHolder(modID, List.of(set)));
+        for (StructureConfig config : configs) config.addSet(new StructureSetData(modID, List.of(set)));
     }
 
 }

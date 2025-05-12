@@ -4,6 +4,7 @@ import blue.endless.jankson.*;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
@@ -316,7 +317,7 @@ public record JanksonOps(boolean compressed) implements DynamicOps<JsonElement> 
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return "Jankson JSON";
     }
 

@@ -2,7 +2,6 @@ package de.cristelknight.cristellib.builtinpacks;
 
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.data.BuiltInPackConfig;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackLocationInfo;

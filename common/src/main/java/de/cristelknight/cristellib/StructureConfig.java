@@ -12,7 +12,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
-import de.cristelknight.cristellib.data.StructureSetHolder;
+import de.cristelknight.cristellib.data.codec.StructureSetData;
 import de.cristelknight.cristellib.registry.ReadStructureSets;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
@@ -31,7 +31,7 @@ public class StructureConfig {
                     Codec.STRING.optionalFieldOf("header", "").forGetter(config -> config.header),
                     ConfigType.CODEC.fieldOf("config_type").forGetter(config -> config.type),
                     Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("comments", new HashMap<>()).forGetter(config -> config.comments),
-                    Codec.list(StructureSetHolder.CODEC).fieldOf("structure_sets").forGetter(config -> config.structureSetHolders)
+                    Codec.list(StructureSetData.CODEC).fieldOf("structure_sets").forGetter(config -> config.structureSetHolders)
             ).apply(builder, StructureConfig::new)
     );
 
@@ -43,7 +43,7 @@ public class StructureConfig {
 
     private final ConfigType type;
 
-    private final List<StructureSetHolder> structureSetHolders;
+    private final List<StructureSetData> structureSetHolders;
 
     // default values
     private final Supplier<Map<ResourceLocation, List<String>>> structuresForED;
@@ -58,12 +58,11 @@ public class StructureConfig {
         this(path, null, new HashMap<>(), type, new ArrayList<>());
     }
 
-    private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetHolder> structureSetHolders) { // for CODEC
+    private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetData> structureSetHolders) { // for CODEC
         this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type, ImmutableList.copyOf(structureSetHolders));
-        //CristelLib.LOGGER.error("name: {}, path {}, type {}, structureSetHolders {}", name, path, type, structureSetHolders);
     }
 
-    private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetHolder> structureSetHolders) {
+    private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
         this.path = path;
         if (header != null && !header.isEmpty()) setHeader(header);
         this.comments = comments;
@@ -74,7 +73,7 @@ public class StructureConfig {
         this.structurePlacement = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSetHolders));
     }
 
-    void addSet(StructureSetHolder set) {
+    void addSet(StructureSetData set) {
         structureSetHolders.add(set);
     }
 

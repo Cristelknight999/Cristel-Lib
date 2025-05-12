@@ -3,7 +3,7 @@ package de.cristelknight.cristellib;
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
-import de.cristelknight.cristellib.data.BuiltInPackConfig;
+import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

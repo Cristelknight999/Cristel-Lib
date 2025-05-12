@@ -7,7 +7,7 @@ import com.mojang.serialization.JsonOps;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
-import de.cristelknight.cristellib.data.StructureSetHolder;
+import de.cristelknight.cristellib.data.codec.StructureSetData;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -16,7 +16,7 @@ import java.util.*;
 
 public class ReadStructureSets {
 
-    public static Map<ResourceLocation, List<String>> readSetsAndAddStructures(List<StructureSetHolder> structureSetHolder) {
+    public static Map<ResourceLocation, List<String>> readSetsAndAddStructures(List<StructureSetData> structureSetHolder) {
         Map<ResourceLocation, List<String>> structures = new HashMap<>();
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modID = holder.modID();
@@ -37,7 +37,7 @@ public class ReadStructureSets {
         return structures;
     }
 
-    public static Map<String, PlacementConfig> readSetsAndAddPlacements(List<StructureSetHolder> structureSetHolder) {
+    public static Map<String, PlacementConfig> readSetsAndAddPlacements(List<StructureSetData> structureSetHolder) {
         Map<String, PlacementConfig> structurePlacement = new HashMap<>();
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modID = holder.modID();
