@@ -65,9 +65,15 @@ public class ConfigManager {
         return readConfig(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
     }
 
-
-
     // File and Codec Util
+
+    public static String createHeader(String header) {
+        if(header == null || header.isEmpty()) return "";
+        if (!header.endsWith("\n")) {
+            header += "\n";
+        }
+        return "/*\n" + header + "*/\n";
+    }
 
     // Write
     public static <T> void writeConfig(StructureConfig config, Codec<T> codec, T from, boolean override) {
@@ -90,14 +96,6 @@ public class ConfigManager {
         } catch (IOException e) {
             CristelLib.LOGGER.error(e.toString());
         }
-    }
-
-    public static String createHeader(String header) {
-        if(header == null || header.isEmpty()) return "";
-        if (!header.endsWith("\n")) {
-            header += "\n";
-        }
-        return "/*\n" + header + "*/\n";
     }
 
     public static <T, K> K createElement(Path path, Codec<T> codec, DynamicOps<K> ops, T from) {
