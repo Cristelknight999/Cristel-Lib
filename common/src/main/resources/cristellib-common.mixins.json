@@ -1,13 +1,11 @@
 {
   "required": true,
   "package": "de.cristelknight.cristellib.mixin",
-  "plugin": "de.cristelknight.cristellib.mixin.TerrablenderPlugin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "client": [
   ],
   "mixins": [
-    "MixinTerrablenderConfig"
   ],
   "injectors": {
     "defaultRequire": 1

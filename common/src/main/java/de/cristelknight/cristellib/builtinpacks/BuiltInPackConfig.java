@@ -76,7 +76,10 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
 
     @Override
     public @NotNull String getHeader() {
-        return "";
+        return """
+                This config file makes it possible to disable built-in packs supplied by Cristel Lib.
+                To disable a pack move it from the "defaultPacks" list to the "disabledPacks" list.
+                """;
     }
 
     @Override

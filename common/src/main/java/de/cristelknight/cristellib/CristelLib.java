@@ -24,9 +24,8 @@ public class CristelLib {
 
     public static final ResourceLocation CRISTEL_LIB_PACK_RL = ResourceLocation.fromNamespaceAndPath(CristelLib.MOD_ID, "runtime_pack");
 
-    public static final RuntimePack DATA_PACK = new RuntimePack(CRISTEL_LIB_PACK_RL, SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), "Runtime Pack for built-in features", CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "pack.png"));
+    public static final RuntimePack DATA_PACK = new RuntimePack(CRISTEL_LIB_PACK_RL, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA), "Runtime Pack for built-in features", CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "pack.png"));
 
-    public static final String minTerraBlenderVersion = "3.3.0.12";
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 
     public static void init() {

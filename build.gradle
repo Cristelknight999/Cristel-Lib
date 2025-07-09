@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
+    id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
@@ -24,10 +24,6 @@ subprojects {
     }
 
     repositories {
-        maven {
-            name = "Forge"
-            url = "https://maven.minecraftforge.net"
-        }
         // Add repositories to retrieve artifacts from in here.
         // You should only use this when depending on other mods because
         // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
@@ -59,12 +55,8 @@ subprojects {
 
                 version: mod_version,
 
-
                 neo_loader_version_range: neo_loader_version_range,
                 neo_version_range: neo_version_range,
-
-                forge_loader_version_range: forge_loader_version_range,
-                forge_version_range: forge_version_range,
 
                 fabric_loader_min_version: fabric_loader_min_version,
                 fabric_api_version: fabric_api_version,
