@@ -11,6 +11,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.ConfigType;
+import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
 import de.cristelknight.cristellib.registry.ReadStructureSets;
@@ -31,6 +32,7 @@ public class StructureConfig {
                     Codec.STRING.optionalFieldOf("header", "").forGetter(config -> config.header),
                     ConfigType.CODEC.fieldOf("config_type").forGetter(config -> config.type),
                     Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("comments", new HashMap<>()).forGetter(config -> config.comments),
+                    Codec.STRING.fieldOf("default_namespace").forGetter(config -> config.defaultNamespace),
                     Codec.list(StructureSetData.CODEC).fieldOf("structure_sets").forGetter(config -> config.structureSetHolders)
             ).apply(builder, StructureConfig::new)
     );
@@ -43,30 +45,33 @@ public class StructureConfig {
 
     private final ConfigType type;
 
+    private final String defaultNamespace;
+
     private final List<StructureSetData> structureSetHolders;
 
     // default values
     private final Supplier<Map<ResourceLocation, List<String>>> structuresForED;
     private final Supplier<Map<String, PlacementConfig>> structurePlacement;
 
-    // current values
-    private Map<String, Boolean> enableDisableConfig = null;
-    private Map<String, PlacementConfig> placementConfig = null;
+    // current values (structure_set + Config)
+    public Map<String, EDConfig> enableDisableConfig = null;
+    public Map<String, PlacementConfig> placementConfig = null;
 
 
-    private StructureConfig(Path path, ConfigType type) {
-        this(path, null, new HashMap<>(), type, new ArrayList<>());
+    private StructureConfig(Path path, ConfigType type, String defaultNamespace) {
+        this(path, null, new HashMap<>(), type, defaultNamespace, new ArrayList<>());
     }
 
-    private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetData> structureSetHolders) { // for CODEC
-        this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type, ImmutableList.copyOf(structureSetHolders));
+    private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, String defaultNamespace, List<StructureSetData> structureSetHolders) { // for CODEC
+        this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type, defaultNamespace, ImmutableList.copyOf(structureSetHolders));
     }
 
-    private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
+    private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, String defaultNamespace, List<StructureSetData> structureSetHolders) {
         this.path = path;
         if (header != null && !header.isEmpty()) setHeader(header);
         this.comments = comments;
         this.type = type;
+        this.defaultNamespace = defaultNamespace;
         this.structureSetHolders = structureSetHolders;
 
         this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
@@ -77,9 +82,9 @@ public class StructureConfig {
         structureSetHolders.add(set);
     }
 
-    void addSetsToRuntimePack() {
+    public void addSetsToRuntimePack() {
         if (type.equals(ConfigType.ENABLE_DISABLE)) enableDisableConfig = ConfigManager.readEDConfig(this);
-        else placementConfig = ConfigManager.readPlacementConfig(this);
+        else placementConfig = new HashMap<>(ConfigManager.readPlacementConfig(this));
 
         structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modID = holder.modID();
@@ -93,26 +98,26 @@ public class StructureConfig {
             JsonObject originalSet = structureSet.deepCopy();
 
             if (type.equals(ConfigType.ENABLE_DISABLE)) {
-                removeStructureInSets(structureSet);
+                removeStructureInSets(structureSet, setLocation);
             } else if (type.equals(ConfigType.PLACEMENT)) {
                 updatePlacementsInSet(structureSet, setLocation);
             }
 
             if (!structureSet.equals(originalSet)) {
-                CristelLib.DATA_PACK.addStructureSet(setLocation, structureSet);
+                CristelLib.RUNTIME_PACK.addStructureSet(setLocation, structureSet);
             }
 
         }));
 
     }
 
-    private void removeStructureInSets(JsonObject structureSet) {
+    private void removeStructureInSets(JsonObject structureSet, ResourceLocation setLocation) {
         JsonArray array = structureSet.get("structures").getAsJsonArray();
         Iterator<JsonElement> structureIterator = array.iterator();
         while (structureIterator.hasNext()) {
             JsonElement structure = structureIterator.next();
             String structureName = structure.getAsJsonObject().get("structure").getAsString().split(":")[1];
-            if (enableDisableConfig.containsKey(structureName) && !enableDisableConfig.get(structureName))
+            if (!enableDisableConfig.get(structureName) && enableDisableConfig.containsKey(structureName))
                 structureIterator.remove();
         }
     }
@@ -134,8 +139,8 @@ public class StructureConfig {
 
     private JsonElement getStructureSet(ResourceLocation location, String modID) {
         ResourceLocation structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
-        if (CristelLib.DATA_PACK.hasResource(structureLocation)) {
-            return CristelLib.DATA_PACK.getResource(structureLocation);
+        if (CristelLib.RUNTIME_PACK.hasResource(structureLocation)) {
+            return CristelLib.RUNTIME_PACK.getResource(structureLocation);
         }
         return JanksonUtil.getSetElement(modID, location);
     }
@@ -145,26 +150,26 @@ public class StructureConfig {
      * Writes the configuration to the filesystem.
      * This method initializes the structures or placements depending on the {@link ConfigType}.
      */
-    void writeConfig() {
+    public void writeConfig(boolean override) {
         if (type.equals(ConfigType.ENABLE_DISABLE)) {
-            ConfigManager.createEDConfig(this, false);
+            ConfigManager.createEDConfig(this, override);
         } else if (type.equals(ConfigType.PLACEMENT)) {
-            ConfigManager.createPlacementConfig(this, false);
+            ConfigManager.createPlacementConfig(this, override);
         }
     }
 
 
     // API
-    public static StructureConfig create(Path path, String name, ConfigType type) {
-        return new StructureConfig(path.resolve(name + ".json5"), type);
+    public static StructureConfig create(Path path, String name, ConfigType type, String defaultNamespace) {
+        return new StructureConfig(path.resolve(name + ".json5"), type, defaultNamespace);
     }
 
-    public static StructureConfig createWithDefaultConfigPath(String subPath, String name, ConfigType type) {
-        return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(subPath).resolve(name + ".json5"), type);
+    public static StructureConfig createWithDefaultConfigPath(String subPath, String name, ConfigType type, String defaultNamespace) {
+        return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(subPath).resolve(name + ".json5"), type, defaultNamespace);
     }
 
-    public static StructureConfig createWithDefaultConfigPath(String name, ConfigType type) {
-        return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(name + ".json5"), type);
+    public static StructureConfig createWithDefaultConfigPath(String name, ConfigType type, String defaultNamespace) {
+        return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(name + ".json5"), type, defaultNamespace);
     }
 
     public void setComments(Map<String, String> comments) {
@@ -183,15 +188,19 @@ public class StructureConfig {
         return comments;
     }
 
-    public Map<ResourceLocation, List<String>> getStructures() {
+    public Map<ResourceLocation, List<String>> getDefaultStructures() {
         return structuresForED.get();
     }
 
-    public Map<String, PlacementConfig> getStructurePlacement() {
+    public Map<String, PlacementConfig> getDefaultStructurePlacement() {
         return structurePlacement.get();
     }
 
     public Path getPath() {
         return path;
+    }
+
+    public ConfigType getType() {
+        return type;
     }
 }

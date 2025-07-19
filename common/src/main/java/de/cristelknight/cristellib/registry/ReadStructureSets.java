@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.registry;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -17,7 +18,7 @@ import java.util.*;
 public class ReadStructureSets {
 
     public static Map<ResourceLocation, List<String>> readSetsAndAddStructures(List<StructureSetData> structureSetHolder) {
-        Map<ResourceLocation, List<String>> structures = new HashMap<>();
+        ImmutableMap.Builder<ResourceLocation, List<String>> structures = new ImmutableMap.Builder<>();
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modID = holder.modID();
 
@@ -34,11 +35,11 @@ public class ReadStructureSets {
             structures.put(setLocation, structureList);
 
         }));
-        return structures;
+        return structures.build();
     }
 
     public static Map<String, PlacementConfig> readSetsAndAddPlacements(List<StructureSetData> structureSetHolder) {
-        Map<String, PlacementConfig> structurePlacement = new HashMap<>();
+        ImmutableMap.Builder<String, PlacementConfig> structurePlacement = new ImmutableMap.Builder<>();
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modID = holder.modID();
 
@@ -51,7 +52,7 @@ public class ReadStructureSets {
             structurePlacement.put(setLocation.getPath(), config);
 
         }));
-        return structurePlacement;
+        return structurePlacement.build();
     }
 
     private static boolean checkElement(JsonElement element, String modID, ResourceLocation setLocation) {

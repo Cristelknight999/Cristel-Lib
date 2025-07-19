@@ -59,6 +59,7 @@ public class CristelLibExpectPlatformImpl {
             String modId = entrypoint.getProvider().getMetadata().getId();
             try {
                 CristelLibAPI api = entrypoint.getEntrypoint();
+                api.onPackRegistration();
                 Set<StructureConfig> set = new HashSet<>();
                 api.registerConfigs(set);
                 configs.put(modId, set);

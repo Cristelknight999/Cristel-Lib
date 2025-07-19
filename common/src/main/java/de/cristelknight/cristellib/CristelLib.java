@@ -5,7 +5,6 @@ import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +23,7 @@ public class CristelLib {
 
     public static final ResourceLocation CRISTEL_LIB_PACK_RL = ResourceLocation.fromNamespaceAndPath(CristelLib.MOD_ID, "runtime_pack");
 
-    public static final RuntimePack DATA_PACK = new RuntimePack(CRISTEL_LIB_PACK_RL, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA), "Runtime Pack for built-in features", CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "pack.png"));
+    public static final RuntimePack RUNTIME_PACK = new RuntimePack(CRISTEL_LIB_PACK_RL, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA), "Runtime Pack for built-in features", CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "pack.png"));
 
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 
@@ -33,14 +32,13 @@ public class CristelLib {
 
 
     public static void preInit(){
-        BuiltInDataPackLoader.registerPack(DATA_PACK, Component.literal("Cristel Lib Config Pack"), () -> true);
         CristelLibRegistry.configs = ImmutableMap.copyOf(CristelLibExpectPlatform.getConfigs(REGISTRY));
         BuiltInDataPackLoader.freeze();
         BuiltInPackConfig.updateConfig();
 
         for(Set<StructureConfig> pack : CristelLibRegistry.getConfigs().values()){
             for(StructureConfig structureConfig : pack){
-                structureConfig.writeConfig();
+                structureConfig.writeConfig(false);
                 structureConfig.addSetsToRuntimePack();
             }
         }

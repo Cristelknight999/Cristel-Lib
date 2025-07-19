@@ -40,7 +40,7 @@ public class ConfigManager {
     public static final JsonGrammar JSON_GRAMMAR = JSON_GRAMMAR_BUILDER.get().build();
 
     public static void createEDConfig(StructureConfig config, boolean override) {
-        Map<ResourceLocation, List<String>> sets = config.getStructures();
+        Map<ResourceLocation, List<String>> sets = config.getDefaultStructures();
         Map<String, NestedEDConfig> nestedStructureMap = EDConfigTransformer.mapToNestedStructures(sets);
 
         writeConfig(config, NestedEDConfig.ED_CODEC, nestedStructureMap, override);
@@ -57,7 +57,7 @@ public class ConfigManager {
     }
 
     public static void createPlacementConfig(StructureConfig config, boolean override) {
-        Map<String, PlacementConfig> sets = config.getStructurePlacement();
+        Map<String, PlacementConfig> sets = config.placementConfig == null ? config.getDefaultStructurePlacement() : config.placementConfig;
         writeConfig(config, PlacementConfig.PLACEMENT_CODEC, sets, override);
     }
 
@@ -82,6 +82,7 @@ public class ConfigManager {
 
         writeFile(config.getPath(), codec, config.getComments(), from, config.getHeader(), true);
     }
+
 
     public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, T from, String header, boolean isSorted) {
         JsonElement jsonElement = createElement(path, codec, JanksonOps.INSTANCE, from);

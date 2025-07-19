@@ -20,6 +20,9 @@
     ],
     "cristellib": [
       "de.cristelknight.cristellib.api.BuiltInAPI"
+    ],
+    "modmenu": [
+      "de.cristelknight.cristellib.fabric.config.ModMenuIntegration"
     ]
   },
   "mixins": [
