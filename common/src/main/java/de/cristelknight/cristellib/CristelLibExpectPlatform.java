@@ -44,5 +44,10 @@ public class CristelLibExpectPlatform {
         throw new AssertionError();
     }
 
+    @ExpectPlatform
+    public static List<String> getModIds() {
+        throw new AssertionError();
+    }
+
 
 }

@@ -1,0 +1,96 @@
+package de.cristelknight.cristellib.autoconfig;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.CristelLibRegistry;
+import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.config.ConfigType;
+import de.cristelknight.cristellib.data.PathFinder;
+import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.util.Util;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Stream;
+
+public class ModFinder {
+
+    public static Map<String, Set<StructureConfig>> addConfigs(CristelLibRegistry registry, Set<String> modsWithConfig) {
+        Map<String, Set<StructureConfig>> configs = new HashMap<>();
+        find(modsWithConfig).forEach((modID, structureSets) -> {
+            Set<StructureConfig> configSet = new HashSet<>();
+
+            StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(modID, "auto_configsED", ConfigType.ENABLE_DISABLE);
+            StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(modID, "auto_configsP", ConfigType.PLACEMENT);
+
+            structureSets.forEach(path -> {
+                JsonElement e = JanksonUtil.getElement(modID, path.toString());
+                JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path).getAsJsonObject("placement");
+                ResourceLocation location = getLocation(path);
+                if(GsonHelper.getAsString(object, "type").equals("minecraft:random_spread")) {
+                    registry.registerSetToConfig(modID, location, edConfig, placementConfig);
+                }
+                else registry.registerSetToConfig(modID, location, edConfig);
+            });
+
+            if(!edConfig.isSetsEmpty()) configSet.add(edConfig);
+            if(!placementConfig.isSetsEmpty()) configSet.add(placementConfig);
+            if(!configSet.isEmpty()){
+                configSet.forEach(StructureConfig::getDefaultNamespace);
+                configs.put(modID, configSet);
+            }
+        });
+        return configs;
+    }
+
+    private static ResourceLocation getLocation(Path rootPath) {
+        String namespace = rootPath.getName(1).toString();
+        String path = Util.cutFileType(rootPath.subpath(4, rootPath.getNameCount()));
+
+        if(namespace.equals("minecraft")) {
+            return ResourceLocation.withDefaultNamespace(path);
+        }
+        return ResourceLocation.fromNamespaceAndPath(namespace, path);
+    }
+
+    public static Map<String, List<Path>> find(Set<String> modsWithConfig) {
+        Map<String, List<Path>> structureSets = new HashMap<>();
+        for(String modID : CristelLibExpectPlatform.getModIds()) {
+            if(modsWithConfig.contains(modID) || modID.equals("minecraft")) continue;
+            CristelLibExpectPlatform.getRootPaths(modID).forEach(rootPath -> structureSets.put(modID, findSets(rootPath)));
+        }
+        return structureSets;
+    }
+
+    private static List<Path> findSets(Path rootPath) {
+        List<Path> structureSets = new ArrayList<>();
+        Path dataDir = rootPath.resolve("data");
+        if(!Files.exists(dataDir)) return structureSets;
+
+        try (Stream<Path> namespaces = Files.list(dataDir)) {
+            namespaces.filter(Files::isDirectory).forEach(namespace -> {
+                Path structureSetDir = namespace.resolve("worldgen").resolve("structure_set");
+                try {
+                    PathFinder.walk(structureSetDir, Files::isDirectory, (path, file) -> {
+                        if (Files.isRegularFile(file) && file.getFileName().toString().endsWith(".json")) {
+                            structureSets.add(file);
+                        }
+                        return true;
+                    }, true, Integer.MAX_VALUE);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return structureSets;
+    }
+
+}

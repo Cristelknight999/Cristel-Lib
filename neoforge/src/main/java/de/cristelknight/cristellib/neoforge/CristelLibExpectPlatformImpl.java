@@ -3,8 +3,8 @@ package de.cristelknight.cristellib.neoforge;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.api.CristelLibAPI;
+import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.builtinpacks.BuiltinResourcePackSource;
-import de.cristelknight.cristellib.data.ReadData;
 import de.cristelknight.cristellib.neoforge.extraapiutil.APIFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
@@ -84,31 +84,15 @@ public class CristelLibExpectPlatformImpl {
         List<Pair<List<String>, CristelLibAPI>> apis = APIFinder.scanForAPIs();
 
         for (Pair<List<String>, CristelLibAPI> apiPair : apis) {
-
             CristelLibAPI api = apiPair.getSecond();
-            List<String> modIds = apiPair.getFirst();
-            //modIds.forEach(modid -> CristelLib.LOGGER.error("Found API for modid: " + modid));
-
-            Set<StructureConfig> set = new HashSet<>();
-            api.registerConfigs(set);
-            configs.put(modIds.getFirst(), set);
-            api.registerStructureSets(registry);
+            String modID = apiPair.getFirst().getFirst();
+            CristelLib.readAPI(registry, modID, api, configs);
         }
-        Util.addAll(configs, data(registry));
+        Util.addAll(configs, Util.data());
+        Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet()));
         return configs;
     }
 
-    public static Map<String, Set<StructureConfig>> data(CristelLibRegistry registry) {
-        Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
-        for (String modid : getModIds()) {
-
-            ReadData.getBuiltInPacks(modid);
-            //ReadData.modifyJson5File(modid);
-            ReadData.copyFile(modid);
-            ReadData.getStructureConfigs(modid, modidAndConfigs);
-        }
-        return modidAndConfigs;
-    }
 
 
     public static List<String> getModIds() {

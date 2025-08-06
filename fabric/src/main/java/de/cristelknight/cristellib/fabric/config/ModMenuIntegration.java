@@ -13,7 +13,7 @@ public class ModMenuIntegration implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return (screenFactory)  -> new ScreenBuilder().createP(screenFactory, CristelLib.MOD_ID);
+        return (screenFactory)  -> new ScreenBuilder().create(screenFactory, CristelLib.MOD_ID);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class ModMenuIntegration implements ModMenuApi {
 
         for(String modID : CristelLibRegistry.getConfigs().keySet()){
             if(modID.equals(CristelLib.MOD_ID)) continue;
-            screens.put(modID, (providedConfigScreenFactories) -> new ScreenBuilder().createP(providedConfigScreenFactories, modID));
+            screens.put(modID, (providedConfigScreenFactories) -> new ScreenBuilder().create(providedConfigScreenFactories, modID));
         }
 
         return screens;

@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.config.serialize.ed;
 
+import de.cristelknight.cristellib.StructureConfig;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
@@ -24,31 +25,56 @@ public class EDConfigTransformer {
         return map;
     }
 
-    public static Map<String, NestedEDConfig> mapToNestedStructures(Map<ResourceLocation, List<String>> sets) {
+    public static Map<String, NestedEDConfig> mapToNestedStructures(Map<ResourceLocation, List<ResourceLocation>> sets, StructureConfig structureConfig) {
         Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
 
-        for (Map.Entry<ResourceLocation, List<String>> mapEntry : sets.entrySet()) {
+        for (Map.Entry<ResourceLocation, List<ResourceLocation>> mapEntry : sets.entrySet()) {
             ResourceLocation location = mapEntry.getKey();
-            List<String> stringList = mapEntry.getValue();
+            List<ResourceLocation> stringList = mapEntry.getValue();
 
             // Prepare the map for the NestedStructure
             Map<String, NestedEDConfig.Entry> entries = new HashMap<>();
 
             // Process each string in the list
-            for (String structure : stringList) {
-                String structureName = structure.split(":")[1];
-                putStructureName(structureName, entries);
+            for (ResourceLocation structure : stringList) {
+                String structureName = structure.getPath();
+                putStructureName(structureName, true, entries);
             }
 
             // Create NestedStructure for this ResourceLocation
             NestedEDConfig nestedStructure = new NestedEDConfig(entries);
-            nestedStructures.put(location.toString().split(":")[1], nestedStructure);
+            nestedStructures.put(structureConfig.toDefaultString(location), nestedStructure);
         }
 
         return nestedStructures;
     }
 
-    public static void putStructureName(String structureName, Map<String, NestedEDConfig.Entry> entries){
+    public static Map<String, NestedEDConfig> mapToNestedStructuresWithValues(Map<ResourceLocation, EDConfig> sets, StructureConfig structureConfig) {
+        Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
+
+        for (Map.Entry<ResourceLocation, EDConfig> mapEntry : sets.entrySet()) {
+            ResourceLocation location = mapEntry.getKey();
+            EDConfig stringList = mapEntry.getValue();
+
+            // Prepare the map for the NestedStructure
+            Map<String, NestedEDConfig.Entry> entries = new HashMap<>();
+
+            // Process each string in the list
+            for (Map.Entry<String, Boolean> entry : stringList.setStructureInfo().entrySet()) {
+                String structure = entry.getKey();
+                boolean value = entry.getValue();
+                putStructureName(structure, value, entries);
+            }
+
+            // Create NestedStructure for this ResourceLocation
+            NestedEDConfig nestedStructure = new NestedEDConfig(entries);
+            nestedStructures.put(structureConfig.toDefaultString(location), nestedStructure);
+        }
+
+        return nestedStructures;
+    }
+
+    public static void putStructureName(String structureName, boolean value, Map<String, NestedEDConfig.Entry> entries){
         if (structureName.contains("/")) {
             // Handle key-value pair scenario
             String[] parts = structureName.split("/", 2);
@@ -60,12 +86,12 @@ public class EDConfigTransformer {
             if(containsNestedStructure) nestedEntries = entries.get(key).nested().entries();
             else nestedEntries = new HashMap<>();
 
-            putStructureName(restOfStructureName, nestedEntries);
+            putStructureName(restOfStructureName, value, nestedEntries);
             if(!containsNestedStructure) entries.put(key, NestedEDConfig.Entry.ofNested(new NestedEDConfig(nestedEntries)));
 
         } else {
             // Handle simple key-value pair where value is always true
-            entries.put(structureName, NestedEDConfig.Entry.ofBoolean(true));
+            entries.put(structureName, NestedEDConfig.Entry.ofBoolean(value));
         }
     }
 

@@ -10,6 +10,7 @@ import com.mojang.serialization.JsonOps;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
 import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
@@ -24,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.cristelknight.cristellib.CristelLib.getWithPrefix;
 
@@ -40,29 +42,34 @@ public class ConfigManager {
     public static final JsonGrammar JSON_GRAMMAR = JSON_GRAMMAR_BUILDER.get().build();
 
     public static void createEDConfig(StructureConfig config, boolean override) {
-        Map<ResourceLocation, List<String>> sets = config.getDefaultStructures();
-        Map<String, NestedEDConfig> nestedStructureMap = EDConfigTransformer.mapToNestedStructures(sets);
+        Map<String, NestedEDConfig> nestedStructureMap;
+        if(config.enableDisableConfig == null) {
+            Map<ResourceLocation, List<ResourceLocation>> sets = config.getDefaultStructures();
+            nestedStructureMap = EDConfigTransformer.mapToNestedStructures(sets, config);
+        } else nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(config.enableDisableConfig, config);
 
         writeConfig(config, NestedEDConfig.ED_CODEC, nestedStructureMap, override);
     }
 
-    public static Map<String, Boolean> readEDConfig(StructureConfig config) {
+    public static Map<ResourceLocation, EDConfig> readEDConfig(StructureConfig config) {
         Map<String, NestedEDConfig> configMap = readConfig(config.getPath(), NestedEDConfig.ED_CODEC);
 
-        Map<String, Boolean> map = new HashMap<>();
-        for (NestedEDConfig edConfig : configMap.values()) {
-            map.putAll(EDConfigTransformer.stringBooleanMap(edConfig, ""));
+        Map<ResourceLocation, EDConfig> map = new HashMap<>();
+        for (String structureSet : configMap.keySet()) {
+            map.put(config.toDefaultRL(structureSet), new EDConfig(EDConfigTransformer.stringBooleanMap(configMap.get(structureSet), "")));
         }
         return map;
     }
 
     public static void createPlacementConfig(StructureConfig config, boolean override) {
-        Map<String, PlacementConfig> sets = config.placementConfig == null ? config.getDefaultStructurePlacement() : config.placementConfig;
-        writeConfig(config, PlacementConfig.PLACEMENT_CODEC, sets, override);
+        Map<ResourceLocation, PlacementConfig> sets = config.placementConfig == null ? config.getDefaultStructurePlacement() : config.placementConfig;
+        Map<String, PlacementConfig> sets2 = sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultString(entry.getKey()), Map.Entry::getValue));
+        writeConfig(config, PlacementConfig.PLACEMENT_CODEC, sets2, override);
     }
 
-    public static Map<String, PlacementConfig> readPlacementConfig(StructureConfig config) {
-        return readConfig(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
+    public static Map<ResourceLocation, PlacementConfig> readPlacementConfig(StructureConfig config) {
+        Map<String, PlacementConfig> sets = readConfig(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
+        return sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultRL(entry.getKey()), Map.Entry::getValue));
     }
 
     // File and Codec Util
@@ -136,7 +143,7 @@ public class ConfigManager {
         Optional<DataResult.Error<Pair<T, K>>> error = decode.error();
 
         if (error.isPresent()) {
-            throw new IllegalArgumentException(getWithPrefix(errorMsg));
+            throw new IllegalArgumentException(getWithPrefix(errorMsg) + " " + error.get().message());
         }
         return decode.result().orElseThrow().getFirst();
     }

@@ -32,7 +32,6 @@ public class StructureConfig {
                     Codec.STRING.optionalFieldOf("header", "").forGetter(config -> config.header),
                     ConfigType.CODEC.fieldOf("config_type").forGetter(config -> config.type),
                     Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("comments", new HashMap<>()).forGetter(config -> config.comments),
-                    Codec.STRING.fieldOf("default_namespace").forGetter(config -> config.defaultNamespace),
                     Codec.list(StructureSetData.CODEC).fieldOf("structure_sets").forGetter(config -> config.structureSetHolders)
             ).apply(builder, StructureConfig::new)
     );
@@ -45,34 +44,35 @@ public class StructureConfig {
 
     private final ConfigType type;
 
-    private final String defaultNamespace;
+    private String defaultNamespace = "";
 
     private final List<StructureSetData> structureSetHolders;
 
     // default values
-    private final Supplier<Map<ResourceLocation, List<String>>> structuresForED;
-    private final Supplier<Map<String, PlacementConfig>> structurePlacement;
+    private final Supplier<Map<ResourceLocation, List<ResourceLocation>>> structuresForED;
+    private final Supplier<Map<ResourceLocation, PlacementConfig>> structurePlacement;
 
     // current values (structure_set + Config)
-    public Map<String, EDConfig> enableDisableConfig = null;
-    public Map<String, PlacementConfig> placementConfig = null;
+    public Map<ResourceLocation, EDConfig> enableDisableConfig = null;
+    public Map<ResourceLocation, PlacementConfig> placementConfig = null;
 
 
-    private StructureConfig(Path path, ConfigType type, String defaultNamespace) {
-        this(path, null, new HashMap<>(), type, defaultNamespace, new ArrayList<>());
+    private StructureConfig(Path path, ConfigType type) {
+        this(path, null, new HashMap<>(), type, new ArrayList<>());
     }
 
-    private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, String defaultNamespace, List<StructureSetData> structureSetHolders) { // for CODEC
-        this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type, defaultNamespace, ImmutableList.copyOf(structureSetHolders));
+    private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetData> structureSetHolders) { // for CODEC
+        this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type,  ImmutableList.copyOf(structureSetHolders));
     }
 
-    private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, String defaultNamespace, List<StructureSetData> structureSetHolders) {
+    private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
         this.path = path;
         if (header != null && !header.isEmpty()) setHeader(header);
         this.comments = comments;
         this.type = type;
-        this.defaultNamespace = defaultNamespace;
         this.structureSetHolders = structureSetHolders;
+
+        if(!this.structureSetHolders.isEmpty()) getDefaultNamespace();
 
         this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
         this.structurePlacement = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSetHolders));
@@ -83,8 +83,8 @@ public class StructureConfig {
     }
 
     public void addSetsToRuntimePack() {
-        if (type.equals(ConfigType.ENABLE_DISABLE)) enableDisableConfig = ConfigManager.readEDConfig(this);
-        else placementConfig = new HashMap<>(ConfigManager.readPlacementConfig(this));
+        if (type.equals(ConfigType.ENABLE_DISABLE) && enableDisableConfig == null) enableDisableConfig = ConfigManager.readEDConfig(this);
+        else if(type.equals(ConfigType.PLACEMENT) && placementConfig == null) placementConfig = ConfigManager.readPlacementConfig(this);
 
         structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modID = holder.modID();
@@ -112,29 +112,40 @@ public class StructureConfig {
     }
 
     private void removeStructureInSets(JsonObject structureSet, ResourceLocation setLocation) {
+        if(!enableDisableConfig.containsKey(setLocation)) {
+            CristelLib.LOGGER.error("{} {}", setLocation, enableDisableConfig.toString());
+            return;
+        }
+
+        EDConfig setConfig = enableDisableConfig.get(setLocation);
+
         JsonArray array = structureSet.get("structures").getAsJsonArray();
         Iterator<JsonElement> structureIterator = array.iterator();
         while (structureIterator.hasNext()) {
             JsonElement structure = structureIterator.next();
             String structureName = structure.getAsJsonObject().get("structure").getAsString().split(":")[1];
-            if (!enableDisableConfig.get(structureName) && enableDisableConfig.containsKey(structureName))
+            if (/*setConfig.containsStructure(structureName) && */setConfig.isStructureDisabled(structureName))
                 structureIterator.remove();
         }
     }
 
     private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation) {
-        String structureSetName = setLocation.getPath();
-        if (placementConfig.containsKey(structureSetName)) {
-            JsonObject a = structureSet.get("placement").getAsJsonObject();
-            PlacementConfig p = placementConfig.get(structureSetName);
-            a.addProperty("salt", p.salt());
-            a.addProperty("spacing", p.spacing());
-            a.addProperty("separation", p.separation());
-
-            double f = p.frequency();
-
-            if (f != 0 && a.has("frequency") && (a.get("frequency").getAsFloat() != f)) a.addProperty("frequency", f);
+        if (!placementConfig.containsKey(setLocation)) {
+            CristelLib.LOGGER.error("{} {}", setLocation, placementConfig.toString());
+            return;
         }
+
+        JsonObject a = structureSet.get("placement").getAsJsonObject();
+        PlacementConfig p = placementConfig.get(setLocation);
+        a.addProperty("salt", p.salt());
+        a.addProperty("spacing", p.spacing());
+        a.addProperty("separation", p.separation());
+
+        double f = p.frequency();
+
+        if (f != 0 &&
+                ((a.has("frequency") && a.get("frequency").getAsFloat() != f) || !a.has("frequency")))
+            a.addProperty("frequency", f);
     }
 
     private JsonElement getStructureSet(ResourceLocation location, String modID) {
@@ -160,16 +171,16 @@ public class StructureConfig {
 
 
     // API
-    public static StructureConfig create(Path path, String name, ConfigType type, String defaultNamespace) {
-        return new StructureConfig(path.resolve(name + ".json5"), type, defaultNamespace);
+    public static StructureConfig create(Path path, String name, ConfigType type) {
+        return new StructureConfig(path.resolve(name + ".json5"), type);
     }
 
-    public static StructureConfig createWithDefaultConfigPath(String subPath, String name, ConfigType type, String defaultNamespace) {
-        return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(subPath).resolve(name + ".json5"), type, defaultNamespace);
+    public static StructureConfig createWithDefaultConfigPath(String subPath, String name, ConfigType type) {
+        return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(subPath).resolve(name + ".json5"), type);
     }
 
-    public static StructureConfig createWithDefaultConfigPath(String name, ConfigType type, String defaultNamespace) {
-        return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(name + ".json5"), type, defaultNamespace);
+    public static StructureConfig createWithDefaultConfigPath(String name, ConfigType type) {
+        return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(name + ".json5"), type);
     }
 
     public void setComments(Map<String, String> comments) {
@@ -188,11 +199,11 @@ public class StructureConfig {
         return comments;
     }
 
-    public Map<ResourceLocation, List<String>> getDefaultStructures() {
+    public Map<ResourceLocation, List<ResourceLocation>> getDefaultStructures() {
         return structuresForED.get();
     }
 
-    public Map<String, PlacementConfig> getDefaultStructurePlacement() {
+    public Map<ResourceLocation, PlacementConfig> getDefaultStructurePlacement() {
         return structurePlacement.get();
     }
 
@@ -202,5 +213,40 @@ public class StructureConfig {
 
     public ConfigType getType() {
         return type;
+    }
+
+    public ResourceLocation toDefaultRL(String location) {
+        if(location.contains(":")) return ResourceLocation.parse(location);
+        else if(defaultNamespace.equals("minecraft")) return ResourceLocation.withDefaultNamespace(location);
+        else return ResourceLocation.fromNamespaceAndPath(defaultNamespace, location);
+    }
+
+    public String toDefaultString(ResourceLocation location) {
+        return location.getNamespace().equals(defaultNamespace)
+                ? location.getPath()
+                : location.toString();
+    }
+
+    public void getDefaultNamespace() {
+        Map<String, Integer> namespaceCounts = new HashMap<>();
+
+        for (StructureSetData data : structureSetHolders) {
+            for (ResourceLocation set : data.sets()) {
+                namespaceCounts.merge(set.getNamespace(), 1, Integer::sum);
+            }
+        }
+
+        if (namespaceCounts.isEmpty()) {
+            throw new RuntimeException("No namespaces found in config with path: " + getPath() + " :(((");
+        }
+
+        this.defaultNamespace = namespaceCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElseThrow(() -> new RuntimeException("Could not determine default namespace :((("));
+    }
+
+    public boolean isSetsEmpty() {
+        return structureSetHolders.isEmpty();
     }
 }

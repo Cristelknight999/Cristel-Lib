@@ -4,9 +4,7 @@ package de.cristelknight.cristellib.util;
 import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonObject;
-import blue.endless.jankson.JsonPrimitive;
 import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.util.jankson.CommentArray;
@@ -18,7 +16,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -47,7 +44,7 @@ public class JanksonUtil {
     }
 
     public static JsonObject addCommentsAndAlphabeticallySortRecursively(Map<String, String> comments, JsonObject object, String parentKey, boolean alphabeticallySorted) {
-        if(comments.isEmpty()) return object;
+        if(comments.isEmpty() && !alphabeticallySorted) return object;
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             String objectKey = entry.getKey();
             String commentsKey = parentKey + objectKey;
@@ -95,18 +92,7 @@ public class JanksonUtil {
         return object;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
+/*
     public static void addToObject(JsonObject jsonObject, String path, List<Pair<String, String>> toAdd) {
         String[] pathSegments = path.split("/");
         JsonElement currentElement = jsonObject;
@@ -132,4 +118,6 @@ public class JanksonUtil {
             }
         }
     }
+
+ */
 }

@@ -17,8 +17,8 @@ import java.util.*;
 
 public class ReadStructureSets {
 
-    public static Map<ResourceLocation, List<String>> readSetsAndAddStructures(List<StructureSetData> structureSetHolder) {
-        ImmutableMap.Builder<ResourceLocation, List<String>> structures = new ImmutableMap.Builder<>();
+    public static Map<ResourceLocation, List<ResourceLocation>> readSetsAndAddStructures(List<StructureSetData> structureSetHolder) {
+        ImmutableMap.Builder<ResourceLocation, List<ResourceLocation>> structures = new ImmutableMap.Builder<>();
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modID = holder.modID();
 
@@ -27,10 +27,11 @@ public class ReadStructureSets {
 
 
             JsonArray structureArray = GsonHelper.getAsJsonArray(e.getAsJsonObject(), "structures");
-            List<String> structureList = new ArrayList<>();
+            List<ResourceLocation> structureList = new ArrayList<>();
             for(JsonElement element : structureArray){
                 if(!element.isJsonObject()) continue;
-                structureList.add(GsonHelper.getAsString(element.getAsJsonObject(), "structure"));
+
+                structureList.add(ResourceLocation.tryParse(GsonHelper.getAsString(element.getAsJsonObject(), "structure")));
             }
             structures.put(setLocation, structureList);
 
@@ -38,8 +39,8 @@ public class ReadStructureSets {
         return structures.build();
     }
 
-    public static Map<String, PlacementConfig> readSetsAndAddPlacements(List<StructureSetData> structureSetHolder) {
-        ImmutableMap.Builder<String, PlacementConfig> structurePlacement = new ImmutableMap.Builder<>();
+    public static Map<ResourceLocation, PlacementConfig> readSetsAndAddPlacements(List<StructureSetData> structureSetHolder) {
+        ImmutableMap.Builder<ResourceLocation, PlacementConfig> structurePlacement = new ImmutableMap.Builder<>();
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modID = holder.modID();
 
@@ -49,7 +50,7 @@ public class ReadStructureSets {
 
             JsonObject placement = GsonHelper.getAsJsonObject(e.getAsJsonObject(), "placement");
             PlacementConfig config = ConfigManager.readElement(String.format("Couldn't read %s in %s, crashing instead. Maybe try to delete the config files!", setLocation, modID), PlacementConfig.CODEC, JsonOps.INSTANCE, placement);
-            structurePlacement.put(setLocation.getPath(), config);
+            structurePlacement.put(setLocation, config);
 
         }));
         return structurePlacement.build();

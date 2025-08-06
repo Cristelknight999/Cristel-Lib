@@ -24,7 +24,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
             ).apply(builder, BuiltInPackConfig::new)
     );
 
-    public static void updateConfig(){
+    public static void updateConfig() {
         BuiltInPackConfig config = BuiltInPackConfig.DEFAULT.getConfig();
 
         List<String> modifiableList1 = new ArrayList<>(config.defaultPacks());

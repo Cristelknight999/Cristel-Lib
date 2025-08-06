@@ -4,9 +4,9 @@ import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import me.shedaniel.clothconfig2.gui.entries.IntegerListEntry;
 
-public record ClientPlacementConfig(IntegerListEntry spacing, IntegerListEntry separation, DoubleListEntry frequency, IntegerListEntry salt) implements ClientConfig {
+public record ClientPlacementConfig(DoubleListEntry frequency, IntegerListEntry salt,  IntegerListEntry separation, IntegerListEntry spacing) {
 
     public PlacementConfig toPlacement(){
-        return new PlacementConfig(spacing.getValue(), separation.getValue(), frequency.getValue(), salt.getValue());
+        return new PlacementConfig(frequency.getValue(), salt.getValue(), separation.getValue(), spacing.getValue());
     }
 }

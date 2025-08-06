@@ -13,8 +13,8 @@ import java.util.Set;
 
 @CristelPlugin
 public class BuiltInAPI implements CristelLibAPI {
-    public static final StructureConfig MINECRAFT_ED = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "minecraftED", ConfigType.ENABLE_DISABLE, "minecraft");
-    public static final StructureConfig MINECRAFT_P = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "minecraftP", ConfigType.PLACEMENT, "minecraft");
+    public static final StructureConfig MINECRAFT_ED = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "minecraftED", ConfigType.ENABLE_DISABLE);
+    public static final StructureConfig MINECRAFT_P = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "minecraftP", ConfigType.PLACEMENT);
 
     @Override
     public void registerConfigs(Set<StructureConfig> sets) {
@@ -54,7 +54,8 @@ public class BuiltInAPI implements CristelLibAPI {
     }
 
     @Override
-    public void onPackRegistration() {
+    public void registerBuiltInPacks() {
         BuiltInDataPackLoader.registerPack(CristelLib.RUNTIME_PACK, Component.literal("Cristel Lib Config Pack"), () -> true);
     }
+
 }

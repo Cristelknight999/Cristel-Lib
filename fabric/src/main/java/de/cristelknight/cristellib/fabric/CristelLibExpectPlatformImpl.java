@@ -1,10 +1,10 @@
 package de.cristelknight.cristellib.fabric;
 
-import de.cristelknight.cristellib.data.ReadData;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.api.CristelLibAPI;
+import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
@@ -19,8 +19,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.*;
-
-import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class CristelLibExpectPlatformImpl {
 
@@ -55,37 +53,16 @@ public class CristelLibExpectPlatformImpl {
 
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
+        // Read Custom Code Configs
         FabricLoader.getInstance().getEntrypointContainers("cristellib", CristelLibAPI.class).forEach(entrypoint -> {
             String modId = entrypoint.getProvider().getMetadata().getId();
-            try {
-                CristelLibAPI api = entrypoint.getEntrypoint();
-                api.onPackRegistration();
-                Set<StructureConfig> set = new HashSet<>();
-                api.registerConfigs(set);
-                configs.put(modId, set);
-                api.registerStructureSets(registry);
-            } catch (Throwable e) {
-                CristelLib.LOGGER.error("Mod: {} provides a broken implementation of CristelLibAPI", modId, e);
-            }
+            CristelLibAPI api = entrypoint.getEntrypoint();
+            CristelLib.readAPI(registry, modId, api, configs);
         });
-        Util.addAll(configs, data());
+        Util.addAll(configs, Util.data()); // Read Custom Data Configs
+        Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet())); // Automatically Create Configs
         return configs;
     }
-
-
-    public static Map<String, Set<StructureConfig>> data(){
-        Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
-        for(ModContainer container : FabricLoader.getInstance().getAllMods()){
-            String modid = container.getMetadata().getId();
-
-            ReadData.getBuiltInPacks(modid);
-            ReadData.copyFile(modid);
-            //ReadData.modifyJson5File(modid);
-            ReadData.getStructureConfigs(modid, modidAndConfigs);
-        }
-        return modidAndConfigs;
-    }
-
 
 
     public static List<Path> getRootPaths(String modId) {
@@ -100,6 +77,10 @@ public class CristelLibExpectPlatformImpl {
     @SuppressWarnings("SameReturnValue")
     public static Platform getPlatform() {
         return Platform.FABRIC;
+    }
+
+    public static List<String> getModIds() {
+        return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
     }
 
 }

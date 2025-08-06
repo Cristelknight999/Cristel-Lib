@@ -3,6 +3,7 @@ package de.cristelknight.cristellib.data;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.ConfigManager;
+import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,6 +41,8 @@ public class PathFinder {
         }
     }
 
+
+
     private static void findInModFiles(List<Path> rootPaths, String modId, String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) throws IOException {
         boolean hasOldPath = false;
         boolean hasNewPath = false;
@@ -72,5 +75,7 @@ public class PathFinder {
             }
         }
     }
+
+
 
 }

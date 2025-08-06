@@ -19,6 +19,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -275,5 +277,28 @@ public class RuntimePack implements PackResources {
             return null;
         }
         return jsonObject;
+    }
+
+    public void dumpToFolder(Path output) throws IOException {
+        this.lock();
+        try {
+            // Dump root resources (e.g. pack.mcmeta, pack.png)
+            for (Map.Entry<List<String>, Supplier<byte[]>> entry : this.root.entrySet()) {
+                List<String> pathParts = entry.getKey();
+                Path filePath = output.resolve(Paths.get("", pathParts.toArray(new String[0])));
+                Files.createDirectories(filePath.getParent());
+                Files.write(filePath, entry.getValue().get(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            }
+
+            // Dump namespaced data (e.g. data/<namespace>/<resource>.json)
+            for (Map.Entry<ResourceLocation, Supplier<byte[]>> entry : this.data.entrySet()) {
+                ResourceLocation rl = entry.getKey();
+                Path filePath = output.resolve(Paths.get("data", rl.getNamespace(), rl.getPath()));
+                Files.createDirectories(filePath.getParent());
+                Files.write(filePath, entry.getValue().get(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            }
+        } finally {
+            this.waiting.unlock();
+        }
     }
 }

@@ -11,6 +11,6 @@ public interface CristelLibAPI {
 
     default void registerStructureSets(CristelLibRegistry registry){}
 
-    default void onPackRegistration() {}
+    default void registerBuiltInPacks() {}
 
 }
