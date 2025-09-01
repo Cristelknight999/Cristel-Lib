@@ -6,6 +6,7 @@ import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.config.ConfigType;
+import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.data.PathFinder;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.Util;
@@ -22,11 +23,13 @@ public class ModFinder {
 
     public static Map<String, Set<StructureConfig>> addConfigs(CristelLibRegistry registry, Set<String> modsWithConfig) {
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
+
         find(modsWithConfig).forEach((modID, structureSets) -> {
             Set<StructureConfig> configSet = new HashSet<>();
 
-            StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(modID, "auto_configsED", ConfigType.ENABLE_DISABLE);
-            StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(modID, "auto_configsP", ConfigType.PLACEMENT);
+            boolean customPath = ACInfoData.currentData.containsKey(modID) && !ACInfoData.currentData.get(modID).autoConfigPath().isEmpty();
+            StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : modID, "auto_configsED", ConfigType.ENABLE_DISABLE);
+            StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : modID, "auto_configsP", ConfigType.PLACEMENT);
 
             structureSets.forEach(path -> {
                 JsonElement e = JanksonUtil.getElement(modID, path.toString());
@@ -40,7 +43,7 @@ public class ModFinder {
 
             if(!edConfig.isSetsEmpty()) configSet.add(edConfig);
             if(!placementConfig.isSetsEmpty()) configSet.add(placementConfig);
-            if(!configSet.isEmpty()){
+            if(!configSet.isEmpty()) {
                 configSet.forEach(StructureConfig::getDefaultNamespace);
                 configs.put(modID, configSet);
             }
@@ -59,9 +62,12 @@ public class ModFinder {
     }
 
     public static Map<String, List<Path>> find(Set<String> modsWithConfig) {
+        ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
+        if(acConfig.disableAutoConfig()) return Map.of();
+
         Map<String, List<Path>> structureSets = new HashMap<>();
         for(String modID : CristelLibExpectPlatform.getModIds()) {
-            if(modsWithConfig.contains(modID) || modID.equals("minecraft")) continue;
+            if(modsWithConfig.contains(modID) || modID.equals("minecraft") || acConfig.blacklistedMods().contains(modID)) continue;
             CristelLibExpectPlatform.getRootPaths(modID).forEach(rootPath -> structureSets.put(modID, findSets(rootPath)));
         }
         return structureSets;

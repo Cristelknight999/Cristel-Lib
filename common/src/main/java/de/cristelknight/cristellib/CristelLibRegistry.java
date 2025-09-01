@@ -2,6 +2,7 @@ package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
+import de.cristelknight.cristellib.util.Util;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -15,7 +16,8 @@ public class CristelLibRegistry {
     protected static ImmutableMap<String, Set<StructureConfig>> configs = ImmutableMap.of();
 
     public static ImmutableMap<String, Set<StructureConfig>> getConfigs() {
-        return configs;
+        if(!configs.isEmpty()) return configs;
+        else throw new RuntimeException(CristelLib.getWithPrefix("Tried to access Registry before initialized."));
     }
 
     public void registerSetToConfig(String modID, String namespace, List<String> sets, StructureConfig... configs) {

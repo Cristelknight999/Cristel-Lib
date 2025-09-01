@@ -1,6 +1,7 @@
 package de.cristelknight.cristellib.config.client;
 
 import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.config.ConfigType;
@@ -8,6 +9,7 @@ import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
 import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.util.Util;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -16,8 +18,12 @@ import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import me.shedaniel.clothconfig2.gui.entries.IntegerListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
@@ -27,10 +33,11 @@ public class ScreenBuilder {
     private final Set<ClientStructureConfig> clientStructureConfigs = new HashSet<>();
 
     public Screen create(Screen parent, String modID){
-        ConfigBuilder builder = ConfigBuilder.create().setTitle(Component.literal("Cristel Lib config for: " + modID));
+        ConfigBuilder builder = ConfigBuilder.create()
+                .setTitle(Component.literal("§7" + CristelLibExpectPlatform.getModDisplayName(modID) + " Structure Configuration (via §d§nCristelLib§r§7)"));
+
         builder.setParentScreen(parent);
         builder.setSavingRunnable(this::onConfigSave);
-
 
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
@@ -39,11 +46,18 @@ public class ScreenBuilder {
             else addEDCategory(builder, structureConfig, entryBuilder);
         }
 
+        AutoClothConfigScreen.addForCristelLib(entryBuilder, builder, modID);
+
         return builder.build();
     }
 
     private void addPlacementCategory(ConfigBuilder builder, StructureConfig structureConfig, ConfigEntryBuilder configEntry) {
-        ConfigCategory placementCategory = builder.getOrCreateCategory(Component.literal("Placement Category"));
+        ConfigCategory placementCategory = builder.getOrCreateCategory(Component.translatable("cristellib.placementCategoryTitle"));
+
+        placementCategory.addEntry(configEntry.startTextDescription(
+                Component.translatable("cristellib.autoCategoryInfo")
+        ).build());
+
         Map<ResourceLocation, PlacementConfig> placementConfigs = structureConfig.placementConfig;
         Map<ResourceLocation, PlacementConfig> defaultPlacementConfigs = structureConfig.getDefaultStructurePlacement();
 
@@ -72,7 +86,12 @@ public class ScreenBuilder {
     }
 
     private void addEDCategory(ConfigBuilder builder, StructureConfig structureConfig, ConfigEntryBuilder configEntry) {
-        ConfigCategory edCategory = builder.getOrCreateCategory(Component.literal("ED Category"));
+        ConfigCategory edCategory = builder.getOrCreateCategory(Component.translatable("cristellib.toggleCategoryTitle"));
+
+        edCategory.addEntry(configEntry.startTextDescription(
+                Component.translatable("cristellib.autoCategoryInfo")
+        ).build());
+
         Map<String, NestedEDConfig> nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(structureConfig.enableDisableConfig, structureConfig);
 
         Map<ResourceLocation, ClientEDConfig> clientEDConfigs = new HashMap<>();
@@ -123,7 +142,6 @@ public class ScreenBuilder {
         }
     }
 
-
     private void onConfigSave(){
         for(ClientStructureConfig clientStructureConfig : clientStructureConfigs) {
             StructureConfig structureConfig = clientStructureConfig.structureConfig();
@@ -133,6 +151,8 @@ public class ScreenBuilder {
             structureConfig.writeConfig(true);
             structureConfig.addSetsToRuntimePack();
         }
+
+        AutoClothConfigScreen.saveForCristelLib();
     }
     private void updatePlacements(StructureConfig structureConfig, Map<ResourceLocation, ClientPlacementConfig> clientPlacementConfigs) {
         Map<ResourceLocation, PlacementConfig> placementConfigs = structureConfig.placementConfig;
@@ -166,7 +186,6 @@ public class ScreenBuilder {
     private static void getWarn(StructureConfig structureConfig, ResourceLocation structureSetName) {
         CristelLib.LOGGER.warn("Structure Set: {} has no default config, skipping!\nThis probably indicates that this config file is outdated and should be deleted to re-create it. (Path: {})", structureSetName.toString(), structureConfig.getPath());
     }
-
 
     private boolean getEDSubWarn(StructureConfig structureConfig, String fullPath, String structureSetName) {
         ResourceLocation setLocation = structureConfig.toDefaultRL(structureSetName);

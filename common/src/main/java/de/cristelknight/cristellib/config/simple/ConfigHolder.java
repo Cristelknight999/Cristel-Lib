@@ -1,0 +1,58 @@
+package de.cristelknight.cristellib.config.simple;
+
+import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.config.ConfigManager;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+
+public class ConfigHolder<T> {
+
+    private final ConfigSettings<T> spec;
+    private T instance;
+
+    public ConfigHolder(ConfigSettings<T> spec) {
+        this.spec = spec;
+    }
+
+    public T getInstance() {
+        if (instance == null) {
+            instance = readOrCreate();
+        }
+        return instance;
+    }
+
+    public void updateAndSave(T newData) {
+        instance = newData;
+        save();
+    }
+
+    public void save() {
+        write(instance);
+    }
+
+    public ConfigSettings<T> getSettings() {
+        return spec;
+    }
+
+    private T readOrCreate() {
+        Path path = getPath();
+        if (!Files.exists(path)) {
+            write(spec.getDefault());
+        }
+        return ConfigManager.readConfig(path, spec.getCodec());
+    }
+
+    private void write(T data) {
+        ConfigManager.writeFile(getPath(), spec.getCodec(), getSafeComments(spec.getComments()), data, ConfigManager.createHeader(spec.getHeader()), spec.isSorted());
+    }
+
+    private Path getPath() {
+        return CristelLibExpectPlatform.getConfigDirectory().resolve(spec.getSubPath() + ".json5");
+    }
+
+    public static HashMap<String, String> getSafeComments(HashMap<String, String> comments) {
+        return comments == null ? new HashMap<>() : comments;
+    }
+}

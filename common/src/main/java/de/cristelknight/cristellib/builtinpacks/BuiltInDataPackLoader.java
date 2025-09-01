@@ -2,6 +2,7 @@ package de.cristelknight.cristellib.builtinpacks;
 
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -42,7 +43,7 @@ public class BuiltInDataPackLoader {
     public static void getPacks(Consumer<Pack> consumer) {
         if (!frozen) throw new RuntimeException(getWithPrefix("Tried to load Packs before the Registry phase is over!"));
         if (PACK_LIST.isEmpty()) return;
-        BuiltInPackConfig config = BuiltInPackConfig.DEFAULT.getConfig();
+        BuiltInPackConfig config = ConfigRegistry.get(BuiltInPackConfig.class);
 
         for (BuiltInPack entry : PACK_LIST) {
             PackResources pack = entry.packResource();

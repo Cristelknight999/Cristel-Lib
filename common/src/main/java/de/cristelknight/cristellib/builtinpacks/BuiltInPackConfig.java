@@ -3,92 +3,71 @@ package de.cristelknight.cristellib.builtinpacks;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.config.CommentedConfig;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import de.cristelknight.cristellib.config.simple.ConfigRegistry;
+import de.cristelknight.cristellib.config.simple.ConfigSettings;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabledPacks) implements CommentedConfig<BuiltInPackConfig> {
-
-    private static BuiltInPackConfig INSTANCE = null;
-
-    public static final BuiltInPackConfig DEFAULT = new BuiltInPackConfig(BuiltInDataPackLoader.getIDs(), List.of());
+public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabledPacks)  {
 
     public static final Codec<BuiltInPackConfig> CODEC = RecordCodecBuilder.create(builder ->
-            builder.group(
-                    Codec.list(Codec.STRING).fieldOf("defaultPacks").forGetter(config -> config.defaultPacks),
-                    Codec.list(Codec.STRING).fieldOf("disabledPacks").forGetter(config -> config.disabledPacks)
-            ).apply(builder, BuiltInPackConfig::new)
+        builder.group(
+            Codec.list(Codec.STRING).fieldOf("defaultPacks").forGetter(BuiltInPackConfig::defaultPacks),
+            Codec.list(Codec.STRING).fieldOf("disabledPacks").forGetter(BuiltInPackConfig::disabledPacks)
+        ).apply(builder, BuiltInPackConfig::new)
     );
 
     public static void updateConfig() {
-        BuiltInPackConfig config = BuiltInPackConfig.DEFAULT.getConfig();
+        BuiltInPackConfig config = ConfigRegistry.get(BuiltInPackConfig.class);
 
-        List<String> modifiableList1 = new ArrayList<>(config.defaultPacks());
-        List<String> modifiableList2 = new ArrayList<>(config.disabledPacks());
+        List<String> defaultPacks = new ArrayList<>(config.defaultPacks());
+        List<String> disabledPacks = new ArrayList<>(config.disabledPacks());
 
         boolean bl = false;
         // Remove elements not in the default list
-        if(modifiableList1.retainAll(DEFAULT.defaultPacks())) bl = true;
-        if(modifiableList2.retainAll(DEFAULT.defaultPacks())) bl = true;
+        if(defaultPacks.retainAll(SETTINGS.getDefault().defaultPacks())) bl = true;
+        if(disabledPacks.retainAll(SETTINGS.getDefault().defaultPacks())) bl = true;
 
         // Add missing elements from the default list only if both lists miss them
-        for (String item : DEFAULT.defaultPacks()) {
-            if (!modifiableList1.contains(item) && !modifiableList2.contains(item)) {
-                modifiableList1.add(item);
+        for (String item : SETTINGS.getDefault().defaultPacks()) {
+            if (!defaultPacks.contains(item) && !disabledPacks.contains(item)) {
+                defaultPacks.add(item);
                 bl = true;
             }
         }
 
-        if(bl){
-            config.setInstance(new BuiltInPackConfig(modifiableList1, modifiableList2));
-            config.getConfig(false, true);
+        if(bl) {
+            ConfigRegistry.updateAndSave(new BuiltInPackConfig(defaultPacks, disabledPacks));
         }
     }
 
-    @Override
-    public String getSubPath() {
-        return CristelLib.MOD_ID + "/built_in_packs";
-    }
+    public static final ConfigSettings<BuiltInPackConfig> SETTINGS = new ConfigSettings<>() {
+        @Override
+        public String getSubPath() {
+            return CristelLib.MOD_ID + "/built_in_packs";
+        }
 
-    @Override
-    public BuiltInPackConfig getInstance() {
-        return INSTANCE;
-    }
+        @Override
+        public Codec<BuiltInPackConfig> getCodec() {
+            return CODEC;
+        }
 
-    @Override
-    public BuiltInPackConfig getDefault() {
-        return DEFAULT;
-    }
+        @Override
+        public BuiltInPackConfig getDefault() {
+            return new BuiltInPackConfig(BuiltInDataPackLoader.getIDs(), List.of());
+        }
 
-    @Override
-    public Codec<BuiltInPackConfig> getCodec() {
-        return CODEC;
-    }
+        @Override
+        public String getHeader() {
+            return """
+                   This config file allows disabling built-in packs supplied by Cristel Lib.
+                   Move entries from 'defaultPacks' to 'disabledPacks' to disable them.
+                   """;
+        }
+    };
 
-    @Override
-    public @Nullable HashMap<String, String> getComments() {
-        return null;
-    }
-
-    @Override
-    public @NotNull String getHeader() {
-        return """
-                This config file makes it possible to disable built-in packs supplied by Cristel Lib.
-                To disable a pack move it from the "defaultPacks" list to the "disabledPacks" list.
-                """;
-    }
-
-    @Override
-    public boolean isSorted() {
-        return false;
-    }
-
-    @Override
-    public void setInstance(BuiltInPackConfig instance) {
-        INSTANCE = instance;
+    static {
+        ConfigRegistry.register(BuiltInPackConfig.class, SETTINGS);
     }
 }

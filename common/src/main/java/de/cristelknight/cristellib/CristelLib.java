@@ -2,10 +2,9 @@ package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.api.CristelLibAPI;
-import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
-import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
+import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
@@ -20,12 +19,12 @@ public class CristelLib {
     public static final String MOD_ID = "cristellib";
 
     public static String getWithPrefix(String message){
-        return String.format("[%s] %s", CristelLib.MOD_ID, message);
+        return String.format("[%s] %s", MOD_ID, message);
     }
 
     public static final Logger LOGGER = LogManager.getLogger("Cristel Lib");
 
-    public static final ResourceLocation CRISTEL_LIB_PACK_RL = ResourceLocation.fromNamespaceAndPath(CristelLib.MOD_ID, "runtime_pack");
+    public static final ResourceLocation CRISTEL_LIB_PACK_RL = ResourceLocation.fromNamespaceAndPath(MOD_ID, "runtime_pack");
 
     public static final RuntimePack RUNTIME_PACK = new RuntimePack(CRISTEL_LIB_PACK_RL, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA), "Runtime Pack for built-in features", CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "pack.png"));
 

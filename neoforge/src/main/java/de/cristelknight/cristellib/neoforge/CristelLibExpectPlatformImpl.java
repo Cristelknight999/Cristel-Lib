@@ -88,7 +88,7 @@ public class CristelLibExpectPlatformImpl {
             String modID = apiPair.getFirst().getFirst();
             CristelLib.readAPI(registry, modID, api, configs);
         }
-        Util.addAll(configs, Util.data());
+        Util.addAll(configs, Util.readData());
         Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet()));
         return configs;
     }
@@ -124,7 +124,7 @@ public class CristelLibExpectPlatformImpl {
             if (container == null) return paths;
             file = container.getModInfo().getOwningFile().getFile();
         }
-        return Collections.singletonList(file.getSecureJar().getRootPath());
+        return Collections.singletonList(file.getFilePath());
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -132,5 +132,11 @@ public class CristelLibExpectPlatformImpl {
         return Platform.FORGE;
     }
 
+    public static String getModDisplayName(String modId) {
+        return ModList.get()
+                .getModContainerById(modId)
+                .map(container -> container.getModInfo().getDisplayName())
+                .orElse(modId); // fallback to modid if nothing is found
+    }
 
 }

@@ -7,5 +7,4 @@ import java.util.Map;
 
 public record ClientStructureConfig(StructureConfig structureConfig, Map<ResourceLocation, ClientPlacementConfig> clientPlacementConfigs, Map<ResourceLocation, ClientEDConfig> clientEDConfigs) {
 
-
 }

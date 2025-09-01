@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.codec.BuiltInPackData;
@@ -20,6 +21,18 @@ import java.util.*;
 
 public class ReadData {
 
+    public static void getAutoConfigSettings(String modId, Map<String, ACInfoData> data) {
+        for (Path path : PathFinder.getPathsInDir(modId, "auto_config")) {
+            ACInfoData acInfoData = ConfigManager.readFromJsonPath(String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
+                    path, ACInfoData.CODEC);
+
+            if(data.containsKey(modId)) {
+                CristelLib.LOGGER.warn("Replacing Auto Config data for modID: {} from path: {}", modId, path);
+            }
+            data.put(modId, acInfoData);
+        }
+
+    }
 
     public static void getStructureConfigs(String modId, Map<String, Set<StructureConfig>> modIdAndConfigs) {
         Set<StructureConfig> configs = new HashSet<>();

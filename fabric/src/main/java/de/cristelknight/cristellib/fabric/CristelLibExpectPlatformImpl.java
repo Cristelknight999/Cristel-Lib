@@ -59,7 +59,7 @@ public class CristelLibExpectPlatformImpl {
             CristelLibAPI api = entrypoint.getEntrypoint();
             CristelLib.readAPI(registry, modId, api, configs);
         });
-        Util.addAll(configs, Util.data()); // Read Custom Data Configs
+        Util.addAll(configs, Util.readData()); // Read Custom Data Configs
         Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet())); // Automatically Create Configs
         return configs;
     }
@@ -83,4 +83,10 @@ public class CristelLibExpectPlatformImpl {
         return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
     }
 
+    public static String getModDisplayName(String modID) {
+        return FabricLoader.getInstance()
+                .getModContainer(modID)
+                .map(container -> container.getMetadata().getName()) // human-readable name
+                .orElse(modID); // fallback to ID if not found
+    }
 }

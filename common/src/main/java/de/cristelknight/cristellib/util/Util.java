@@ -1,10 +1,11 @@
 package de.cristelknight.cristellib.util;
 
+import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.autoconfig.ACConfig;
+import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.ReadData;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
@@ -65,17 +66,20 @@ public class Util {
         return map.keySet().stream().sorted().toList();
     }
 
-    public static Map<String, Set<StructureConfig>> data(){
+    public static Map<String, Set<StructureConfig>> readData(){
         Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
+        Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
         updateOldFiles();
-        for(ModContainer container : FabricLoader.getInstance().getAllMods()){
-            String modid = container.getMetadata().getId();
-
-            ReadData.getBuiltInPacks(modid);
-            ReadData.copyFile(modid);
+        for(String modID : CristelLibExpectPlatform.getModIds()) {
+            ReadData.getBuiltInPacks(modID);
+            ReadData.copyFile(modID);
             //ReadData.modifyJson5File(modid);
-            ReadData.getStructureConfigs(modid, modidAndConfigs);
+            ReadData.getStructureConfigs(modID, modidAndConfigs);
+            ReadData.getAutoConfigSettings(modID, autoConfigInfoData);
         }
+
+        ACInfoData.currentData = autoConfigInfoData;
+        ACConfig.updateConfig();
         return modidAndConfigs;
     }
 
