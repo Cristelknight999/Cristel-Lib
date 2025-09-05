@@ -3,7 +3,10 @@ package de.cristelknight.cristellib.config.client;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import me.shedaniel.clothconfig2.gui.entries.IntegerListEntry;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
+@Environment(EnvType.CLIENT)
 public record ClientPlacementConfig(DoubleListEntry frequency, IntegerListEntry salt,  IntegerListEntry separation, IntegerListEntry spacing) {
 
     public PlacementConfig toPlacement(){

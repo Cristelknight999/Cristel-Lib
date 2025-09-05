@@ -50,6 +50,11 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
+    public static boolean isClient(){
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static List<String> getModIds() {
         throw new AssertionError();
     }

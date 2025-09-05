@@ -1,6 +1,7 @@
 package de.cristelknight.cristellib.util;
 
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
@@ -17,6 +18,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class Util {
+
+    public static boolean isClothConfigLoaded() {
+        if(CristelLibExpectPlatform.getPlatform().equals(Platform.FABRIC)) return ModLoadingUtil.isModLoaded("cloth-config");
+        else return ModLoadingUtil.isModLoaded("cloth_config");
+    }
 
     public static Path janksonPathFromString(String path, String name){
         return pathFromString(path).resolve(name + ".json5");

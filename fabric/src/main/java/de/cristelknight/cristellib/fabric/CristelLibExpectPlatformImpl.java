@@ -7,6 +7,7 @@ import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.fabric.impl.resource.loader.ModNioResourcePack;
 import net.fabricmc.loader.api.FabricLoader;
@@ -49,8 +50,6 @@ public class CristelLibExpectPlatformImpl {
         return null;
     }
 
-
-
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
         // Read Custom Code Configs
@@ -64,6 +63,9 @@ public class CristelLibExpectPlatformImpl {
         return configs;
     }
 
+    public static List<String> getModIds() {
+        return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
+    }
 
     public static List<Path> getRootPaths(String modId) {
         ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
@@ -71,6 +73,7 @@ public class CristelLibExpectPlatformImpl {
         if(container != null){
             paths = container.getRootPaths();
         }
+        CristelLib.LOGGER.error(paths.toString());
         return paths;
     }
 
@@ -79,14 +82,14 @@ public class CristelLibExpectPlatformImpl {
         return Platform.FABRIC;
     }
 
-    public static List<String> getModIds() {
-        return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
-    }
-
     public static String getModDisplayName(String modID) {
         return FabricLoader.getInstance()
                 .getModContainer(modID)
                 .map(container -> container.getMetadata().getName()) // human-readable name
                 .orElse(modID); // fallback to ID if not found
+    }
+
+    public static boolean isClient() {
+        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
     }
 }

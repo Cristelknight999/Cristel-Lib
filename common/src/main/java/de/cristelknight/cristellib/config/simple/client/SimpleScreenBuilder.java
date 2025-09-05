@@ -1,78 +1,98 @@
-package de.cristelknight.cristellib.config.client;
+package de.cristelknight.cristellib.config.simple.client;
 
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import de.cristelknight.cristellib.config.simple.ConfigHolder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.ConfigSettings;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.lang.reflect.RecordComponent;
 import java.util.*;
 
-public class AutoClothConfigScreen {
+@Environment(EnvType.CLIENT)
+public class SimpleScreenBuilder {
 
-    public static void addForCristelLib(ConfigEntryBuilder entryBuilder, ConfigBuilder builder, String modID) {
-        if(modID.equals(CristelLib.MOD_ID)) addConfigToCategory(entryBuilder, builder, BuiltInPackConfig.class);
+    public static void saveConfigs(String modID) {
+        Map<String, Set<SimpleConfigScreen>> simpleConfigsWithScreen = ClientConfigRegistry.getAllConfigsWithScreen();
+        if(!simpleConfigsWithScreen.containsKey(modID)) return;
+
+        for(SimpleConfigScreen simpleConfig : simpleConfigsWithScreen.get(modID))  {
+            SimpleScreenBuilder.saveConfig(simpleConfig.simpleConfig(), modID);
+        }
     }
 
-    public static void saveForCristelLib() {
-        BuiltInPackConfig configInstance = ConfigRegistry.get(BuiltInPackConfig.class);
+    public static <T> void saveConfig(Class<T> config, String modID) {
+        T configInstance = ConfigRegistry.get(config);
         try {
             // Rebuild and save updated config instance
-            BuiltInPackConfig updated = rebuildConfigInstance(BuiltInPackConfig.class, configInstance);
-            ConfigRegistry.updateAndSave(updated);
+            T updated = rebuildConfigInstance(config, configInstance);
+
+            ConfigHolder<T> holder = ConfigRegistry.holder(config);
+            holder.update(updated);
+            Objects.requireNonNull(ClientConfigRegistry.getScreen(modID, config)).onScreenSave().run();
+            holder.save();
         } catch (Exception e) {
-            e.printStackTrace();
+            CristelLib.LOGGER.error("Couldn't save config screen: {}; ErrorMsg: {}", config.getSimpleName(), e.getMessage());
         }
-        BuiltInPackConfig.updateConfig();
     }
 
 
-    public static <T> void addConfigToCategory(ConfigEntryBuilder entryBuilder, ConfigBuilder builder, Class<T> clazz) {
-        T configInstance = ConfigRegistry.get(clazz);
-        ConfigSettings<T> settings = ConfigRegistry.getSettings(clazz);
+    public static <T> void addConfigToCategory(ConfigBuilder builder, ConfigEntryBuilder entryBuilder, SimpleConfigScreen simpleScreen) {
+        Class<T> config = (Class<T>) simpleScreen.simpleConfig();
+        T configInstance = ConfigRegistry.get(config);
+        ConfigSettings<T> settings = ConfigRegistry.getSettings(config);
         HashMap<String, String> comments = ConfigHolder.getSafeComments(settings.getComments());
 
-        ConfigCategory category = builder.getOrCreateCategory(Component.literal(clazz.getSimpleName()));
+        String categoryName = simpleScreen.screenName();
+        ConfigCategory category = builder.getOrCreateCategory(Component.literal(categoryName.isEmpty() ? config.getSimpleName() : categoryName));
+        String header = settings.getHeader();
+        if(header != null && !header.isEmpty())
+            category.addEntry(entryBuilder.startTextDescription(Component.literal(header.trim())).build());
 
-
-        for (RecordComponent component : clazz.getRecordComponents()) {
+        for (RecordComponent component : config.getRecordComponents()) {
             String name = component.getName();
             Class<?> type = component.getType();
 
             Object value;
+            Object defaultValue;
             try {
                 value = component.getAccessor().invoke(configInstance);
+                defaultValue = component.getAccessor().invoke(settings.getDefault());
             } catch (Exception e) {
-                e.printStackTrace();
+                CristelLib.LOGGER.error("Couldn't read config value for config: {}; ErrorMsg: {}", config.getSimpleName(), e.getMessage());
                 continue;
             }
 
             // Handle supported types (String, int, boolean, List<String>) just like before
             if (type == String.class) {
                 category.addEntry(entryBuilder.startStrField(Component.literal(name), (String) value)
+                        .setDefaultValue((String) defaultValue)
                         .setTooltipSupplier(() -> tooltip(name, comments))
-                        .setSaveConsumer(val -> updateFieldValue(clazz, name, val))
+                        .setSaveConsumer(val -> updateFieldValue(config, name, val))
                         .build());
             } else if (type == int.class || type == Integer.class) {
                 category.addEntry(entryBuilder.startIntField(Component.literal(name), (Integer) value)
+                        .setDefaultValue((Integer) defaultValue)
                         .setTooltipSupplier(() -> tooltip(name, comments))
-                        .setSaveConsumer(val -> updateFieldValue(clazz, name, val))
+                        .setSaveConsumer(val -> updateFieldValue(config, name, val))
                         .build());
             } else if (type == boolean.class || type == Boolean.class) {
                 category.addEntry(entryBuilder.startBooleanToggle(Component.literal(name), (Boolean) value)
+                        .setDefaultValue((Boolean) defaultValue)
                         .setTooltipSupplier(() -> tooltip(name, comments))
-                        .setSaveConsumer(val -> updateFieldValue(clazz, name, val))
+                        .setSaveConsumer(val -> updateFieldValue(config, name, val))
                         .build());
             } else if (type == List.class && value instanceof List<?> list && list.stream().allMatch(it -> it instanceof String)) {
                 category.addEntry(entryBuilder.startStrList(Component.literal(name), new ArrayList<>((List<String>) value))
+                        .setDefaultValue((List<String>) defaultValue)
                         .setTooltipSupplier(() -> tooltip(name, comments))
-                        .setSaveConsumer(val -> updateFieldValue(clazz, name, val))
+                        .setSaveConsumer(val -> updateFieldValue(config, name, val))
                         .build());
             } else {
                 category.addEntry(entryBuilder.startTextDescription(Component.literal("Unsupported type: " + name)).build());
@@ -97,7 +117,7 @@ public class AutoClothConfigScreen {
         pendingUpdates.computeIfAbsent(clazz, k -> new HashMap<>()).put(fieldName, value);
     }
 
-    private static <T extends Record> T rebuildConfigInstance(Class<T> clazz, Object oldInstance) throws Exception {
+    private static <T> T rebuildConfigInstance(Class<T> clazz, Object oldInstance) throws Exception {
         RecordComponent[] components = clazz.getRecordComponents();
         Object[] args = new Object[components.length];
         Map<String, Object> updates = pendingUpdates.getOrDefault(clazz, Map.of());

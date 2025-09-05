@@ -2,6 +2,7 @@ package de.cristelknight.cristellib.config.serialize.placement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import de.cristelknight.cristellib.CristelLib;
 
 import java.util.Map;
 
@@ -10,9 +11,9 @@ public record PlacementConfig(double frequency, int salt, int separation, int sp
     public PlacementConfig {
         // Ensure spacing is greater than or equal to separation
         if (spacing < separation)
-            throw new IllegalArgumentException("Spacing must be greater than or equal to separation.");
+            throw new IllegalArgumentException(CristelLib.getWithPrefix("Spacing must be greater than or equal to separation."));
         if(frequency <= 0)
-            throw new IllegalArgumentException("Frequency must be greater than zero.");
+            throw new IllegalArgumentException(CristelLib.getWithPrefix("Frequency must be greater than zero."));
     }
 
     public static final Codec<PlacementConfig> CODEC = RecordCodecBuilder.create(builder ->

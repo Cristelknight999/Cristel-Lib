@@ -36,7 +36,6 @@ public class CristelLibFabric implements ModInitializer {
             return 1;
         } catch (Exception e) {
             source.sendFailure(Component.literal("Failed to dump RuntimePack: " + e.getMessage()));
-            e.printStackTrace();
             return 0;
         }
     }

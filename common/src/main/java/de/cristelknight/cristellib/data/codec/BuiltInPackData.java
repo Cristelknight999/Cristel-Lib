@@ -20,8 +20,6 @@ public record BuiltInPackData(ResourceLocation location, String displayName, Opt
             ).apply(builder, BuiltInPackData::new)
     );
 
-
-
     public static final Codec<Either<BuiltInPackData, BuiltInPackDataWrapper>> PACKS_CODEC = Codec.either(CODEC, BuiltInPackDataWrapper.CODEC);
 
 }

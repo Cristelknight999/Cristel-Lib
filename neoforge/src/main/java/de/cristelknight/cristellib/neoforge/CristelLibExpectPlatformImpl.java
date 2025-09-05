@@ -16,8 +16,10 @@ import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.KnownPack;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
@@ -85,15 +87,13 @@ public class CristelLibExpectPlatformImpl {
 
         for (Pair<List<String>, CristelLibAPI> apiPair : apis) {
             CristelLibAPI api = apiPair.getSecond();
-            String modID = apiPair.getFirst().getFirst();
+            String modID = apiPair.getFirst().getFirst(); // just get main mod hopefully
             CristelLib.readAPI(registry, modID, api, configs);
         }
         Util.addAll(configs, Util.readData());
         Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet()));
         return configs;
     }
-
-
 
     public static List<String> getModIds() {
         ModList modList = ModList.get();
@@ -110,7 +110,6 @@ public class CristelLibExpectPlatformImpl {
         return modIds;
     }
 
-
     public static List<Path> getRootPaths(String modId) {
         ModList modList = ModList.get();
         List<Path> paths = new ArrayList<>();
@@ -124,7 +123,7 @@ public class CristelLibExpectPlatformImpl {
             if (container == null) return paths;
             file = container.getModInfo().getOwningFile().getFile();
         }
-        return Collections.singletonList(file.getFilePath());
+        return Collections.singletonList(file.getSecureJar().getRootPath());
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -137,6 +136,10 @@ public class CristelLibExpectPlatformImpl {
                 .getModContainerById(modId)
                 .map(container -> container.getModInfo().getDisplayName())
                 .orElse(modId); // fallback to modid if nothing is found
+    }
+
+    public static boolean isClient() {
+        return FMLEnvironment.dist.isClient();
     }
 
 }

@@ -23,6 +23,10 @@ public class ConfigHolder<T> {
         return instance;
     }
 
+    public void update(T newData) {
+        instance = newData;
+    }
+
     public void updateAndSave(T newData) {
         instance = newData;
         save();

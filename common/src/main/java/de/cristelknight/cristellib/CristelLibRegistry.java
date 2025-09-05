@@ -2,7 +2,6 @@ package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
-import de.cristelknight.cristellib.util.Util;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;

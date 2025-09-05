@@ -6,12 +6,12 @@ import java.util.Optional;
 
 public class ModLoadingUtil {
     @ExpectPlatform
-    public static boolean isModLoaded(String modid){
+    public static boolean isModLoaded(String modID){
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static Optional<Integer> compare(String modid, String version){
+    public static Optional<Integer> compare(String modID, String version){
         throw new AssertionError();
     }
 }

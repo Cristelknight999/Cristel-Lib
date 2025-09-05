@@ -5,8 +5,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.ConfigSettings;
+import net.minecraft.Util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public record ACConfig(
@@ -28,26 +30,25 @@ public record ACConfig(
     );
 
     public static void updateConfig() {
+        ACConfig config = ConfigRegistry.get(ACConfig.class);
+
         // default values
         List<String> defaultBlacklistedMods = new ArrayList<>(SETTINGS.getDefault().blacklistedMods());
         List<String> defaultClientExcludedMods = new ArrayList<>(SETTINGS.getDefault().clientExcludedMods());
 
-        // return if no default values
-        if(defaultBlacklistedMods.isEmpty() && defaultClientExcludedMods.isEmpty()) return;
-
-
-        ACConfig config = ConfigRegistry.get(ACConfig.class);
-
-        // Merge user config with defaults
+        // Current values
+        List<String> modOverrideWhitelist = new ArrayList<>(config.modOverrideWhitelist());
         List<String> blacklistedMods = new ArrayList<>(config.blacklistedMods());
         List<String> clientExcludedMods = new ArrayList<>(config.clientExcludedMods());
+
+        // return if no default values (and no whitelisted mods)
+        if(defaultBlacklistedMods.isEmpty() && defaultClientExcludedMods.isEmpty() && modOverrideWhitelist.isEmpty()) return;
 
         // remove all defaults temporarily
         blacklistedMods.removeAll(defaultBlacklistedMods);
         clientExcludedMods.removeAll(defaultClientExcludedMods);
 
         // Whitelist only applies to mods that are actually blacklisted
-        List<String> modOverrideWhitelist = new ArrayList<>(config.modOverrideWhitelist());
         List<String> allDefaultBlacklists = new ArrayList<>(SETTINGS.getDefault().blacklistedMods());
         allDefaultBlacklists.addAll(SETTINGS.getDefault().clientExcludedMods());
         modOverrideWhitelist.retainAll(allDefaultBlacklists);
@@ -90,28 +91,32 @@ public record ACConfig(
         public String getHeader() {
             return """
                    Auto-Config Settings
-                   
-                   - disableAutoConfig
-                     Disable automatic config generation is fully.
-
-                   - disableAutoConfigScreens
-                     Disable automatic screen generation for structure configs.
-
-                   - blacklistedMods:
-                     Mods where automatic structure config generation is fully disabled.
-
-                   - clientExcludedMods:
-                     Mods where automatic screen generation for structure configs is disabled.
-
-                   - modOverrideWhitelist:
-                     List of mods from the above categories that the user is explicitly
-                     allowed to override. Without adding a mod here, author-provided
-                     defaults cannot be changed by the user.
+                   The Config for Cristel Lib's automated structure config generation.
                    """;
+        }
+
+        @Override
+        public HashMap<String, String> getComments() {
+            return Util.make(new HashMap<>(), map -> {
+                map.put("disableAutoConfig", """
+                    Disable automatic config generation fully.""");
+                map.put("disableAutoConfigScreens", """
+                    Disable automatic screen generation for structure configs.""");
+
+                map.put("blacklistedMods", """
+                    Mods where automatic structure config generation is fully disabled.""");
+                map.put("clientExcludedMods", """
+                    Mods where automatic screen generation for structure configs is disabled.""");
+                map.put("modOverrideWhitelist", """        
+                    This list let's you override the default settings provided by mod authors.
+                    If you add a mod that is blacklisted at default (in the two other lists)
+                    you can now remove them without them getting added back. Proceed at your own risk.""");
+            });
         }
     };
 
     static {
-        ConfigRegistry.register(ACConfig.class, SETTINGS);
+        ConfigRegistry.registerWithScreen(ACConfig.class, SETTINGS,
+                CristelLib.MOD_ID, "Auto-config", ACConfig::updateConfig);
     }
 }
