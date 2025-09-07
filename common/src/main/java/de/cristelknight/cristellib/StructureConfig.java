@@ -135,17 +135,18 @@ public class StructureConfig {
             return;
         }
 
-        JsonObject a = structureSet.get("placement").getAsJsonObject();
+        JsonObject o = structureSet.get("placement").getAsJsonObject();
         PlacementConfig p = placementConfig.get(setLocation);
-        a.addProperty("salt", p.salt());
-        a.addProperty("spacing", p.spacing());
-        a.addProperty("separation", p.separation());
+        o.addProperty("salt", p.salt());
+        o.addProperty("spacing", p.spacing());
+        o.addProperty("separation", p.separation());
 
-        double f = p.frequency();
+        double newF = p.frequency();
 
-        if (f != 0 &&
-                ((a.has("frequency") && a.get("frequency").getAsFloat() != f) || !a.has("frequency")))
-            a.addProperty("frequency", f);
+        if ((!o.has("frequency") && newF == 1.0) ||
+                (o.has("frequency") && newF == (double) o.get("frequency").getAsFloat())) return;
+
+        o.addProperty("frequency", newF);
     }
 
     private JsonElement getStructureSet(ResourceLocation location, String modID) {

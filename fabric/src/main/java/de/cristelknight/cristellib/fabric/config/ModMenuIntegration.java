@@ -16,14 +16,14 @@ public class ModMenuIntegration implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return (screenFactory) -> Util.isClothConfigLoaded() ? new ScreenBuilder().create(screenFactory, CristelLib.MOD_ID, true, true) : null;
+        return screenFactory -> Util.isClothConfigLoaded() ? new ScreenBuilder().create(screenFactory, CristelLib.MOD_ID, true, true) : null;
     }
 
     @Override
     public Map<String, ConfigScreenFactory<?>> getProvidedConfigScreenFactories() {
         if(!Util.isClothConfigLoaded()) return Map.of();
         ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
-        boolean structureEnabled = !acConfig.disableAutoConfig() && !acConfig.disableAutoConfigScreens();
+        boolean structureEnabled = !acConfig.disableAutoConfigScreens();
 
         Map<String, ConfigScreenFactory<?>> screens = new HashMap<>();
         for(String modID : ScreenBuilder.allConfigMods(structureEnabled)){

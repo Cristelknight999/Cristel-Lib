@@ -5,10 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.PackSource;
 import org.jetbrains.annotations.NotNull;
 
-public class BuiltinResourcePackSource implements PackSource {
-
-    public BuiltinResourcePackSource() {
-    }
+public record BuiltinResourcePackSource() implements PackSource {
 
     @Override
     public boolean shouldAddAutomatically() {
@@ -17,6 +14,6 @@ public class BuiltinResourcePackSource implements PackSource {
 
     @Override
     public @NotNull Component decorate(@NotNull Component packName) {
-        return Component.translatable("cristellib.nameAndSource", packName, Component.translatable("cristellib.builtinPack")).withStyle(ChatFormatting.GRAY);
+        return Component.translatable("cristellib.nameAndSource", packName).withStyle(ChatFormatting.GRAY);
     }
 }

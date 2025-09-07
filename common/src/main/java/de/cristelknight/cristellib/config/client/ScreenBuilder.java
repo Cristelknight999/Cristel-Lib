@@ -41,7 +41,7 @@ public class ScreenBuilder {
     public Screen create(Screen parent, String modID, boolean structure, boolean simple){
         this.modID = modID;
         ConfigBuilder builder = ConfigBuilder.create()
-                .setTitle(Component.literal("§7" + CristelLibExpectPlatform.getModDisplayName(modID) + " Structure Configuration (via §d§nCristelLib§r§7)"));
+                .setTitle(Component.literal("§7" + CristelLibExpectPlatform.getModDisplayName(modID) + " Configuration (via §d§nCristelLib§r§7)"));
 
         builder.setParentScreen(parent);
         builder.setSavingRunnable(this::onConfigSave);
@@ -110,17 +110,43 @@ public class ScreenBuilder {
         for (String structureSetName : Util.sortedKeyList(nestedStructureMap)) {
             Map<String, BooleanListEntry> structures = new HashMap<>();
             SubCategoryBuilder rootSubCategory = entryBuilder.startSubCategory(Component.literal(structureSetName));
-            addEDSubCategory(rootSubCategory, null, nestedStructureMap.get(structureSetName), "", entryBuilder, structures, structureConfig, structureSetName);
-            edCategory.addEntry(rootSubCategory.build());
+            NestedEDConfig nestedEDConfig = nestedStructureMap.get(structureSetName);
+
+            if(!checkForSingle(nestedEDConfig, structureSetName, structureConfig, entryBuilder, structures, edCategory)) {
+                addEDSubCategory(rootSubCategory, null, nestedEDConfig, "", entryBuilder, structures, structureConfig, structureSetName);
+                edCategory.addEntry(rootSubCategory.build());
+            }
+
             clientEDConfigs.put(structureConfig.toDefaultRL(structureSetName), new ClientEDConfig(structures));
         }
 
         clientStructureConfigs.add(new ClientStructureConfig(structureConfig, null, clientEDConfigs));
     }
 
+    private boolean checkForSingle(NestedEDConfig nestedEDConfig, String structureSetName, StructureConfig structureConfig, ConfigEntryBuilder entryBuilder, Map<String, BooleanListEntry> structures, ConfigCategory edCategory) {
+        if(nestedEDConfig.entries().size() != 1) return false;
+        NestedEDConfig.Entry entry = nestedEDConfig.entries().values().stream().findAny().get();
+        if(!entry.isBoolean()) return false;
+
+        String key = nestedEDConfig.entries().keySet().stream().findAny().get();
+
+        BooleanListEntry toggle = entryBuilder.startBooleanToggle(
+                        Component.literal(key),
+                        entry.value()
+                ).setDefaultValue(true)
+                .build();
+
+        structures.put(key, toggle);
+
+        if(getEDSubWarn(structureConfig, key, structureSetName)) return true;
+
+        edCategory.addEntry(toggle);
+        return true;
+    }
+
 
     private void addEDSubCategory(SubCategoryBuilder rootCategory, SubCategoryBuilder parent, NestedEDConfig edConfig, String pathPrefix,
-                                  ConfigEntryBuilder configEntry, Map<String, BooleanListEntry> clientEDConfigs, StructureConfig structureConfig, String structureSetName) {
+                                  ConfigEntryBuilder entryBuilder, Map<String, BooleanListEntry> structures, StructureConfig structureConfig, String structureSetName) {
         Map<String, NestedEDConfig.Entry> entries = edConfig.entries();
         for (String key : Util.sortedKeyList(entries)) {
             NestedEDConfig.Entry value = entries.get(key);
@@ -128,13 +154,13 @@ public class ScreenBuilder {
 
             if (value.isBoolean()) {
                 // Simple toggle
-                BooleanListEntry toggle = configEntry.startBooleanToggle(
+                BooleanListEntry toggle = entryBuilder.startBooleanToggle(
                                 Component.literal(key),
                                 value.value()
                         ).setDefaultValue(true)
                         .build();
 
-                clientEDConfigs.put(fullPath, toggle);
+                structures.put(fullPath, toggle);
 
                 if(getEDSubWarn(structureConfig, fullPath, structureSetName)) continue;
 
@@ -143,10 +169,10 @@ public class ScreenBuilder {
 
             } else {
                 // Nested structure → make subcategory
-                SubCategoryBuilder subCategory = configEntry.startSubCategory(Component.literal(key));
+                SubCategoryBuilder subCategory = entryBuilder.startSubCategory(Component.literal(key));
 
                 // Recursively build its children
-                addEDSubCategory(rootCategory, subCategory, value.nested(), fullPath, configEntry, clientEDConfigs, structureConfig, structureSetName);
+                addEDSubCategory(rootCategory, subCategory, value.nested(), fullPath, entryBuilder, structures, structureConfig, structureSetName);
 
                 if(parent == null) rootCategory.add(subCategory.build());
                 else parent.add(subCategory.build());
@@ -216,9 +242,9 @@ public class ScreenBuilder {
     public static Pair<Boolean, Boolean> shouldCreateScreen(String modID, boolean mainStructure) {
         if(modID.equals(CristelLib.MOD_ID) || modID.equals("minecraft")) return new Pair<>(false, false);
 
-        boolean structure = true;
-        ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
-         if(!mainStructure || acConfig.clientExcludedMods().contains(modID)) structure = false;
+        boolean structure = mainStructure &&
+                CristelLibRegistry.getConfigs().containsKey(modID) &&
+                !ConfigRegistry.get(ACConfig.class).clientExcludedMods().contains(modID);
 
         return new Pair<>(structure, ClientConfigRegistry.hasScreens(modID));
     }
@@ -226,7 +252,6 @@ public class ScreenBuilder {
     public static Set<String> allConfigMods(boolean structure) {
         Set<String> allMods = new HashSet<>(ClientConfigRegistry.getAllConfigsWithScreen().keySet());
         if(structure) allMods.addAll(new HashSet<>(CristelLibRegistry.getConfigs().keySet()));
-        CristelLib.LOGGER.error(allMods.toString());
         return allMods;
     }
 }

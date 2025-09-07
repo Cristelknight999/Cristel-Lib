@@ -14,6 +14,7 @@ import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
 import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.ResourceLocation;
@@ -24,6 +25,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -52,7 +54,7 @@ public class ConfigManager {
     }
 
     public static Map<ResourceLocation, EDConfig> readEDConfig(StructureConfig config) {
-        Map<String, NestedEDConfig> configMap = readConfig(config.getPath(), NestedEDConfig.ED_CODEC);
+        Map<String, NestedEDConfig> configMap = readFromJanksonPath(config.getPath(), NestedEDConfig.ED_CODEC);
 
         Map<ResourceLocation, EDConfig> map = new HashMap<>();
         for (String structureSet : configMap.keySet()) {
@@ -68,7 +70,7 @@ public class ConfigManager {
     }
 
     public static Map<ResourceLocation, PlacementConfig> readPlacementConfig(StructureConfig config) {
-        Map<String, PlacementConfig> sets = readConfig(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
+        Map<String, PlacementConfig> sets = readFromJanksonPath(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
         return sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultRL(entry.getKey()), Map.Entry::getValue));
     }
 
@@ -117,7 +119,7 @@ public class ConfigManager {
     }
 
     // Read
-    public static <T> T readConfig(Path path, Codec<T> codec) {
+    public static <T> T readFromJanksonPath(Path path, Codec<T> codec) {
         JsonElement load;
         try {
             load = JANKSON.load(path.toFile());
@@ -125,6 +127,19 @@ public class ConfigManager {
             throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
         }
         return readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
+    }
+
+    public static <T> T readFromJanksonPathWithFix(Path path, Codec<T> codec, Consumer<T> writeAfterFix) {
+        JsonElement load;
+        try {
+            load = JANKSON.load(path.toFile());
+        } catch (Exception errorMsg) {
+            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
+        }
+        boolean gotFixed = load instanceof JsonObject object && DataFixer.appliedFixer(codec, object);
+        T config = readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
+        if(gotFixed) writeAfterFix.accept(config);
+        return config;
     }
 
     public static <T> T readFromJsonPath(String errorMsg, Path path, Codec<T> codec) {

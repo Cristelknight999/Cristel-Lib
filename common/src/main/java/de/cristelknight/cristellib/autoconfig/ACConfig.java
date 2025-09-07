@@ -99,7 +99,7 @@ public record ACConfig(
         public HashMap<String, String> getComments() {
             return Util.make(new HashMap<>(), map -> {
                 map.put("disableAutoConfig", """
-                    Disable automatic config generation fully.""");
+                    Disable automatic structure config generation.""");
                 map.put("disableAutoConfigScreens", """
                     Disable automatic screen generation for structure configs.""");
 
@@ -109,8 +109,9 @@ public record ACConfig(
                     Mods where automatic screen generation for structure configs is disabled.""");
                 map.put("modOverrideWhitelist", """        
                     This list let's you override the default settings provided by mod authors.
-                    If you add a mod that is blacklisted at default (in the two other lists)
-                    you can now remove them without them getting added back. Proceed at your own risk.""");
+                    If you add a mod that is blacklisted by default (in the two other lists)
+                    you can now remove them without them getting added back automatically.
+                    Proceed at your own risk.""");
             });
         }
     };

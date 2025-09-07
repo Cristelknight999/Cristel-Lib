@@ -23,7 +23,6 @@ import java.util.Optional;
 public class NeoForgeClient {
 
     public static void registerMainConfigScreen() {
-        CristelLib.LOGGER.error("register thingy!!!!!!!!!!!!!!!!!!!!!!");
         ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> (mc, screenFactory) ->
                 new ScreenBuilder().create(screenFactory, CristelLib.MOD_ID, true, true));
     }
@@ -32,19 +31,15 @@ public class NeoForgeClient {
         ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
         boolean structureMain = !acConfig.disableAutoConfig() && !acConfig.disableAutoConfigScreens();
 
-        CristelLib.LOGGER.error("register thingy2!!!!!!!!!!!!!!!!!!!!!! " + structureMain);
-
         for(String modID : ScreenBuilder.allConfigMods(structureMain)){
             Pair<Boolean, Boolean> structureSimple = ScreenBuilder.shouldCreateScreen(modID, structureMain);
             boolean structure = structureSimple.getFirst();
             boolean simple = structureSimple.getSecond();
-            CristelLib.LOGGER.error("Trying to add for: " + modID);
             if(!structure && !simple) continue;
 
             Optional<? extends ModContainer> container = ModList.get().getModContainerById(modID);
             if(container.isEmpty() || container.get().getCustomExtension(IConfigScreenFactory.class).isPresent()) continue;
 
-            CristelLib.LOGGER.error("Adding for: " + modID);
             container.get().registerExtensionPoint(IConfigScreenFactory.class, (mc, screenFactory) ->
                     new ScreenBuilder().create(screenFactory, modID, structure, simple));
         }

@@ -34,7 +34,7 @@ public class BuiltInDataPackLoader {
         PACK_LIST.add(new BuiltInPack(packResource, displayName, supplier));
     }
 
-    public static List<String> getIDs(){
+    public static List<String> getCustomIDs(){
         return PACK_LIST.stream().map(pack -> pack.packResource().packId()).filter(id -> !id.equals(CristelLib.CRISTEL_LIB_PACK_RL.toString())).toList();
     }
 

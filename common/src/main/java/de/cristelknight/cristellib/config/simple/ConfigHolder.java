@@ -45,7 +45,7 @@ public class ConfigHolder<T> {
         if (!Files.exists(path)) {
             write(spec.getDefault());
         }
-        return ConfigManager.readConfig(path, spec.getCodec());
+        return ConfigManager.readFromJanksonPathWithFix(path, spec.getCodec(), this::write);
     }
 
     private void write(T data) {

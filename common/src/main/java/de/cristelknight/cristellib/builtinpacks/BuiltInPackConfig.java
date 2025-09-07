@@ -5,17 +5,20 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.ConfigSettings;
+import net.minecraft.Util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabledPacks)  {
+public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabledPacks, boolean hideAllPacksInScreen)  {
 
     public static final Codec<BuiltInPackConfig> CODEC = RecordCodecBuilder.create(builder ->
-        builder.group(
-            Codec.list(Codec.STRING).fieldOf("defaultPacks").forGetter(BuiltInPackConfig::defaultPacks),
-            Codec.list(Codec.STRING).fieldOf("disabledPacks").forGetter(BuiltInPackConfig::disabledPacks)
-        ).apply(builder, BuiltInPackConfig::new)
+            builder.group(
+                    Codec.list(Codec.STRING).fieldOf("defaultPacks").forGetter(BuiltInPackConfig::defaultPacks),
+                    Codec.list(Codec.STRING).fieldOf("disabledPacks").forGetter(BuiltInPackConfig::disabledPacks),
+                    Codec.BOOL.fieldOf("hideAllPacksInScreen").forGetter(BuiltInPackConfig::hideAllPacksInScreen)
+            ).apply(builder, BuiltInPackConfig::new)
     );
 
     public static void updateConfig() {
@@ -38,7 +41,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
         }
 
         if(bl) {
-            ConfigRegistry.updateAndSave(new BuiltInPackConfig(defaultPacks, disabledPacks));
+            ConfigRegistry.updateAndSave(new BuiltInPackConfig(defaultPacks, disabledPacks, config.hideAllPacksInScreen()));
         }
     }
 
@@ -55,7 +58,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
 
         @Override
         public BuiltInPackConfig getDefault() {
-            return new BuiltInPackConfig(BuiltInDataPackLoader.getIDs(), List.of());
+            return new BuiltInPackConfig(BuiltInDataPackLoader.getCustomIDs(), List.of(), false);
         }
 
         @Override
@@ -64,6 +67,14 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
                    This config allows disabling built-in packs supplied by Cristel Lib.
                    Move entries from 'defaultPacks' to 'disabledPacks' to disable them.
                    """;
+        }
+
+        @Override
+        public HashMap<String, String> getComments() {
+            return Util.make(new HashMap<>(), map -> {
+                map.put("hideAllPacksInScreen", """
+                    This option hides all packs provided by Cristel Lib in the pack selection screen to reduce clutter.""");
+            });
         }
     };
 

@@ -73,7 +73,6 @@ public class CristelLibExpectPlatformImpl {
         if(container != null){
             paths = container.getRootPaths();
         }
-        CristelLib.LOGGER.error(paths.toString());
         return paths;
     }
 
