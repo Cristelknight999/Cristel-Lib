@@ -1,4 +1,4 @@
-package de.cristelknight.cristellib.config.simple.client;
+package de.cristelknight.cristellib.config.client.simple;
 
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.config.simple.ConfigHolder;

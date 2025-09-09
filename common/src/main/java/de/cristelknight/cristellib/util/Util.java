@@ -7,6 +7,8 @@ import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.ReadData;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
@@ -54,6 +56,8 @@ public class Util {
         int dotIndex = fileName.lastIndexOf('.');
         return (dotIndex > 0) ? fileName.substring(0, dotIndex) : fileName;
     }
+
+    public static Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
 
     public static <V, S> void addAll(Map<V, Set<S>> addTo, Map<V, Set<S>> addFrom){
         for(V key : addFrom.keySet()){

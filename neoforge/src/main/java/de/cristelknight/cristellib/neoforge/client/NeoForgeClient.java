@@ -2,8 +2,6 @@ package de.cristelknight.cristellib.neoforge.client;
 
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.config.client.ScreenBuilder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;

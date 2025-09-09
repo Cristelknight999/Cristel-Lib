@@ -14,6 +14,7 @@ import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
 import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
@@ -136,7 +137,7 @@ public class ConfigManager {
         } catch (Exception errorMsg) {
             throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
         }
-        boolean gotFixed = load instanceof JsonObject object && DataFixer.appliedFixer(codec, object);
+        boolean gotFixed = load instanceof JsonObject object && DataFixer.appliedFixer(ConfigRegistry.getClazzFromCodec(codec), object);
         T config = readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
         if(gotFixed) writeAfterFix.accept(config);
         return config;

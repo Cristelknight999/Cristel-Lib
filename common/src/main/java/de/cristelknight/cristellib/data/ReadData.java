@@ -27,11 +27,10 @@ public class ReadData {
                     path, ACInfoData.CODEC);
 
             if(data.containsKey(modId)) {
-                CristelLib.LOGGER.warn("Replacing Auto Config data for modID: {} from path: {}", modId, path);
+                CristelLib.LOGGER.warn("Overriding Auto Config data for modID: {} from path: {}", modId, path);
             }
             data.put(modId, acInfoData);
         }
-
     }
 
     public static void getStructureConfigs(String modId, Map<String, Set<StructureConfig>> modIdAndConfigs) {

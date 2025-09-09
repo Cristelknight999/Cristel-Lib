@@ -123,7 +123,7 @@ public class StructureConfig {
         Iterator<JsonElement> structureIterator = array.iterator();
         while (structureIterator.hasNext()) {
             JsonElement structure = structureIterator.next();
-            String structureName = structure.getAsJsonObject().get("structure").getAsString().split(":")[1];
+            String structureName = toDefaultString(Objects.requireNonNull(ResourceLocation.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
             if (/*setConfig.containsStructure(structureName) && */setConfig.isStructureDisabled(structureName))
                 structureIterator.remove();
         }

@@ -13,8 +13,8 @@ import java.util.Set;
 
 @CristelPlugin
 public class BuiltInAPI implements CristelLibAPI {
-    public static final StructureConfig MINECRAFT_ED = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "minecraftED", ConfigType.ENABLE_DISABLE);
-    public static final StructureConfig MINECRAFT_P = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "minecraftP", ConfigType.PLACEMENT);
+    public static final StructureConfig MINECRAFT_ED = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "toggle_structure_config", ConfigType.ENABLE_DISABLE);
+    public static final StructureConfig MINECRAFT_P = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "placement_structure_config", ConfigType.PLACEMENT);
 
     @Override
     public void registerConfigs(Set<StructureConfig> sets) {
@@ -49,7 +49,7 @@ public class BuiltInAPI implements CristelLibAPI {
                 MINECRAFT_ED, MINECRAFT_P);
 
 
-        //No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
+        // No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
         registry.registerSetToConfig("minecraft", ResourceLocation.withDefaultNamespace("strongholds"), MINECRAFT_ED);
     }
 

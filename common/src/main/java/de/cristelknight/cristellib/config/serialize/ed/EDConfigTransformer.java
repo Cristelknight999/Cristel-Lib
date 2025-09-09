@@ -37,7 +37,7 @@ public class EDConfigTransformer {
 
             // Process each string in the list
             for (ResourceLocation structure : stringList) {
-                String structureName = structure.getPath();
+                String structureName = structureConfig.toDefaultString(structure);
                 putStructureName(structureName, true, entries);
             }
 

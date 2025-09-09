@@ -1,4 +1,4 @@
-package de.cristelknight.cristellib.config.simple.client;
+package de.cristelknight.cristellib.config.client.simple;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

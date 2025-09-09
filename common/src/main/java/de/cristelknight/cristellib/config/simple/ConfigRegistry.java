@@ -1,8 +1,8 @@
 package de.cristelknight.cristellib.config.simple;
 
+import com.mojang.serialization.Codec;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.ModLoadingUtil;
-import de.cristelknight.cristellib.config.simple.client.ClientConfigRegistry;
+import de.cristelknight.cristellib.config.client.simple.ClientConfigRegistry;
 import de.cristelknight.cristellib.util.Util;
 
 import java.util.HashMap;
@@ -12,16 +12,21 @@ public class ConfigRegistry {
 
     private static final Map<Class<?>, ConfigHolder<?>> CONFIGS = new HashMap<>();
 
-    /**
-     * Does not save config automatically
-     */
+
     public static <T> void register(Class<T> clazz, ConfigSettings<T> spec) {
         CONFIGS.put(clazz, new ConfigHolder<>(spec));
+        get(clazz); // read or create config
     }
 
     /**
-     * Does not save config automatically
-     * REQUIRES CLOTH CONFIG
+     * REQUIRES CLOTH CONFIG TO DISPLAY
+     */
+    public static <T> void registerWithScreen(Class<T> clazz, ConfigSettings<T> spec, String modIdForScreen, String screenName) {
+        registerWithScreen(clazz, spec, modIdForScreen, screenName, () -> {});
+    }
+
+    /**
+     * REQUIRES CLOTH CONFIG TO DISPLAY
      */
     public static <T> void registerWithScreen(Class<T> clazz, ConfigSettings<T> spec, String modIdForScreen, String screenName, Runnable onScreenSave) {
         register(clazz, spec);
@@ -29,9 +34,6 @@ public class ConfigRegistry {
             ClientConfigRegistry.registerScreen(modIdForScreen, screenName, onScreenSave, clazz);
     }
 
-    /**
-     * Saves config automatically if it doesn't exist yet
-     */
     @SuppressWarnings("unchecked")
     public static <T> T get(Class<T> clazz) {
         ConfigHolder<T> holder = (ConfigHolder<T>) CONFIGS.get(clazz);
@@ -57,7 +59,10 @@ public class ConfigRegistry {
         holder.updateAndSave(newInstance);
     }
 
-    public static void saveAll() {
-        CONFIGS.values().forEach(ConfigHolder::save);
+    public static <T> Class<T> getClazzFromCodec(Codec<T> codec) {
+        for(Map.Entry<Class<?>, ConfigHolder<?>> entry : CONFIGS.entrySet()) {
+            if(entry.getValue().getSettings().getCodec().equals(codec)) return (Class<T>) entry.getKey();
+        }
+        return null;
     }
 }

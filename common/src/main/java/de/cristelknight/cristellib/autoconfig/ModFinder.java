@@ -28,8 +28,8 @@ public class ModFinder {
             Set<StructureConfig> configSet = new HashSet<>();
 
             boolean customPath = ACInfoData.currentData.containsKey(modID) && !ACInfoData.currentData.get(modID).autoConfigPath().isEmpty();
-            StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : modID, "auto_configsED", ConfigType.ENABLE_DISABLE);
-            StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : modID, "auto_configsP", ConfigType.PLACEMENT);
+            StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : modID, "structure_toggle_config", ConfigType.ENABLE_DISABLE);
+            StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : modID, "structure_placement_config", ConfigType.PLACEMENT);
 
             structureSets.forEach(path -> {
                 JsonElement e = JanksonUtil.getElement(modID, path.toString());
@@ -41,8 +41,8 @@ public class ModFinder {
                 else registry.registerSetToConfig(modID, location, edConfig);
             });
 
-            if(!edConfig.isSetsEmpty()) configSet.add(edConfig);
             if(!placementConfig.isSetsEmpty()) configSet.add(placementConfig);
+            if(!edConfig.isSetsEmpty()) configSet.add(edConfig);
             if(!configSet.isEmpty()) {
                 configSet.forEach((config)-> {
                     config.getDefaultNamespace();
@@ -53,6 +53,7 @@ public class ModFinder {
         });
         return configs;
     }
+
 
     private static ResourceLocation getLocation(Path rootPath) {
         String namespace = rootPath.getName(1).toString();
