@@ -189,7 +189,7 @@ public class StructureConfig {
     }
 
     public void setHeader(String header) {
-        this.header = ConfigManager.createHeader(header);
+        this.header = header;
     }
 
     public String getHeader() {

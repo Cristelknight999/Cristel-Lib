@@ -54,7 +54,7 @@ public class PathFinder {
             walk(newPath, rootFilter, processor, visitAllFiles, maxDepth);
         }
         if (hasOldPath && !hasNewPath)
-            CristelLib.LOGGER.error("Mod with id {} only has an old path for subPath {}. New Path for Cristel Lib >=2.0.1 is missing! Maybe contact the mod author to let them know.", modId, subPath);
+            CristelLib.LOGGER.warn("Mod with id: {} only has an old path for subPath: {}. New Path for Cristel Lib >=2.0.1 is missing! Maybe contact the mod author to let them know.", modId, subPath);
 
     }
 

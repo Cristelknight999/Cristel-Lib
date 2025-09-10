@@ -76,7 +76,6 @@ public class ConfigManager {
     }
 
     // File and Codec Util
-
     public static String createHeader(String header) {
         if(header == null || header.isEmpty()) return "";
         if (!header.endsWith("\n")) {
@@ -90,7 +89,7 @@ public class ConfigManager {
         Path path = config.getPath();
         if (!override && path.toFile().exists()) return;
 
-        writeFile(config.getPath(), codec, config.getComments(), from, config.getHeader(), true);
+        writeFile(config.getPath(), codec, config.getComments(), from, ConfigManager.createHeader(config.getHeader()), true);
     }
 
 

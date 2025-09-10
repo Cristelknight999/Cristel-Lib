@@ -101,7 +101,7 @@ public class SimpleScreenBuilder {
         }
     }
 
-    private static Optional<Component[]> tooltip(String name, Map<String, String> comments) {
+    public static Optional<Component[]> tooltip(String name, Map<String, String> comments) {
         String comment = comments.get(name);
         if (comment != null && !comment.isEmpty()) {
             return Optional.of(new MutableComponent[] { Component.literal(comment) });

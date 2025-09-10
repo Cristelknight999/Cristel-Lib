@@ -22,16 +22,16 @@ public class BuiltInAPI implements CristelLibAPI {
         sets.add(MINECRAFT_P);
 
         MINECRAFT_ED.setHeader("""
-                This config file makes it possible to switch off any Minecraft structure.
+                This config makes it possible to switch off any Minecraft structure.
                 To disable a structure, simply set the value of that structure to "false".
-                To change the rarity of a structure category, use the other file in the folder.
+                To change the rarity of a structure category use the structure placement config.
                 
                 =====
                 Created by Cristel Lib
                 """);
         MINECRAFT_P.setHeader("""
-                This config file makes it possible to change the spacing, separation, salt (and frequency) of Minecraft's structure sets.
-                	SPACING ---  controls how far a structure can be from others of its kind
+                This config makes it possible to change the spacing, separation, salt (and frequency) of Minecraft's structure sets.
+                    SPACING ---  controls how far a structure can be from others of its kind
                 	SEPARATION --- controls how close to each other two structures of the same type can be.
                 KEEP IN MIND THAT SPACING ALWAYS NEEDS TO BE HIGHER THAN SEPARATION.
                 
