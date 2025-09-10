@@ -8,7 +8,6 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     implementation("blue.endless:jankson:${rootProject.jankson_version}")
 
-    modImplementation "com.github.glitchfiend:TerraBlender-common:${rootProject.minecraft_version}-${rootProject.terrablender_version}"
     // Required by TerraBlender
     compileOnly "com.electronwill.night-config:core:3.6.7"
     compileOnly "com.electronwill.night-config:toml:3.6.7"

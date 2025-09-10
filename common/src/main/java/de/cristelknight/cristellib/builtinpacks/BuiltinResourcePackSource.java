@@ -5,10 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.PackSource;
 import org.jetbrains.annotations.NotNull;
 
-public class BuiltinResourcePackSource implements PackSource {
-
-    public BuiltinResourcePackSource() {
-    }
+public record BuiltinResourcePackSource() implements PackSource {
 
     @Override
     public boolean shouldAddAutomatically() {
