@@ -20,6 +20,9 @@
     ],
     "cristellib": [
       "de.cristelknight.cristellib.api.BuiltInAPI"
+    ],
+    "modmenu": [
+      "de.cristelknight.cristellib.fabric.config.ModMenuIntegration"
     ]
   },
   "mixins": [
@@ -28,7 +31,10 @@
   ],
   "depends": {
     "fabricloader": ">=${fabric_loader_min_version}",
-    "fabric": ">=${fabric_api_version}",
+    "fabric-api": ">=${fabric_api_version}",
     "minecraft": ">=${minecraft_version}"
+  },
+  "breaks": {
+    "t_and_t": "<=1.13.3"
   }
 }

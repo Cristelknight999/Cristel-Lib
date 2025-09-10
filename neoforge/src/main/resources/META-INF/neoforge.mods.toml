@@ -23,6 +23,9 @@ displayTest="IGNORE_ALL_VERSION"
 
 description= '''${mod_description}'''
 
+[[mixins]]
+config="cristellib-common.mixins.json"
+
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
@@ -36,3 +39,11 @@ type="required"
 versionRange="[${minecraft_version},)"
 ordering="NONE"
 side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="t_and_t"
+type="incompatible"
+versionRange="(,1.13.3]"
+ordering="NONE"
+side="BOTH"
+

@@ -1,163 +1,177 @@
 package de.cristelknight.cristellib;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.ConfigType;
-import de.cristelknight.cristellib.config.Placement;
+import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
+import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.data.codec.StructureSetData;
+import de.cristelknight.cristellib.registry.ReadStructureSets;
+import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.util.RuntimePackUtil;
 import de.cristelknight.cristellib.util.Util;
-import de.cristelknight.cristellib.config.ConfigUtil;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StructureConfig {
+
+    public static final Codec<StructureConfig> CODEC = RecordCodecBuilder.create(builder ->
+            builder.group(
+                    Codec.STRING.fieldOf("name").forGetter(config -> Util.fileName(config.getPath())),
+                    Codec.STRING.fieldOf("path").forGetter(config -> String.valueOf(config.path.getParent())),
+                    Codec.STRING.optionalFieldOf("header", "").forGetter(config -> config.header),
+                    ConfigType.CODEC.fieldOf("config_type").forGetter(config -> config.type),
+                    Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("comments", new HashMap<>()).forGetter(config -> config.comments),
+                    Codec.list(StructureSetData.CODEC).fieldOf("structure_sets").forGetter(config -> config.structureSetHolders)
+            ).apply(builder, StructureConfig::new)
+    );
 
     private final Path path;
 
     private String header = "";
 
-    private HashMap<String, String> comments = new HashMap<>();
+    private Map<String, String> comments;
 
     private final ConfigType type;
 
-    private final Map<ResourceLocation, List<String>> structures = new HashMap<>();
+    private String defaultNamespace = "";
 
-    private final Map<ResourceLocation, Placement> structurePlacement = new HashMap<>();
+    private final List<StructureSetData> structureSetHolders;
 
-    private final List<Pair<String, ResourceLocation>> structureSets = new ArrayList<>();
+    // default values
+    private final Supplier<Map<ResourceLocation, List<ResourceLocation>>> structuresForED;
+    private final Supplier<Map<ResourceLocation, PlacementConfig>> structurePlacement;
+
+    // current values (structure_set + Config)
+    public Map<ResourceLocation, EDConfig> enableDisableConfig = null;
+    public Map<ResourceLocation, PlacementConfig> placementConfig = null;
+
 
     private StructureConfig(Path path, ConfigType type) {
+        this(path, null, new HashMap<>(), type, new ArrayList<>());
+    }
+
+    private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetData> structureSetHolders) { // for CODEC
+        this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type,  ImmutableList.copyOf(structureSetHolders));
+    }
+
+    private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
         this.path = path;
+        if (header != null && !header.isEmpty()) setHeader(header);
+        this.comments = comments;
         this.type = type;
+        this.structureSetHolders = structureSetHolders;
+
+        if(!this.structureSetHolders.isEmpty()) getDefaultNamespace();
+
+        this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
+        this.structurePlacement = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSetHolders));
     }
 
-    protected void addSet(Pair<String, ResourceLocation> set) {
-        structureSets.add(set);
+    void addSet(StructureSetData set) {
+        structureSetHolders.add(set);
     }
 
-    protected void addSetsToRuntimePack() {
-        Map<String, Boolean> map = ConfigUtil.readConfig(path);
-        Map<String, Placement> map2 = ConfigUtil.readPlacementConfig(path);
+    public void addSetsToRuntimePack() {
+        if (type.equals(ConfigType.ENABLE_DISABLE) && enableDisableConfig == null) enableDisableConfig = ConfigManager.readEDConfig(this);
+        else if(type.equals(ConfigType.PLACEMENT) && placementConfig == null) placementConfig = ConfigManager.readPlacementConfig(this);
 
-        for(Pair<String, ResourceLocation> s : structureSets) {
-            ResourceLocation location = s.getSecond();
+        structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
+            String modID = holder.modID();
 
-
-            JsonElement e = null;
-
-            ResourceLocation structureLocation = Util.getLocationForStructureSet(location);
-
-            if(CristelLib.DATA_PACK.hasResource(structureLocation)){
-                e = CristelLib.DATA_PACK.getResource(structureLocation);
-            }
-            if(e == null){
-                e = ConfigUtil.getSetElement(s.getFirst(), location);
+            JsonElement structureSetElement = getStructureSet(setLocation, modID);
+            if (!(structureSetElement instanceof JsonObject structureSet)) {
+                CristelLib.LOGGER.warn("Set for {} {} is not a JsonObject, skipping...", modID, setLocation);
+                return;
             }
 
-            if(e instanceof JsonObject object) {
-                JsonObject objectOld = object.deepCopy();
+            JsonObject originalSet = structureSet.deepCopy();
 
-                if(type.equals(ConfigType.ENABLE_DISABLE)) {
-                    JsonArray array = object.get("structures").getAsJsonArray();
-                    List<JsonElement> elements = new ArrayList<>();
-                    for(JsonElement eInArray : array) {
-                        String structureName = eInArray.getAsJsonObject().get("structure").getAsString().split(":")[1];
-                        if(map.containsKey(structureName) && !map.get(structureName)){
-                            elements.add(eInArray);
-                        }
-                    }
-                    elements.forEach(array::remove);
-                } else if(type.equals(ConfigType.PLACEMENT)) {
-                    if(map2.containsKey(location.getPath())) {
-                        JsonObject a = object.get("placement").getAsJsonObject();
-                        Placement p = map2.get(location.getPath());
-                        a.addProperty("salt", p.salt);
-                        a.addProperty("spacing", p.spacing);
-                        a.addProperty("separation", p.separation);
-                        
-                        double f = p.frequency;
-                        
-                        if(f != 0 && a.has("frequency") && (a.get("frequency").getAsFloat() != f)) a.addProperty("frequency", f);
-                    }
-                }
+            if (type.equals(ConfigType.ENABLE_DISABLE)) {
+                removeStructureInSets(structureSet, setLocation);
+            } else if (type.equals(ConfigType.PLACEMENT)) {
+                updatePlacementsInSet(structureSet, setLocation);
+            }
 
-                if(!object.equals(objectOld)){
-                    CristelLib.DATA_PACK.addStructureSet(location, object);
-                }
+            if (!structureSet.equals(originalSet)) {
+                CristelLib.RUNTIME_PACK.addStructureSet(setLocation, structureSet);
             }
-            else {
-                CristelLib.LOGGER.error("Set for {} {} is not a JsonObject", s.getFirst(), location);
-            }
+
+        }));
+
+    }
+
+    private void removeStructureInSets(JsonObject structureSet, ResourceLocation setLocation) {
+        if(!enableDisableConfig.containsKey(setLocation)) {
+            CristelLib.LOGGER.error("{} {}", setLocation, enableDisableConfig.toString());
+            return;
+        }
+
+        EDConfig setConfig = enableDisableConfig.get(setLocation);
+
+        JsonArray array = structureSet.get("structures").getAsJsonArray();
+        Iterator<JsonElement> structureIterator = array.iterator();
+        while (structureIterator.hasNext()) {
+            JsonElement structure = structureIterator.next();
+            String structureName = toDefaultString(Objects.requireNonNull(ResourceLocation.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
+            if (/*setConfig.containsStructure(structureName) && */setConfig.isStructureDisabled(structureName))
+                structureIterator.remove();
         }
     }
 
-    protected void writeConfig() {
-        if(type.equals(ConfigType.ENABLE_DISABLE) && structures.isEmpty()){
-            readSetsAndAddStructures();
-            ConfigUtil.createConfig(this);
-        }
-        else if(type.equals(ConfigType.PLACEMENT) && structurePlacement.isEmpty()){
-            readSetsAndAddPlacements();
-            ConfigUtil.createPlacementConfig(this);
+    private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation) {
+        if (!placementConfig.containsKey(setLocation)) {
+            CristelLib.LOGGER.error("{} {}", setLocation, placementConfig.toString());
+            return;
         }
 
+        JsonObject o = structureSet.get("placement").getAsJsonObject();
+        PlacementConfig p = placementConfig.get(setLocation);
+        o.addProperty("salt", p.salt());
+        o.addProperty("spacing", p.spacing());
+        o.addProperty("separation", p.separation());
+
+        double newF = p.frequency();
+
+        if ((!o.has("frequency") && newF == 1.0) ||
+                (o.has("frequency") && newF == (double) o.get("frequency").getAsFloat())) return;
+
+        o.addProperty("frequency", newF);
+    }
+
+    private JsonElement getStructureSet(ResourceLocation location, String modID) {
+        ResourceLocation structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
+        if (CristelLib.RUNTIME_PACK.hasResource(structureLocation)) {
+            return CristelLib.RUNTIME_PACK.getResource(structureLocation);
+        }
+        return JanksonUtil.getSetElement(modID, location);
     }
 
 
-    private void readSetsAndAddStructures() {
-        for(Pair<String, ResourceLocation> p : structureSets){
-            ResourceLocation setLocation = p.getSecond();
-            JsonElement e = ConfigUtil.getSetElement(p.getFirst(), setLocation);
-            if(e == null){
-                CristelLib.LOGGER.error("Set for {} {} is not a JsonObject", p.getFirst(), setLocation);
-                continue;
-            }
-            JsonArray a = e.getAsJsonObject().get("structures").getAsJsonArray();
-            List<String> structureList = new ArrayList<>();
-            for(JsonElement element : a){
-                if(element instanceof JsonObject) {
-                    structureList.add(element.getAsJsonObject().get("structure").getAsString());
-                }
-            }
-            structures.put(setLocation, structureList);
-        }
-    }
-
-    private void readSetsAndAddPlacements() {
-        for(Pair<String, ResourceLocation> pair : structureSets){
-            ResourceLocation setLocation = pair.getSecond();
-            JsonElement e = ConfigUtil.getSetElement(pair.getFirst(), setLocation);
-            if(e == null){
-                CristelLib.LOGGER.error("Set for {} {} is not a JsonObject", pair.getFirst(), setLocation);
-                continue;
-            }
-            JsonObject a = e.getAsJsonObject().get("placement").getAsJsonObject();
-            Placement p = new Placement();
-
-
-
-            JsonElement salt = a.get("salt");
-            JsonElement spacing = a.get("spacing");
-            JsonElement separation = a.get("separation");
-            JsonElement frequency = a.get("frequency");
-
-
-            if(salt != null) p.salt = salt.getAsInt();
-            if(spacing != null) p.spacing = spacing.getAsInt();
-            if(separation != null) p.separation = separation.getAsInt();
-            if(frequency != null) p.frequency = frequency.getAsDouble();
-
-            structurePlacement.put(setLocation, p);
+    /**
+     * Writes the configuration to the filesystem.
+     * This method initializes the structures or placements depending on the {@link ConfigType}.
+     */
+    public void writeConfig(boolean override) {
+        if (type.equals(ConfigType.ENABLE_DISABLE)) {
+            ConfigManager.createEDConfig(this, override);
+        } else if (type.equals(ConfigType.PLACEMENT)) {
+            ConfigManager.createPlacementConfig(this, override);
         }
     }
 
 
+    // API
     public static StructureConfig create(Path path, String name, ConfigType type) {
         return new StructureConfig(path.resolve(name + ".json5"), type);
     }
@@ -165,37 +179,79 @@ public class StructureConfig {
     public static StructureConfig createWithDefaultConfigPath(String subPath, String name, ConfigType type) {
         return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(subPath).resolve(name + ".json5"), type);
     }
+
     public static StructureConfig createWithDefaultConfigPath(String name, ConfigType type) {
         return new StructureConfig(CristelLibExpectPlatform.getConfigDirectory().resolve(name + ".json5"), type);
     }
 
-    public void setComments(HashMap<String, String> comments){
+    public void setComments(Map<String, String> comments) {
         this.comments = comments;
     }
 
-    public void setHeader(String header){
-        this.header = "/*\n" + header + "*/";
+    public void setHeader(String header) {
+        this.header = header;
     }
 
-    public String getHeader(){
+    public String getHeader() {
         return header;
     }
 
-    public HashMap<String, String> getComments() {
+    public Map<String, String> getComments() {
         return comments;
     }
 
-    public Map<ResourceLocation, List<String>> getStructures() {
-        return structures;
+    public Map<ResourceLocation, List<ResourceLocation>> getDefaultStructures() {
+        return structuresForED.get();
     }
 
-    public Map<ResourceLocation, Placement> getStructurePlacement() {
-        return structurePlacement;
+    public Map<ResourceLocation, PlacementConfig> getDefaultStructurePlacement() {
+        return structurePlacement.get();
     }
 
     public Path getPath() {
         return path;
     }
+
+    public ConfigType getType() {
+        return type;
+    }
+
+    public ResourceLocation toDefaultRL(String location) {
+        if(location.contains(":")) return ResourceLocation.parse(location);
+        else if(defaultNamespace.equals("minecraft")) return ResourceLocation.withDefaultNamespace(location);
+        else return ResourceLocation.fromNamespaceAndPath(defaultNamespace, location);
+    }
+
+    public String toDefaultString(ResourceLocation location) {
+        return location.getNamespace().equals(defaultNamespace)
+                ? location.getPath()
+                : location.toString();
+    }
+
+    public void getDefaultNamespace() {
+        Map<String, Integer> namespaceCounts = new HashMap<>();
+
+        for (StructureSetData data : structureSetHolders) {
+            for (ResourceLocation set : data.sets()) {
+                namespaceCounts.merge(set.getNamespace(), 1, Integer::sum);
+            }
+        }
+
+        if (namespaceCounts.isEmpty()) {
+            throw new RuntimeException("No namespaces found in config with path: " + getPath() + " :(((");
+        }
+
+        this.defaultNamespace = namespaceCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElseThrow(() -> new RuntimeException("Could not determine default namespace :((("));
+    }
+
+    public boolean isSetsEmpty() {
+        return structureSetHolders.isEmpty();
+    }
+
+    public boolean isAutoGenerated = false;
 
 
 }

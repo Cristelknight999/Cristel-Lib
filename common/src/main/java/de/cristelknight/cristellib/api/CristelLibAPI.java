@@ -7,10 +7,10 @@ import java.util.Set;
 
 public interface CristelLibAPI {
 
-    default void registerConfigs(Set<StructureConfig> sets){
-    }
+    default void registerConfigs(Set<StructureConfig> sets){}
 
-    default void registerStructureSets(CristelLibRegistry registry){
-    }
+    default void registerStructureSets(CristelLibRegistry registry){}
+
+    default void registerBuiltInPacks() {}
 
 }

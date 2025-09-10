@@ -34,6 +34,7 @@ repositories {
 dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
 
+    modApi "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
     include(implementation("blue.endless:jankson:${rootProject.jankson_version}"))
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }

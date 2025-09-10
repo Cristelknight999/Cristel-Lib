@@ -25,7 +25,7 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
+    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
         throw new AssertionError();
     }
 
@@ -40,7 +40,22 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
+    public static String getModDisplayName(String modID) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static Platform getPlatform(){
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static boolean isClient(){
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static List<String> getModIds() {
         throw new AssertionError();
     }
 

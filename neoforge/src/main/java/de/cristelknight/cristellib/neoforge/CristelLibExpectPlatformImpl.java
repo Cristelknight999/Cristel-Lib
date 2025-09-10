@@ -3,8 +3,8 @@ package de.cristelknight.cristellib.neoforge;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.api.CristelLibAPI;
+import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.builtinpacks.BuiltinResourcePackSource;
-import de.cristelknight.cristellib.data.ReadData;
 import de.cristelknight.cristellib.neoforge.extraapiutil.APIFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
@@ -18,6 +18,7 @@ import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
@@ -36,17 +37,20 @@ public class CristelLibExpectPlatformImpl {
         return FMLPaths.CONFIGDIR.get();
     }
 
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
-        Path path = getResourceDirectory(modid, id.getPath());
-        if (path != null) {
+    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
+        String modID = id.getNamespace();
+        String path = id.getPath();
+        Path totalPath = getResourceDirectory(modID, id.getPath());
+        if (totalPath != null) {
             PackLocationInfo metadata = new PackLocationInfo(
-                    id.getPath(),
+                    id.toString(),
                     displayName,
                     new BuiltinResourcePackSource(),
-                    Optional.of(new KnownPack(id.getNamespace(), id.toString(), ModList.get().getModFileById(modid).versionString()))
+                    Optional.of(new KnownPack(CristelLib.MOD_ID, id.toString(), ModList.get().getModFileById(modID).versionString()))
             );
-            return new PathPackResources(metadata, path);
+            return new PathPackResources(metadata, totalPath);
         }
+        CristelLib.LOGGER.debug("Couldn't find path: {} in container for modID: {} for pack with display name: {}", path, modID, displayName);
         return null;
     }
 
@@ -81,32 +85,14 @@ public class CristelLibExpectPlatformImpl {
         List<Pair<List<String>, CristelLibAPI>> apis = APIFinder.scanForAPIs();
 
         for (Pair<List<String>, CristelLibAPI> apiPair : apis) {
-
             CristelLibAPI api = apiPair.getSecond();
-            List<String> modIds = apiPair.getFirst();
-            //modIds.forEach(modid -> CristelLib.LOGGER.error("Found API for modid: " + modid));
-
-            Set<StructureConfig> set = new HashSet<>();
-            api.registerConfigs(set);
-            configs.put(modIds.get(0), set);
-            api.registerStructureSets(registry);
+            String modID = apiPair.getFirst().getFirst(); // just get main mod hopefully
+            CristelLib.readAPI(registry, modID, api, configs);
         }
-        Util.addAll(configs, data(registry));
+        Util.addAll(configs, Util.readData());
+        Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet()));
         return configs;
     }
-
-    public static Map<String, Set<StructureConfig>> data(CristelLibRegistry registry) {
-        Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
-        for (String modid : getModIds()) {
-
-            ReadData.getBuiltInPacks(modid);
-            //ReadData.modifyJson5File(modid);
-            ReadData.copyFile(modid);
-            ReadData.getStructureConfigs(modid, modidAndConfigs, registry);
-        }
-        return modidAndConfigs;
-    }
-
 
     public static List<String> getModIds() {
         ModList modList = ModList.get();
@@ -122,7 +108,6 @@ public class CristelLibExpectPlatformImpl {
         }
         return modIds;
     }
-
 
     public static List<Path> getRootPaths(String modId) {
         ModList modList = ModList.get();
@@ -140,9 +125,20 @@ public class CristelLibExpectPlatformImpl {
         return Collections.singletonList(file.getSecureJar().getRootPath());
     }
 
+    @SuppressWarnings("SameReturnValue")
     public static Platform getPlatform() {
         return Platform.FORGE;
     }
 
+    public static String getModDisplayName(String modId) {
+        return ModList.get()
+                .getModContainerById(modId)
+                .map(container -> container.getModInfo().getDisplayName())
+                .orElse(modId); // fallback to modid if nothing is found
+    }
+
+    public static boolean isClient() {
+        return FMLEnvironment.dist.isClient();
+    }
 
 }

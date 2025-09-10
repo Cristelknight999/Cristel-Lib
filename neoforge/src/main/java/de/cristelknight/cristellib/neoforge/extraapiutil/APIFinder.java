@@ -16,6 +16,7 @@ import java.util.List;
 public class APIFinder {
 
 
+    @SuppressWarnings("unchecked")
     public static List<Pair<List<String>, CristelLibAPI>> scanForAPIs() {
         List<Pair<List<String>, CristelLibAPI>> instances = Lists.newArrayList();
         for (ModFileScanData data : ModList.get().getAllScanData()) {
@@ -34,13 +35,13 @@ public class APIFinder {
                 try {
                     clazz = (Class<CristelLibAPI>) Class.forName(ad.memberName());
                 } catch (ClassNotFoundException e) {
-                    CristelLib.LOGGER.error("Failed to load api class: " + ad.clazz() + " for @CristelPlugin annotation", e);
+                    CristelLib.LOGGER.error("Failed to load api class: {} for @CristelPlugin annotation", ad.clazz(), e);
                     continue;
                 }
                 try {
                     instances.add(new Pair<>(modIds, clazz.getDeclaredConstructor().newInstance()));
                 } catch (Throwable throwable) {
-                    CristelLib.LOGGER.error("Failed to load api: " + ad.memberName(), throwable);
+                    CristelLib.LOGGER.error("Failed to load api: {}", ad.memberName(), throwable);
                 }
             }
         }

@@ -1,12 +1,13 @@
 package de.cristelknight.cristellib.fabric;
 
-import de.cristelknight.cristellib.data.ReadData;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.api.CristelLibAPI;
+import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.fabric.impl.resource.loader.ModNioResourcePack;
 import net.fabricmc.loader.api.FabricLoader;
@@ -26,13 +27,14 @@ public class CristelLibExpectPlatformImpl {
         return FabricLoader.getInstance().getConfigDir();
     }
 
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName, String modid) {
-        ModContainer container = FabricLoader.getInstance().getModContainer(modid).orElse(null);
+    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
+        String modID = id.getNamespace();
+        ModContainer container = FabricLoader.getInstance().getModContainer(modID).orElse(null);
         if(container != null){
             return ModNioResourcePack.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, ResourcePackActivationType.ALWAYS_ENABLED, false);
         }
         else {
-            CristelLib.LOGGER.warn("Couldn't get mod container for modid: {}", modid);
+            CristelLib.LOGGER.warn("Couldn't get mod container for modID: {}", modID);
             return null;
         }
     }
@@ -48,41 +50,22 @@ public class CristelLibExpectPlatformImpl {
         return null;
     }
 
-
-
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
+        // Read Custom Code Configs
         FabricLoader.getInstance().getEntrypointContainers("cristellib", CristelLibAPI.class).forEach(entrypoint -> {
             String modId = entrypoint.getProvider().getMetadata().getId();
-            try {
-                CristelLibAPI api = entrypoint.getEntrypoint();
-                Set<StructureConfig> set = new HashSet<>();
-                api.registerConfigs(set);
-                configs.put(modId, set);
-                api.registerStructureSets(registry);
-            } catch (Throwable e) {
-                CristelLib.LOGGER.error("Mod: " + modId + " provides a broken implementation of CristelLibAPI", e);
-            }
+            CristelLibAPI api = entrypoint.getEntrypoint();
+            CristelLib.readAPI(registry, modId, api, configs);
         });
-        Util.addAll(configs, data(registry));
+        Util.addAll(configs, Util.readData()); // Read Custom Data Configs
+        Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet())); // Automatically Create Configs
         return configs;
     }
 
-
-    public static Map<String, Set<StructureConfig>> data(CristelLibRegistry registry){
-        Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
-        for(ModContainer container : FabricLoader.getInstance().getAllMods()){
-            String modid = container.getMetadata().getId();
-
-            ReadData.getBuiltInPacks(modid);
-            ReadData.copyFile(modid);
-            //ReadData.modifyJson5File(modid);
-            ReadData.getStructureConfigs(modid, modidAndConfigs, registry);
-        }
-        return modidAndConfigs;
+    public static List<String> getModIds() {
+        return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
     }
-
-
 
     public static List<Path> getRootPaths(String modId) {
         ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
@@ -93,8 +76,19 @@ public class CristelLibExpectPlatformImpl {
         return paths;
     }
 
+    @SuppressWarnings("SameReturnValue")
     public static Platform getPlatform() {
         return Platform.FABRIC;
     }
 
+    public static String getModDisplayName(String modID) {
+        return FabricLoader.getInstance()
+                .getModContainer(modID)
+                .map(container -> container.getMetadata().getName()) // human-readable name
+                .orElse(modID); // fallback to ID if not found
+    }
+
+    public static boolean isClient() {
+        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
+    }
 }

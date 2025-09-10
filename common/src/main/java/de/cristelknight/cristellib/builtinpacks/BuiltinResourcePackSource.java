@@ -14,6 +14,6 @@ public record BuiltinResourcePackSource() implements PackSource {
 
     @Override
     public @NotNull Component decorate(@NotNull Component packName) {
-        return Component.translatable("cristellib.nameAndSource", packName, Component.translatable("cristellib.builtinPack")).withStyle(ChatFormatting.GRAY);
+        return Component.translatable("cristellib.nameAndSource", packName).withStyle(ChatFormatting.GRAY);
     }
 }

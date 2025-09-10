@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.neoforge;
 
+import de.cristelknight.cristellib.CristelLib;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
@@ -7,47 +8,50 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class ModLoadingUtilImpl {
 
-    public static boolean isModLoaded(String modid) {
+    public static boolean isModLoaded(String modID) {
         ModList modList = ModList.get();
         if (modList != null) {
-            return modList.isLoaded(modid);
+            return modList.isLoaded(modID);
         }
-        return isModPreLoaded(modid);
+        return isModPreLoaded(modID);
     }
 
-    public static boolean isModPreLoaded(String modid) {
-        return getPreLoadedModInfo(modid) != null;
+    public static boolean isModPreLoaded(String modID) {
+        return getPreLoadedModInfo(modID) != null;
     }
 
-    public static @Nullable ModInfo getPreLoadedModInfo(String modId) {
+    public static @Nullable ModInfo getPreLoadedModInfo(String modID) {
         for (ModInfo info : LoadingModList.get().getMods()) {
-            if (info.getModId().equals(modId)) {
+            if (info.getModId().equals(modID)) {
                 return info;
             }
         }
         return null;
     }
 
-    public static boolean isModLoadedWithVersion(String modid, String minVersion) {
-        if (isModLoaded(modid)) {
+
+    public static Optional<Integer> compare(String modID, String version) {
+        if (isModLoaded(modID)) {
             ModList modList = ModList.get();
-            ArtifactVersion version;
-            if (modList != null) version = modList.getModContainerById(modid).get().getModInfo().getVersion();
-            else version = getPreLoadedModVersion(modid);
+            ArtifactVersion modVersion;
+            if (modList != null) modVersion = modList.getModContainerById(modID).get().getModInfo().getVersion();
+            else modVersion = getPreLoadedModVersion(modID);
 
             ArtifactVersion min;
-            min = new DefaultArtifactVersion(minVersion);
-            return version.compareTo(min) >= 0;
+            min = new DefaultArtifactVersion(version);
+            return Optional.of(modVersion.compareTo(min));
         }
-        return false;
+        return Optional.empty();
     }
 
-    public static ArtifactVersion getPreLoadedModVersion(String modid) {
-        ModInfo info = getPreLoadedModInfo(modid);
-        if (info == null) throw new RuntimeException("Couldn't find mod: " + modid);
+
+    public static ArtifactVersion getPreLoadedModVersion(String modID) {
+        ModInfo info = getPreLoadedModInfo(modID);
+        if (info == null) throw new RuntimeException(CristelLib.getWithPrefix("Couldn't find mod: " + modID));
         return info.getVersion();
     }
 }
