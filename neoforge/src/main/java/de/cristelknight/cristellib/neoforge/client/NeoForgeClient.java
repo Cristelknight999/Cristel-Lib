@@ -17,7 +17,6 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 import java.util.Optional;
 
-@EventBusSubscriber(modid = CristelLib.MOD_ID, value = Dist.CLIENT)
 public class NeoForgeClient {
 
     public static void registerMainConfigScreen() {
@@ -43,9 +42,7 @@ public class NeoForgeClient {
         }
     }
 
-    @SubscribeEvent
     public static void onLoadComplete(FMLLoadCompleteEvent event) {
-        if(!Util.isClothConfigLoaded()) return;
         event.enqueueWork(NeoForgeClient::addOtherConfigScreens);
     }
 

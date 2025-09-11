@@ -20,8 +20,8 @@ public class CristelLibForge {
 
         if(FMLEnvironment.dist.isClient() && Util.isClothConfigLoaded()) {
             NeoForgeClient.registerMainConfigScreen();
+            bus.addListener(NeoForgeClient::onLoadComplete);
         }
-
     }
 
     private void injectPackRepositories(AddPackFindersEvent event) {
