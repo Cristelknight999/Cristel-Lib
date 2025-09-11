@@ -20,7 +20,9 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class ModFinder {
-
+    
+    public static List<String> supportedPlacements = List.of("mes:advanced_random_spread", "minecraft:random_spread");
+    
     public static Map<String, Set<StructureConfig>> addConfigs(CristelLibRegistry registry, Set<String> modsWithConfig) {
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
 
@@ -35,7 +37,7 @@ public class ModFinder {
                 JsonElement e = JanksonUtil.getElement(modID, path.toString());
                 JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path).getAsJsonObject("placement");
                 ResourceLocation location = getLocation(path);
-                if(GsonHelper.getAsString(object, "type").equals("minecraft:random_spread")) {
+                if(supportedPlacements.contains(GsonHelper.getAsString(object, "type"))) {
                     registry.registerSetToConfig(modID, location, edConfig, placementConfig);
                 }
                 else registry.registerSetToConfig(modID, location, edConfig);
