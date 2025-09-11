@@ -110,7 +110,7 @@ public record ACConfig(
                 map.put("modOverrideWhitelist", """        
                     This list lets you override the default settings provided by mod authors.
                     If you add a mod that is blacklisted by default (in the two other lists)
-                    you can now remove them without them getting added back automatically.
+                    you can now remove it without it getting added back automatically.
                     Proceed at your own risk.""");
             });
         }
