@@ -124,8 +124,11 @@ public class StructureConfig {
         while (structureIterator.hasNext()) {
             JsonElement structure = structureIterator.next();
             String structureName = toDefaultString(Objects.requireNonNull(ResourceLocation.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
-            if (/*setConfig.containsStructure(structureName) && */setConfig.isStructureDisabled(structureName))
-                structureIterator.remove();
+            if (setConfig.containsStructure(structureName)) {
+                if(setConfig.isStructureDisabled(structureName)) structureIterator.remove();
+
+            }
+            else CristelLib.LOGGER.error("{} is not included in: {} for mod with path: {} " + setConfig.setStructureInfo().toString(), structureName, setLocation, path);
         }
     }
 

@@ -39,14 +39,17 @@ import static de.cristelknight.cristellib.config.client.simple.SimpleScreenBuild
 @Environment(EnvType.CLIENT)
 public class ScreenBuilder {
 
-    private String modID;
+    private final String modID;
 
     private ConfigEntryBuilder entryBuilder;
 
     private final Set<ClientStructureConfig> clientStructureConfigs = new HashSet<>();
 
-    public Screen create(Screen parent, String modID, boolean structure, boolean simple){
+    public ScreenBuilder(String modID) {
         this.modID = modID;
+    }
+
+    public Screen create(Screen parent, boolean structure, boolean simple){
         ConfigBuilder builder = ConfigBuilder.create()
                 .setTitle(Component.translatable("§7" + CristelLibExpectPlatform.getModDisplayName(modID) + " Configuration (via %s§7)", Util.CRISTEL_LIB));
 
@@ -68,6 +71,20 @@ public class ScreenBuilder {
         }
 
         return builder.build();
+    }
+
+    public void addToBuilder(ConfigBuilder builder, boolean structure, boolean simple) {
+        if(structure) {
+            for(StructureConfig structureConfig : sorted(CristelLibRegistry.getConfigs().get(modID))){
+                if(structureConfig.getType().equals(ConfigType.PLACEMENT)) addPlacementCategory(builder, structureConfig);
+                else addEDCategory(builder, structureConfig);
+            }
+        }
+        if(simple) {
+            for(SimpleConfigScreen simpleConfigScreen : ClientConfigRegistry.getScreens(modID)) {
+                SimpleScreenBuilder.addConfigToCategory(builder, entryBuilder, simpleConfigScreen);
+            }
+        }
     }
 
     private void addPlacementCategory(ConfigBuilder builder, StructureConfig structureConfig) {

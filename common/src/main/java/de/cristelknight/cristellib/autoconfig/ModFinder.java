@@ -21,7 +21,10 @@ import java.util.stream.Stream;
 
 public class ModFinder {
     
-    public static List<String> supportedPlacements = List.of("mes:advanced_random_spread", "minecraft:random_spread");
+    public static Set<String> supportedPlacements = Set.of("minecraft:random_spread",
+            "mes:advanced_random_spread", "mns:advanced_random_spread", "mss:advanced_random_spread", "mvs:advanced_random_spread",
+            "repurposed_structures:advanced_random_spread"
+    );
     
     public static Map<String, Set<StructureConfig>> addConfigs(CristelLibRegistry registry, Set<String> modsWithConfig) {
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
