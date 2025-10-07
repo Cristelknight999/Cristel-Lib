@@ -8,4 +8,4 @@ A Library Mod for Structure configs
 - Datapack Loading
 
 ## Cristel Lib Wiki
-[Wiki](https://github.com/Cristelknight999/Cristel-Lib/wiki)
+[Wiki]([https://github.com/Cristelknight999/Cristel-Lib/wiki](https://github.com/Cristelknight999/Cristel-Lib/wiki/1.-Getting-started))
