@@ -53,7 +53,6 @@ public class RuntimePack implements PackResources {
                 Optional.of(new KnownPack(CristelLib.MOD_ID, this.id, String.valueOf(version)))
         );
 
-
         if(imageFile != null){
             byte[] image = RuntimePackUtil.extractImageBytes(imageFile);
             if(image != null) this.addRootResource("pack.png", image);
@@ -63,6 +62,8 @@ public class RuntimePack implements PackResources {
             JsonObject object = new JsonObject();
             JsonObject pack = new JsonObject();
             pack.addProperty("pack_format", this.packVersion);
+            pack.addProperty("min_format", this.packVersion);
+            pack.addProperty("max_format", this.packVersion);
             pack.addProperty("description", description);
             object.add("pack", pack);
             this.addRootResource("pack.mcmeta", RuntimePackUtil.serializeJson(object));
@@ -197,7 +198,7 @@ public class RuntimePack implements PackResources {
             throw new RuntimeException(e);
         }
         if(stream == null) CristelLib.LOGGER.error("Couldn't find pack.mcmeta of the Runtime Pack: {}", id);
-        return FilePackResources.getMetadataFromStream(metadataSectionType, stream);
+        return FilePackResources.getMetadataFromStream(metadataSectionType, stream, metadata);
     }
 
     @Override
