@@ -128,7 +128,7 @@ public class StructureConfig {
                 if(setConfig.isStructureDisabled(structureName)) structureIterator.remove();
 
             }
-            else CristelLib.LOGGER.error("{} is not included in: {} for mod with path: {} " + setConfig.setStructureInfo().toString(), structureName, setLocation, path);
+            else CristelLib.LOGGER.error("{} is not included in: {} for mod with path: {} ", structureName, setLocation, path);
         }
     }
 
