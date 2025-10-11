@@ -104,7 +104,7 @@ public record ACConfig(
                     Disable automatic screen generation for structure configs.""");
 
                 map.put("blacklistedMods", """
-                    Mods where automatic structure config generation is fully disabled.""");
+                    Mods where automatic structure config generation is disabled.""");
                 map.put("clientExcludedMods", """
                     Mods where automatic screen generation for structure configs is disabled.""");
                 map.put("modOverrideWhitelist", """        

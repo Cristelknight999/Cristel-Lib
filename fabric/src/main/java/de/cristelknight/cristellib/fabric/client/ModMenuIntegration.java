@@ -1,4 +1,4 @@
-package de.cristelknight.cristellib.fabric.config;
+package de.cristelknight.cristellib.fabric.client;
 
 import com.mojang.datafixers.util.Pair;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
@@ -16,7 +16,7 @@ public class ModMenuIntegration implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return screenFactory -> Util.isClothConfigLoaded() ? new ScreenBuilder().create(screenFactory, CristelLib.MOD_ID, true, true) : null;
+        return screenFactory -> Util.isClothConfigLoaded() ? new ScreenBuilder(CristelLib.MOD_ID).create(screenFactory,true, true) : null;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ModMenuIntegration implements ModMenuApi {
             if(!structure && !simple) continue;
 
             screens.put(modID, (providedConfigScreenFactories) ->
-                    new ScreenBuilder().create(providedConfigScreenFactories, modID, structure, simple)
+                    new ScreenBuilder(modID).create(providedConfigScreenFactories, structure, simple)
             );
         }
 

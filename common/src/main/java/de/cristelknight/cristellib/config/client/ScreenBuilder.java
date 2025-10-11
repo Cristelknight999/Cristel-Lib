@@ -38,22 +38,52 @@ import static de.cristelknight.cristellib.config.client.simple.SimpleScreenBuild
 @Environment(EnvType.CLIENT)
 public class ScreenBuilder {
 
-    private String modID;
+    private final String modID;
 
     private ConfigEntryBuilder entryBuilder;
 
     private final Set<ClientStructureConfig> clientStructureConfigs = new HashSet<>();
 
-    public Screen create(Screen parent, String modID, boolean structure, boolean simple){
+    public ScreenBuilder(String modID) {
         this.modID = modID;
+    }
+
+    /**
+     * Creates and builds a configuration screen for the specified mod.
+     *
+     * <p>This method initializes a {@link ConfigBuilder}, sets up its properties,
+     * and populates it with config entries for either structure configs,
+     * simple configs, or both depending on the provided flags.</p>
+     *
+     * @param parent     the parent screen to return to when the config screen is closed
+     * @param structure  if {@code true}, includes structure-related configuration categories
+     * @param simple     if {@code true}, includes simple (non-structure) configuration categories
+     * @return the fully built {@link Screen} instance representing the mod's configuration screen
+     */
+    public Screen create(Screen parent, boolean structure, boolean simple){
         ConfigBuilder builder = ConfigBuilder.create()
                 .setTitle(Component.translatable("§7" + CristelLibExpectPlatform.getModDisplayName(modID) + " Configuration (via %s§7)", Util.CRISTEL_LIB));
 
         builder.setParentScreen(parent);
         builder.setSavingRunnable(this::onConfigSave);
 
-        entryBuilder = builder.entryBuilder();
+        addToBuilder(builder, structure, simple);
 
+        return builder.build();
+    }
+
+    /**
+     * Adds configuration entries to the provided {@link ConfigBuilder}.
+     *
+     * <p>This method determines which types of configs to include based on the
+     * given flags, and adds the corresponding categories and entries to the builder.</p>
+     *
+     * @param builder    the {@link ConfigBuilder} to add config entries to
+     * @param structure  if {@code true}, adds structure-related configuration categories
+     * @param simple     if {@code true}, adds simple (non-structure) configuration categories
+     */
+    public void addToBuilder(ConfigBuilder builder, boolean structure, boolean simple) {
+        entryBuilder = builder.entryBuilder();
         if(structure) {
             for(StructureConfig structureConfig : sorted(CristelLibRegistry.getConfigs().get(modID))){
                 if(structureConfig.getType().equals(ConfigType.PLACEMENT)) addPlacementCategory(builder, structureConfig);
@@ -65,8 +95,6 @@ public class ScreenBuilder {
                 SimpleScreenBuilder.addConfigToCategory(builder, entryBuilder, simpleConfigScreen);
             }
         }
-
-        return builder.build();
     }
 
     private void addPlacementCategory(ConfigBuilder builder, StructureConfig structureConfig) {

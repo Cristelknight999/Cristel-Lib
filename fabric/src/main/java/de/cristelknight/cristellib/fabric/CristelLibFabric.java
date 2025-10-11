@@ -19,12 +19,20 @@ public class CristelLibFabric implements ModInitializer {
     public void onInitialize() {
         CristelLib.init();
         if(FabricLoader.getInstance().isDevelopmentEnvironment()) register();
+
     }
 
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            register(dispatcher);
+            registerDumpPack(dispatcher);
         });
+    }
+
+    private static void registerDumpPack(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("dump_runtime_pack")
+                .then(Commands.argument("outputPath", StringArgumentType.string())
+                        .executes(ctx -> dumpPack(ctx, StringArgumentType.getString(ctx, "outputPath"))))
+        );
     }
 
     private static int dumpPack(CommandContext<CommandSourceStack> ctx, String outputPathStr) {
@@ -38,12 +46,5 @@ public class CristelLibFabric implements ModInitializer {
             source.sendFailure(Component.literal("Failed to dump RuntimePack: " + e.getMessage()));
             return 0;
         }
-    }
-
-    private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("dump_runtime_pack")
-                .then(Commands.argument("outputPath", StringArgumentType.string())
-                        .executes(ctx -> dumpPack(ctx, StringArgumentType.getString(ctx, "outputPath"))))
-        );
     }
 }

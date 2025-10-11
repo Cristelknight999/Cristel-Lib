@@ -21,7 +21,7 @@ public class NeoForgeClient {
 
     public static void registerMainConfigScreen() {
         ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> (mc, screenFactory) ->
-                new ScreenBuilder().create(screenFactory, CristelLib.MOD_ID, true, true));
+                new ScreenBuilder(CristelLib.MOD_ID).create(screenFactory, true, true));
     }
 
     public static void addOtherConfigScreens() {
@@ -38,7 +38,7 @@ public class NeoForgeClient {
             if(container.isEmpty() || container.get().getCustomExtension(IConfigScreenFactory.class).isPresent()) continue;
 
             container.get().registerExtensionPoint(IConfigScreenFactory.class, (mc, screenFactory) ->
-                    new ScreenBuilder().create(screenFactory, modID, structure, simple));
+                    new ScreenBuilder(modID).create(screenFactory, structure, simple));
         }
     }
 

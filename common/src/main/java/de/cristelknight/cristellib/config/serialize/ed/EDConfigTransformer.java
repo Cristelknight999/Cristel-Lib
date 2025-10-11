@@ -19,7 +19,7 @@ public class EDConfigTransformer {
             if (object.isBoolean()) {
                 map.put(finalKey, object.value());
             } else {
-                map.putAll(stringBooleanMap(object.nested(), key));
+                map.putAll(stringBooleanMap(object.nested(), finalKey));
             }
         }
         return map;

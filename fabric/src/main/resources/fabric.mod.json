@@ -18,11 +18,14 @@
     "main": [
       "de.cristelknight.cristellib.fabric.CristelLibFabric"
     ],
+    "client": [
+      "de.cristelknight.cristellib.fabric.client.CristelLibClient"
+    ],
     "cristellib": [
       "de.cristelknight.cristellib.api.BuiltInAPI"
     ],
     "modmenu": [
-      "de.cristelknight.cristellib.fabric.config.ModMenuIntegration"
+      "de.cristelknight.cristellib.fabric.client.ModMenuIntegration"
     ]
   },
   "mixins": [

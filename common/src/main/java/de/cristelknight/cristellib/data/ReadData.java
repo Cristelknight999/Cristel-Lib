@@ -1,6 +1,7 @@
 package de.cristelknight.cristellib.data;
 
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.StructureConfig;
@@ -11,6 +12,7 @@ import de.cristelknight.cristellib.data.codec.BuiltInPackData;
 import de.cristelknight.cristellib.data.codec.BuiltInPackDataWrapper;
 import de.cristelknight.cristellib.data.codec.CopyFileData;
 import de.cristelknight.cristellib.util.Util;
+import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.io.FileUtils;
@@ -26,7 +28,7 @@ public class ReadData {
             ACInfoData acInfoData = ConfigManager.readFromJsonPath(String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
                     path, ACInfoData.CODEC);
 
-            if(data.containsKey(modId)) {
+            if (data.containsKey(modId)) {
                 CristelLib.LOGGER.warn("Overriding Auto Config data for modID: {} from path: {}", modId, path);
             }
             data.put(modId, acInfoData);
@@ -34,15 +36,47 @@ public class ReadData {
     }
 
     public static void getStructureConfigs(String modId, Map<String, Set<StructureConfig>> modIdAndConfigs) {
-        Set<StructureConfig> configs = new HashSet<>();
         for (Path path : PathFinder.getPathsInDir(modId, "structure_config")) {
+            // Read the structure config from disk
             StructureConfig config = ConfigManager.readFromJsonPath(String.format("Couldn't read %s, crashing instead. This file is corrupted!", path),
                     path, StructureConfig.CODEC);
 
-            configs.add(config);
+            // Special-case for replacement configs:
+            // We use 'minecraft' as a placeholder modId to indicate that this config
+            // should replace an existing config from another mod.
+            // checkForReplace ensures that we only replace the correct config in the
+            // original mod's set. If a replacement was applied, we skip adding it as a new config.
+            if (modId.equals("minecraft") && checkForReplace(modIdAndConfigs, path, config))
+                continue;
+
+            modIdAndConfigs.computeIfAbsent(modId, k -> new HashSet<>()).add(config);
         }
-        if (configs.isEmpty()) return;
-        modIdAndConfigs.put(modId, configs);
+    }
+
+    private static boolean checkForReplace(Map<String, Set<StructureConfig>> modIdAndConfigs, Path path, StructureConfig config) {
+        try {
+            // Use '@' as separator in filenames
+            // e.g., t_and_t@t_and_t_ED.json → t_and_t:t_and_t_ED
+
+            Pair<String, String> pair = Util.parseNamespaceAndPath(Util.fileName(path), '@');
+            String namespace = pair.getFirst();
+
+            Set<StructureConfig> configs = modIdAndConfigs.computeIfAbsent(namespace, k -> new HashSet<>());
+
+            for (Iterator<StructureConfig> it = configs.iterator(); it.hasNext(); ) {
+                StructureConfig old = it.next();
+                if (!Util.fileName(old.getPath()).equals(pair.getSecond())) continue;
+
+                it.remove();
+                configs.add(config);
+                return true; // replaced successfully
+            }
+
+            configs.add(config); // namespace exists but no match; just add
+            return true;
+        } catch (ResourceLocationException ignored) {
+            return false; // fallback: can't parse namespace, add to "minecraft"
+        }
     }
 
     public static void getBuiltInPacks(String modId) {
