@@ -9,7 +9,7 @@ import de.cristelknight.cristellib.util.RuntimePackUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.*;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.GsonHelper;
@@ -185,8 +185,9 @@ public class RuntimePack implements PackResources {
         return namespaces;
     }
 
+    @Nullable
     @Override
-    public @Nullable <T> T getMetadataSection(MetadataSectionSerializer<T> metadataSectionSerializer) {
+    public <T> T getMetadataSection(MetadataSectionType<T> metadataSectionType) {
         InputStream stream = null;
         try {
             IoSupplier<InputStream> supplier = this.getRootResource("pack.mcmeta");
@@ -197,7 +198,7 @@ public class RuntimePack implements PackResources {
             throw new RuntimeException(e);
         }
         if(stream == null) CristelLib.LOGGER.error("Couldn't find pack.mcmeta of the Runtime Pack: {}", id);
-        return FilePackResources.getMetadataFromStream(metadataSectionSerializer, stream);
+        return FilePackResources.getMetadataFromStream(metadataSectionType, stream, metadata);
     }
 
     @Override
