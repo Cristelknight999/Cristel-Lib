@@ -26,10 +26,8 @@ public class ModFinder {
             "repurposed_structures:advanced_random_spread"
     );
     
-    public static Map<String, Set<StructureConfig>> addConfigs(CristelLibRegistry registry, Set<String> modsWithConfig) {
-        Map<String, Set<StructureConfig>> configs = new HashMap<>();
-
-        find(modsWithConfig).forEach((modID, structureSets) -> {
+    public static void addConfigs(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry) {
+        find(configs.keySet()).forEach((modID, structureSets) -> {
             Set<StructureConfig> configSet = new HashSet<>();
 
             boolean customPath = ACInfoData.currentData.containsKey(modID) && !ACInfoData.currentData.get(modID).autoConfigPath().isEmpty();
@@ -57,7 +55,6 @@ public class ModFinder {
                 configs.put(modID, configSet);
             }
         });
-        return configs;
     }
 
 

@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.util;
 
+import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.StructureConfig;
@@ -8,6 +9,7 @@ import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.ReadData;
 import net.minecraft.ChatFormatting;
+import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.io.FileUtils;
 
@@ -57,6 +59,25 @@ public class Util {
         return (dotIndex > 0) ? fileName.substring(0, dotIndex) : fileName;
     }
 
+    /**
+     * Parses a filename into namespace and path parts using a custom separator.
+     *
+     * @param fileName the filename to parse
+     * @param separator the character used to separate namespace and path
+     * @return a Pair where left = namespace, right = path
+     * @throws IllegalArgumentException if the filename is invalid or separator is missing
+     */
+    public static Pair<String, String> parseNamespaceAndPath(String fileName, char separator) throws IllegalArgumentException {
+        int sepIndex = fileName.indexOf(separator);
+        if (sepIndex < 1 || sepIndex == fileName.length() - 1) {
+            throw new ResourceLocationException("Invalid file name: " + fileName + ", missing or misplaced separator '" + separator + "'");
+        }
+
+        String namespace = fileName.substring(0, sepIndex); // keep case as-is
+        String path = fileName.substring(sepIndex + 1);     // keep case as-is
+        return new Pair<>(namespace, path);
+    }
+
     public static Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
 
     public static <V, S> void addAll(Map<V, Set<S>> addTo, Map<V, Set<S>> addFrom){
@@ -76,21 +97,19 @@ public class Util {
         return map.keySet().stream().sorted().toList();
     }
 
-    public static Map<String, Set<StructureConfig>> readData(){
-        Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
+    public static void readData(Map<String, Set<StructureConfig>> configs){
         Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
         updateOldFiles();
         for(String modID : CristelLibExpectPlatform.getModIds()) {
             ReadData.getBuiltInPacks(modID);
             ReadData.copyFile(modID);
             //ReadData.modifyJson5File(modid);
-            ReadData.getStructureConfigs(modID, modidAndConfigs);
+            ReadData.getStructureConfigs(modID, configs);
             ReadData.getAutoConfigSettings(modID, autoConfigInfoData);
         }
 
         ACInfoData.currentData = autoConfigInfoData;
         ACConfig.updateConfig();
-        return modidAndConfigs;
     }
 
     private static void updateOldFiles() {

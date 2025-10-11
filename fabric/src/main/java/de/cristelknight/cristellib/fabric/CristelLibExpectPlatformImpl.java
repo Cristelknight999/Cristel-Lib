@@ -58,8 +58,9 @@ public class CristelLibExpectPlatformImpl {
             CristelLibAPI api = entrypoint.getEntrypoint();
             CristelLib.readAPI(registry, modId, api, configs);
         });
-        Util.addAll(configs, Util.readData()); // Read Custom Data Configs
-        Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet())); // Automatically Create Configs
+
+        Util.readData(configs); // Read Custom Data Configs
+        ModFinder.addConfigs(configs, registry); // Automatically Create Configs
         return configs;
     }
 
