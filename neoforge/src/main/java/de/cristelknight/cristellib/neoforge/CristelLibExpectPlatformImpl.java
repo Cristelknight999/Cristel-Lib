@@ -3,8 +3,8 @@ package de.cristelknight.cristellib.neoforge;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.api.CristelLibAPI;
-import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.builtinpacks.BuiltinResourcePackSource;
+import de.cristelknight.cristellib.data.PathFinder;
 import de.cristelknight.cristellib.neoforge.extraapiutil.APIFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
@@ -14,22 +14,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.KnownPack;
-import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.fml.loading.LoadingModList;
-import net.neoforged.fml.loading.moddiscovery.ModInfo;
+import net.neoforged.neoforge.resource.JarContentsPackResources;
 import net.neoforged.neoforgespi.language.IModInfo;
 import net.neoforged.neoforgespi.locating.IModFile;
 
-import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
-
-import static de.cristelknight.cristellib.neoforge.ModLoadingUtilImpl.getPreLoadedModInfo;
 
 public class CristelLibExpectPlatformImpl {
 
@@ -37,47 +34,43 @@ public class CristelLibExpectPlatformImpl {
         return FMLPaths.CONFIGDIR.get();
     }
 
+    public static PathFinder.PathFinderData findInModFiles(String modId, Set<String> modsWithConfig) {
+        return PathFinderUtil.getSubPathsInMod(modId, modsWithConfig);
+    }
+
     public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
         String modID = id.getNamespace();
         String path = id.getPath();
-        Path totalPath = getResourceDirectory(modID, id.getPath());
-        if (totalPath != null) {
-            PackLocationInfo metadata = new PackLocationInfo(
-                    id.toString(),
-                    displayName,
-                    new BuiltinResourcePackSource(),
-                    Optional.of(new KnownPack(CristelLib.MOD_ID, id.toString(), ModList.get().getModFileById(modID).versionString()))
-            );
-            return new PathPackResources(metadata, totalPath);
-        }
-        CristelLib.LOGGER.debug("Couldn't find path: {} in container for modID: {} for pack with display name: {}", path, modID, displayName);
-        return null;
+
+        CristelLib.LOGGER.error("trying to load pack: " + id);
+
+        IModFile file = PathFinderUtil.getModFile(modID);
+        if(file == null) return null;
+
+        PackLocationInfo metadata = new PackLocationInfo(
+                id.toString(),
+                displayName,
+                new BuiltinResourcePackSource(),
+                Optional.of(new KnownPack(CristelLib.MOD_ID, id.toString(), ModList.get().getModFileById(modID).versionString()))
+        );
+
+        CristelLib.LOGGER.error("load pack??: " + id);
+        return new JarContentsPackResources(metadata, file.getContents(), path);
     }
 
-    public static @Nullable Path getResourceDirectory(String modId, String subPath) {
-        ModList modList = ModList.get();
-        IModFile file;
-        if (modList == null) {
-            ModInfo info = getPreLoadedModInfo(modId);
-            if (info == null) {
-                CristelLib.LOGGER.warn("Mod info for modId: {} is null", modId);
-                return null;
-            }
-            file = info.getOwningFile().getFile();
-        } else {
-            ModContainer container = modList.getModContainerById(modId).orElse(null);
-            if (container == null) {
-                CristelLib.LOGGER.warn("Mod container for modId: {} is null", modId);
-                return null;
-            }
-            file = container.getModInfo().getOwningFile().getFile();
+    public static InputStream getResourceStream(String modId, String subPath) {
+        IModFile file = PathFinderUtil.getModFile(modId);
+        if(file == null) return null;
+
+        InputStream inputStream;
+        try {
+            inputStream = file.getContents().openFile(subPath);
+        } catch (IOException e) {
+            CristelLib.LOGGER.warn("Couldn't create Input Stream for sub path: {} in mod: {}", subPath, modId, e);
+            return null;
         }
 
-        Path path = file.findResource(subPath);
-        if (path == null) {
-            CristelLib.LOGGER.warn("Path for subPath: {} in modId: {} is null", subPath, modId);
-        }
-        return path;
+        return inputStream;
     }
 
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
@@ -89,8 +82,7 @@ public class CristelLibExpectPlatformImpl {
             String modID = apiPair.getFirst().getFirst(); // just get main mod hopefully
             CristelLib.readAPI(registry, modID, api, configs);
         }
-        Util.readData(configs);
-        ModFinder.addConfigs(configs, registry);
+        Util.readData(configs, registry);
         return configs;
     }
 
@@ -102,27 +94,11 @@ public class CristelLibExpectPlatformImpl {
                 modIds.add(modInfo.getModId());
             }
         } else {
-            for (IModInfo modInfo : LoadingModList.get().getMods()) {
+            for (IModInfo modInfo : FMLLoader.getCurrent().getLoadingModList().getMods()) {
                 modIds.add(modInfo.getModId());
             }
         }
         return modIds;
-    }
-
-    public static List<Path> getRootPaths(String modId) {
-        ModList modList = ModList.get();
-        List<Path> paths = new ArrayList<>();
-        IModFile file;
-        if (modList == null) {
-            ModInfo info = getPreLoadedModInfo(modId);
-            if (info == null) return paths;
-            file = info.getOwningFile().getFile();
-        } else {
-            ModContainer container = modList.getModContainerById(modId).orElse(null);
-            if (container == null) return paths;
-            file = container.getModInfo().getOwningFile().getFile();
-        }
-        return Collections.singletonList(file.getSecureJar().getRootPath());
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -138,7 +114,8 @@ public class CristelLibExpectPlatformImpl {
     }
 
     public static boolean isClient() {
-        return FMLEnvironment.dist.isClient();
+        return FMLEnvironment.getDist().isClient();
     }
+
 
 }

@@ -2,10 +2,12 @@ package de.cristelknight.cristellib.util;
 
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
+import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.ReadData;
 import net.minecraft.ChatFormatting;
@@ -97,19 +99,23 @@ public class Util {
         return map.keySet().stream().sorted().toList();
     }
 
-    public static void readData(Map<String, Set<StructureConfig>> configs){
-        Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
+    public static void readData(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry){
         updateOldFiles();
+        Map<String, Set<String>> modIdAndSets = new HashMap<>();
+        Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
+
         for(String modID : CristelLibExpectPlatform.getModIds()) {
-            ReadData.getBuiltInPacks(modID);
-            ReadData.copyFile(modID);
-            //ReadData.modifyJson5File(modid);
-            ReadData.getStructureConfigs(modID, configs);
-            ReadData.getAutoConfigSettings(modID, autoConfigInfoData);
+            Set<String> structureSets = ReadData.readData(modID, autoConfigInfoData, configs);
+            modIdAndSets.put(modID, structureSets);
         }
 
         ACInfoData.currentData = autoConfigInfoData;
         ACConfig.updateConfig();
+
+        for(String modId : modIdAndSets.keySet()) {
+            if(isForge() && ModFinder.shouldSkipModForAC(modId, configs.keySet())) continue;
+            ModFinder.addAutoConfigs(modId, modIdAndSets.get(modId), configs, registry);
+        }
     }
 
     private static void updateOldFiles() {
@@ -137,6 +143,10 @@ public class Util {
         else if (Files.exists(oldOldSubPath)) {
             FileUtils.copyDirectory(oldOldSubPath.toFile(), ConfigManager.CONFIG_LIB.resolve(subPath).toFile());
         }
+    }
+
+    public static boolean isForge() {
+        return CristelLibExpectPlatform.getPlatform().equals(Platform.FORGE);
     }
 
 }

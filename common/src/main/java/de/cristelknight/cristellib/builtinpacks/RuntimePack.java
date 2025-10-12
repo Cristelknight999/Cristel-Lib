@@ -42,7 +42,7 @@ public class RuntimePack implements PackResources {
     private final PackLocationInfo metadata;
 
 
-    public RuntimePack(ResourceLocation id, int version, String description, @Nullable Path imageFile) {
+    public RuntimePack(ResourceLocation id, int version, String description, @Nullable InputStream imageStream) {
         this.packVersion = version;
         this.id = id.toString();
 
@@ -53,8 +53,8 @@ public class RuntimePack implements PackResources {
                 Optional.of(new KnownPack(CristelLib.MOD_ID, this.id, String.valueOf(version)))
         );
 
-        if(imageFile != null){
-            byte[] image = RuntimePackUtil.extractImageBytes(imageFile);
+        if(imageStream != null){
+            byte[] image = RuntimePackUtil.extractImageBytes(imageStream);
             if(image != null) this.addRootResource("pack.png", image);
         }
 

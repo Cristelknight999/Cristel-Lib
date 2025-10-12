@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib;
 
+import de.cristelknight.cristellib.data.PathFinder;
 import de.cristelknight.cristellib.util.Platform;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.chat.Component;
@@ -7,10 +8,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class CristelLibExpectPlatform {
 
@@ -20,17 +25,12 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static @Nullable Path getResourceDirectory(String modid, String subPath) {
+    public static InputStream getResourceStream(String modId, String subPath) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
     public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
-    public static List<Path> getRootPaths(String modId) {
         throw new AssertionError();
     }
 
@@ -59,5 +59,8 @@ public class CristelLibExpectPlatform {
         throw new AssertionError();
     }
 
-
+    @ExpectPlatform
+    public static PathFinder.PathFinderData findInModFiles(String modId, Set<String> modsWithConfig) {
+        throw new AssertionError();
+    }
 }

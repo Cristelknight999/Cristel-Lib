@@ -2,6 +2,7 @@ package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.api.CristelLibAPI;
+import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
@@ -9,7 +10,6 @@ import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.pack.PackFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,7 +28,7 @@ public class CristelLib {
 
     public static final ResourceLocation CRISTEL_LIB_PACK_RL = ResourceLocation.fromNamespaceAndPath(MOD_ID, "runtime_pack");
 
-    public static final RuntimePack RUNTIME_PACK = new RuntimePack(CRISTEL_LIB_PACK_RL, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major(), "Runtime Pack for built-in features", CristelLibExpectPlatform.getResourceDirectory(MOD_ID, "pack.png"));
+    public static final RuntimePack RUNTIME_PACK = new RuntimePack(CRISTEL_LIB_PACK_RL, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major(), "Runtime Pack for built-in features", CristelLibExpectPlatform.getResourceStream(MOD_ID, "pack.png"));
 
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 

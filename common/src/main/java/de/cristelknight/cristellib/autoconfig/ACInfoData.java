@@ -3,12 +3,13 @@ package de.cristelknight.cristellib.autoconfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public record ACInfoData(boolean disableAC, boolean disableACScreen, String autoConfigPath) {
 
-    public static Map<String, ACInfoData> currentData;
+    public static Map<String, ACInfoData> currentData = new HashMap<>();
 
     public static final Codec<ACInfoData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(

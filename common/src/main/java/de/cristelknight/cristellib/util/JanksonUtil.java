@@ -24,18 +24,13 @@ public class JanksonUtil {
         return getElement(getDataFromModId, "data/" + location.getNamespace() + "/worldgen/structure_set/" + location.getPath() + ".json");
     }
     public static @Nullable com.google.gson.JsonElement getElement(String getDataFromModId, String location) {
-        InputStream im;
-        Path pathC = CristelLibExpectPlatform.getResourceDirectory(getDataFromModId, location);
-        //CristelLib.LOGGER.warn("PathC: " + pathC + " Location Path: " + location);
-
-        if(pathC == null) return null;
-        try {
-            im = Files.newInputStream(pathC);
-        } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
+        InputStream in = CristelLibExpectPlatform.getResourceStream(getDataFromModId, location);
+        if(in == null) {
+            CristelLib.LOGGER.warn("Couldn't create Input Stream for sub path {} in modId {}", location, getDataFromModId);
             return null;
         }
-        try (InputStreamReader reader = new InputStreamReader(im)) {
+
+        try (InputStreamReader reader = new InputStreamReader(in)) {
             return JsonParser.parseReader(reader);
         } catch (IOException e) {
             CristelLib.LOGGER.warn("Couldn't read {} from mod: {}", location, getDataFromModId, e);

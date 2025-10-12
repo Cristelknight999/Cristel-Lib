@@ -18,7 +18,7 @@ public class CristelLibForge {
         CristelLib.init();
         bus.addListener(this::injectPackRepositories);
 
-        if(FMLEnvironment.dist.isClient() && Util.isClothConfigLoaded()) {
+        if(FMLEnvironment.getDist().isClient() && Util.isClothConfigLoaded()) {
             NeoForgeClient.registerMainConfigScreen();
         }
 

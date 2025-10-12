@@ -142,6 +142,15 @@ public class ConfigManager {
         return config;
     }
 
+    public static <T> T readFromSubPath(String modID, String subPath, Codec<T> codec, String errorMsg) {
+        InputStream stream = CristelLibExpectPlatform.getResourceStream(modID, subPath);
+        if(stream == null) {
+            throw new IllegalArgumentException(getWithPrefix(errorMsg)); //TODO: improve
+        }
+        com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream));
+        return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
+    }
+
     public static <T> T readFromJsonPath(String errorMsg, Path path, Codec<T> codec) {
         InputStream stream;
         try {

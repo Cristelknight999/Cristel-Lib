@@ -1,10 +1,13 @@
 package de.cristelknight.cristellib.fabric;
 
 import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.autoconfig.ModFinder;
+import de.cristelknight.cristellib.data.PathFinder;
+import de.cristelknight.cristellib.fabric.file.PathFinderUtil;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
 import net.fabricmc.api.EnvType;
@@ -18,8 +21,14 @@ import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class CristelLibExpectPlatformImpl {
 
@@ -39,17 +48,6 @@ public class CristelLibExpectPlatformImpl {
         }
     }
 
-    public static @Nullable Path getResourceDirectory(String modid, String subPath) {
-        ModContainer container = FabricLoader.getInstance().getModContainer(modid).orElse(null);
-        if(container != null){
-            Path path = container.findPath(subPath).orElse(null);
-            if(path == null) CristelLib.LOGGER.debug("Path for subPath: {} in modId: {} is null", subPath, modid);
-            return path;
-        }
-        CristelLib.LOGGER.debug("Mod container for modId: {} is null", modid);
-        return null;
-    }
-
     public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
         // Read Custom Code Configs
@@ -59,22 +57,12 @@ public class CristelLibExpectPlatformImpl {
             CristelLib.readAPI(registry, modId, api, configs);
         });
 
-        Util.readData(configs); // Read Custom Data Configs
-        ModFinder.addConfigs(configs, registry); // Automatically Create Configs
+        Util.readData(configs, registry); // Read Custom Data Configs
         return configs;
     }
 
     public static List<String> getModIds() {
         return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
-    }
-
-    public static List<Path> getRootPaths(String modId) {
-        ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
-        List<Path> paths = new ArrayList<>();
-        if(container != null){
-            paths = container.getRootPaths();
-        }
-        return paths;
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -91,5 +79,36 @@ public class CristelLibExpectPlatformImpl {
 
     public static boolean isClient() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
+    }
+
+    public static InputStream getResourceStream(String modId, String subPath) {
+        InputStream inputStream;
+        Path pathC = getResourceDirectory(modId, subPath);
+
+        if(pathC == null) return null;
+        try {
+            inputStream = Files.newInputStream(pathC);
+        } catch (IOException e) {
+            CristelLib.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
+            return null;
+        }
+        return inputStream;
+    }
+
+    public static PathFinder.PathFinderData findInModFiles(String modId, Set<String> modsWithConfig) {
+        return PathFinderUtil.getSubPathsInMod(modId, modsWithConfig);
+    }
+
+
+    // Internal
+    private static @Nullable Path getResourceDirectory(String modId, String subPath) {
+        ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
+        if(container != null){
+            Path path = container.findPath(subPath).orElse(null);
+            if(path == null) CristelLib.LOGGER.debug("Path for subPath: {} in modId: {} is null", subPath, modId);
+            return path;
+        }
+        CristelLib.LOGGER.debug("Mod container for modId: {} is null", modId);
+        return null;
     }
 }

@@ -2,6 +2,7 @@ package de.cristelknight.cristellib.neoforge;
 
 import de.cristelknight.cristellib.CristelLib;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -25,7 +26,7 @@ public class ModLoadingUtilImpl {
     }
 
     public static @Nullable ModInfo getPreLoadedModInfo(String modID) {
-        for (ModInfo info : LoadingModList.get().getMods()) {
+        for (ModInfo info : FMLLoader.getCurrent().getLoadingModList().getMods()) {
             if (info.getModId().equals(modID)) {
                 return info;
             }

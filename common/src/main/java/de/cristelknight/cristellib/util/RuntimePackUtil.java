@@ -15,15 +15,13 @@ import java.nio.file.Path;
 
 public class RuntimePackUtil {
 
-    public static byte @Nullable [] extractImageBytes(Path imageName) {
-        InputStream stream;
+    public static byte @Nullable [] extractImageBytes(InputStream imageStream) {
         try {
-            stream = Files.newInputStream(imageName.toAbsolutePath());
-            byte[] bytes = stream.readAllBytes();
-            stream.close();
+            byte[] bytes = imageStream.readAllBytes();
+            imageStream.close();
             return bytes;
         } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't get image for path: {}", imageName, e);
+            CristelLib.LOGGER.warn("Couldn't get image for a RuntimePack");
             return null;
         }
     }
