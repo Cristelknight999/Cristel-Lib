@@ -9,7 +9,7 @@ import java.util.Map;
 
 public record ACInfoData(boolean disableAC, boolean disableACScreen, String autoConfigPath) {
 
-    public static Map<String, ACInfoData> currentData = new HashMap<>();
+    public static Map<String, ACInfoData> currentData;
 
     public static final Codec<ACInfoData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(

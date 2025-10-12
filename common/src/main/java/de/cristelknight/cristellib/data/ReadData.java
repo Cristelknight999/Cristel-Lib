@@ -27,10 +27,10 @@ import java.util.*;
 public class ReadData {
 
     public static Set<String> readData(String modId, Map<String, ACInfoData> autoConfigInfoData, Map<String, Set<StructureConfig>> structureConfigData) {
-        PathFinder.PathFinderData finder = CristelLibExpectPlatform.findInModFiles(modId, structureConfigData.keySet());
+        PathFinder.PathFinderData finder = PathFinder.getSubPathsInMod(modId, structureConfigData.keySet());
 
         // order matters
-         getAutoConfigSettings(modId, finder.autoConfig(), autoConfigInfoData);
+        getAutoConfigSettings(modId, finder.autoConfig(), autoConfigInfoData);
         getStructureConfigs(modId, finder.structureConfig(), structureConfigData);
         getBuiltInPacks(modId, finder.dataPack());
         copyFile(modId, finder.copyFile());
@@ -38,7 +38,7 @@ public class ReadData {
         return finder.structureSets(); // return for later processing
     }
 
-    public static void getAutoConfigSettings(String modId, Set<String> subPaths, Map<String, ACInfoData> data) {
+    private static void getAutoConfigSettings(String modId, Set<String> subPaths, Map<String, ACInfoData> data) {
         for (String subPath : subPaths) {
             ACInfoData acInfoData = ConfigManager.readFromSubPath(modId, subPath, ACInfoData.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
 

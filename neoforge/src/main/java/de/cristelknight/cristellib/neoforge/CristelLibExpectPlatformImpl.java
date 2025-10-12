@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.builtinpacks.BuiltinResourcePackSource;
-import de.cristelknight.cristellib.data.PathFinder;
 import de.cristelknight.cristellib.neoforge.extraapiutil.APIFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
@@ -15,10 +14,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.repository.KnownPack;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.jarcontents.JarContents;
+import net.neoforged.fml.jarcontents.JarResource;
+import net.neoforged.fml.jarcontents.JarResourceVisitor;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.moddiscovery.ModInfo;
 import net.neoforged.neoforge.resource.JarContentsPackResources;
 import net.neoforged.neoforgespi.language.IModInfo;
 import net.neoforged.neoforgespi.locating.IModFile;
@@ -27,15 +31,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import static de.cristelknight.cristellib.neoforge.ModLoadingUtilImpl.getPreLoadedModInfo;
+
+@SuppressWarnings("unused")
 public class CristelLibExpectPlatformImpl {
 
     public static Path getConfigDirectory() {
         return FMLPaths.CONFIGDIR.get();
     }
 
-    public static PathFinder.PathFinderData findInModFiles(String modId, Set<String> modsWithConfig) {
-        return PathFinderUtil.getSubPathsInMod(modId, modsWithConfig);
+    public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
+        IModFile file = getModFile(modId);
+        if(file == null){
+            CristelLib.LOGGER.error("Couldn't get mod file for modId: {}", modId);
+            return;
+        }
+        walk(file.getContents(), startingFolder, fileFilter, consumer);
     }
 
     public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
@@ -44,7 +58,7 @@ public class CristelLibExpectPlatformImpl {
 
         CristelLib.LOGGER.error("trying to load pack: " + id);
 
-        IModFile file = PathFinderUtil.getModFile(modID);
+        IModFile file = getModFile(modID);
         if(file == null) return null;
 
         PackLocationInfo metadata = new PackLocationInfo(
@@ -59,7 +73,7 @@ public class CristelLibExpectPlatformImpl {
     }
 
     public static InputStream getResourceStream(String modId, String subPath) {
-        IModFile file = PathFinderUtil.getModFile(modId);
+        IModFile file = getModFile(modId);
         if(file == null) return null;
 
         InputStream inputStream;
@@ -117,5 +131,38 @@ public class CristelLibExpectPlatformImpl {
         return FMLEnvironment.getDist().isClient();
     }
 
+    // Internal
+    public static IModFile getModFile(String modId) {
+        ModList modList = ModList.get();
+        IModFile file;
+        if (modList == null) {
+            ModInfo info = getPreLoadedModInfo(modId);
+            if (info == null) {
+                CristelLib.LOGGER.warn("Mod info for modId: {} is null", modId);
+                return null;
+            }
+            file = info.getOwningFile().getFile();
+        } else {
+            ModContainer container = modList.getModContainerById(modId).orElse(null);
+            if (container == null) {
+                CristelLib.LOGGER.warn("Mod container for modId: {} is null", modId);
+                return null;
+            }
+            file = container.getModInfo().getOwningFile().getFile();
+        }
+        return file;
+    }
 
+    // Internal
+    private static void walk(JarContents contents, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
+        var visitor = new JarResourceVisitor() {
+            @Override
+            public void visit(String relativePath, JarResource resource) {
+                if(!fileFilter.test(Path.of(relativePath))) return;
+                consumer.accept(relativePath);
+            }
+        };
+
+        contents.visitContent(startingFolder, visitor);
+    }
 }

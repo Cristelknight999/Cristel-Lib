@@ -1,13 +1,10 @@
 package de.cristelknight.cristellib.fabric;
 
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.api.CristelLibAPI;
-import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.data.PathFinder;
-import de.cristelknight.cristellib.fabric.file.PathFinderUtil;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
 import net.fabricmc.api.EnvType;
@@ -28,7 +25,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public class CristelLibExpectPlatformImpl {
 
@@ -45,6 +41,16 @@ public class CristelLibExpectPlatformImpl {
         else {
             CristelLib.LOGGER.warn("Couldn't get mod container for modID: {}", modID);
             return null;
+        }
+    }
+
+    public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
+        for (var root : getRootPaths(modId)) {
+            try {
+                PathFinder.walk(root.resolve(startingFolder), fileFilter, consumer);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -95,10 +101,6 @@ public class CristelLibExpectPlatformImpl {
         return inputStream;
     }
 
-    public static PathFinder.PathFinderData findInModFiles(String modId, Set<String> modsWithConfig) {
-        return PathFinderUtil.getSubPathsInMod(modId, modsWithConfig);
-    }
-
 
     // Internal
     private static @Nullable Path getResourceDirectory(String modId, String subPath) {
@@ -110,5 +112,15 @@ public class CristelLibExpectPlatformImpl {
         }
         CristelLib.LOGGER.debug("Mod container for modId: {} is null", modId);
         return null;
+    }
+
+    // Internal
+    public static List<Path> getRootPaths(String modId) {
+        ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
+        List<Path> paths = new ArrayList<>();
+        if(container != null){
+            paths = container.getRootPaths();
+        }
+        return paths;
     }
 }

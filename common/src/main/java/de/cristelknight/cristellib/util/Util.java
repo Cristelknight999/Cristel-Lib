@@ -113,7 +113,7 @@ public class Util {
         ACConfig.updateConfig();
 
         for(String modId : modIdAndSets.keySet()) {
-            if(isForge() && ModFinder.shouldSkipModForAC(modId, configs.keySet())) continue;
+            if(ModFinder.shouldSkipModForACAfter(modId)) continue;
             ModFinder.addAutoConfigs(modId, modIdAndSets.get(modId), configs, registry);
         }
     }

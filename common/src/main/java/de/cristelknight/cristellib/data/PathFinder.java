@@ -2,6 +2,7 @@ package de.cristelknight.cristellib.data;
 
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.config.ConfigManager;
 
 import java.io.IOException;
@@ -13,6 +14,83 @@ import java.util.function.Predicate;
 
 public class PathFinder {
 
+    public static PathFinder.PathFinderData getSubPathsInMod(String modId, Set<String> modsWithConfig) {
+        long startTime = System.nanoTime(); // start profiling
+
+        Set<String> autoConfig = new HashSet<>();
+        Set<String> structureConfig = new HashSet<>();
+        Set<String> dataPack = new HashSet<>();
+        Set<String> copyFile = new HashSet<>();
+        Set<String> structureSets = ModFinder.shouldSkipModForACPre(modId, modsWithConfig) ? null : new HashSet<>();
+
+        try {
+            if (modId.equals("minecraft")) {
+                // Keep this logic unchanged: walks real config folder
+                walk(ConfigManager.CONFIG_LIB,
+                        path -> Files.isRegularFile(path) && path.toString().endsWith(".json"),
+                        p -> categorizePath(p, autoConfig, structureConfig, dataPack, copyFile, null));
+            } else {
+                // Walk all files under data/ once
+
+                CristelLibExpectPlatform.findInModFiles(
+                        modId,
+                        "data",
+                        path -> path.toString().endsWith(".json"),
+                        p -> categorizePath(p, autoConfig, structureConfig, dataPack, copyFile, structureSets)
+                );
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        long endTime = System.nanoTime(); // end profiling
+        double durationMs = (endTime - startTime) / 1_000_000.0;
+        CristelLib.LOGGER.error("Scanned mod {} in {}ms", modId, durationMs);
+
+
+        PathFinder.PathFinderData data = new PathFinder.PathFinderData(autoConfig, structureConfig, dataPack, copyFile, structureSets == null ?
+                Set.of() :
+                structureSets
+        );
+        CristelLib.LOGGER.error(data.toString());
+        return data;
+    }
+
+    private static void categorizePath(String path,
+                                       Set<String> autoConfig,
+                                       Set<String> structureConfig,
+                                       Set<String> dataPack,
+                                       Set<String> copyFile,
+                                       Set<String> structureSets) {
+
+        // Normalize slashes for consistency across OSes
+        String normalized = path.replace('\\', '/');
+
+        if(!normalized.startsWith("/")) normalized = "/" + normalized;
+
+        if (!normalized.startsWith("/data/")) {
+            return;
+        }
+
+        if (structureSets != null && normalized.matches("^/data/[^/]+/worldgen/structure_set/.*")) {
+            structureSets.add(normalized);
+            return;
+        }
+
+        if (!normalized.startsWith("/data/cristellib/")) {
+            return;
+        }
+
+        if (normalized.startsWith("/data/cristellib/structure_config/")) {
+            structureConfig.add(path);
+        } else if (normalized.startsWith("/data/cristellib/data_pack/")) {
+            dataPack.add(path);
+        } else if (normalized.startsWith("/data/cristellib/auto_config/")) {
+            autoConfig.add(path);
+        } else if (normalized.startsWith("/data/cristellib/copy_file/")) {
+            copyFile.add(path);
+        }
+    }
 
 
     public static void walk(Path root, Predicate<Path> fileFilter, Consumer<String> consumer) throws IOException {

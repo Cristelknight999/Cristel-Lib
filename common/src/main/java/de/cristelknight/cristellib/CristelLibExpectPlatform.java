@@ -1,14 +1,11 @@
 package de.cristelknight.cristellib;
 
-import de.cristelknight.cristellib.data.PathFinder;
 import de.cristelknight.cristellib.util.Platform;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
@@ -60,7 +57,7 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static PathFinder.PathFinderData findInModFiles(String modId, Set<String> modsWithConfig) {
+    public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
         throw new AssertionError();
     }
 }

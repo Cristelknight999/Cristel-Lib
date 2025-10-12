@@ -64,8 +64,12 @@ public class ModFinder {
         return ResourceLocation.fromNamespaceAndPath(namespace, path);
     }
 
-    public static boolean shouldSkipModForAC(String modID, Set<String> modsWithConfig) {
+    public static boolean shouldSkipModForACPre(String modID, Set<String> modsWithConfig) {
+        return modsWithConfig.contains(modID) || modID.equals("minecraft");
+    }
+
+    public static boolean shouldSkipModForACAfter(String modID) {
         ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
-        return acConfig.disableAutoConfig() || modsWithConfig.contains(modID) || modID.equals("minecraft") || acConfig.blacklistedMods().contains(modID);
+        return acConfig.disableAutoConfig() || acConfig.blacklistedMods().contains(modID);
     }
 }
