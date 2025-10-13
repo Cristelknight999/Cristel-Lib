@@ -20,7 +20,6 @@ public class PathFinder {
         Set<String> autoConfig = new HashSet<>();
         Set<String> structureConfig = new HashSet<>();
         Set<String> dataPack = new HashSet<>();
-        Set<String> copyFile = new HashSet<>();
         Set<String> structureSets = ModFinder.shouldSkipModForACPre(modId, modsWithConfig) ? null : new HashSet<>();
 
         try {

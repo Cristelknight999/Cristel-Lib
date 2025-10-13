@@ -67,8 +67,8 @@ public class ModFinder {
         return modsWithConfig.contains(modID) || modID.equals(CristelLib.MC_ID);
     }
 
-    public static boolean shouldSkipModForACAfter(String modID) {
+    public static boolean shouldSkipModForACAfter(String modID, Set<String> modsWithConfig) {
         ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
-        return acConfig.disableAutoConfig() || acConfig.blacklistedMods().contains(modID);
+        return acConfig.disableAutoConfig() || acConfig.blacklistedMods().contains(modID) || modsWithConfig.contains(modID);
     }
 }

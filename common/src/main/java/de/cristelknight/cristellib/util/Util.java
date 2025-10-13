@@ -115,7 +115,7 @@ public class Util {
         ACConfig.updateConfig();
 
         for(String modId : modIdAndSets.keySet()) {
-            if(ModFinder.shouldSkipModForACAfter(modId)) continue;
+            if(ModFinder.shouldSkipModForACAfter(modId, configs.keySet())) continue;
             ModFinder.addAutoConfigs(modId, modIdAndSets.get(modId), configs, registry);
         }
     }
