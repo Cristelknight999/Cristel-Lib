@@ -3,22 +3,15 @@ package de.cristelknight.cristellib.data;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
-import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
-import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.codec.BuiltInPackData;
 import de.cristelknight.cristellib.data.codec.BuiltInPackDataWrapper;
-import de.cristelknight.cristellib.data.codec.CopyFileData;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -33,7 +26,7 @@ public class ReadData {
         getAutoConfigSettings(modId, finder.autoConfig(), autoConfigInfoData);
         getStructureConfigs(modId, finder.structureConfig(), structureConfigData);
         getBuiltInPacks(modId, finder.dataPack());
-        copyFile(modId, finder.copyFile());
+        //copyFile(modId, finder.copyFile());
 
         return finder.structureSets(); // return for later processing
     }
@@ -111,7 +104,7 @@ public class ReadData {
         BuiltInDataPackLoader.registerPack(pack.location(), Component.nullToEmpty(pack.displayName()), () -> bl);
     }
 
-
+    /*
     private static void copyFile(String modId, Set<String> subPaths) {
         for (String subPath : subPaths) {
 
@@ -127,7 +120,7 @@ public class ReadData {
         String modID = from.getNamespace();
         String location = from.getPath();
 
-        /*
+
         List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(modID);
         for (Path p : inputUrl) {
             Path fromFile = p.resolve(location);
@@ -139,8 +132,8 @@ public class ReadData {
                 CristelLib.LOGGER.error("Couldn't copy file from: {} to: {}", fromFile, toFile, e);
             }
         }
-         */
-    }
 
+    }
+    */
 
 }

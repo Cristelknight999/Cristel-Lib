@@ -28,7 +28,7 @@ public class PathFinder {
                 // Keep this logic unchanged: walks real config folder
                 walk(ConfigManager.CONFIG_LIB,
                         path -> Files.isRegularFile(path) && path.toString().endsWith(".json"),
-                        p -> categorizePath(p, autoConfig, structureConfig, dataPack, copyFile, null));
+                        p -> categorizePath(p, autoConfig, structureConfig, dataPack, null));
             } else {
                 // Walk all files under data/ once
 
@@ -36,7 +36,7 @@ public class PathFinder {
                         modId,
                         "data",
                         path -> path.toString().endsWith(".json"),
-                        p -> categorizePath(p, autoConfig, structureConfig, dataPack, copyFile, structureSets)
+                        p -> categorizePath(p, autoConfig, structureConfig, dataPack, structureSets)
                 );
             }
         } catch (IOException e) {
@@ -49,7 +49,7 @@ public class PathFinder {
         CristelLib.LOGGER.error("Scanned mod {} in {}ms", modId, durationMs);
          */
 
-        return new PathFinderData(autoConfig, structureConfig, dataPack, copyFile, structureSets == null ?
+        return new PathFinderData(autoConfig, structureConfig, dataPack, structureSets == null ?
                 Set.of() :
                 structureSets
         );
@@ -59,7 +59,6 @@ public class PathFinder {
                                        Set<String> autoConfig,
                                        Set<String> structureConfig,
                                        Set<String> dataPack,
-                                       Set<String> copyFile,
                                        Set<String> structureSets) {
 
         // Normalize slashes for consistency across OSes
@@ -87,8 +86,6 @@ public class PathFinder {
             dataPack.add(path);
         } else if (normalized.startsWith("/data/cristellib/auto_config/")) {
             autoConfig.add(path);
-        } else if (normalized.startsWith("/data/cristellib/copy_file/")) {
-            copyFile.add(path);
         }
     }
 
@@ -108,7 +105,6 @@ public class PathFinder {
     public record PathFinderData(Set<String> autoConfig,
                                  Set<String> structureConfig,
                                  Set<String> dataPack,
-                                 Set<String> copyFile,
                                  Set<String> structureSets) {}
 
 }
