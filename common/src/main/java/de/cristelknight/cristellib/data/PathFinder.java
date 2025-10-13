@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 public class PathFinder {
 
     public static PathFinder.PathFinderData getSubPathsInMod(String modId, Set<String> modsWithConfig) {
-        long startTime = System.nanoTime(); // start profiling
+        //long startTime = System.nanoTime(); // start profiling
 
         Set<String> autoConfig = new HashSet<>();
         Set<String> structureConfig = new HashSet<>();
@@ -43,9 +43,11 @@ public class PathFinder {
             throw new RuntimeException(e);
         }
 
+        /*
         long endTime = System.nanoTime(); // end profiling
         double durationMs = (endTime - startTime) / 1_000_000.0;
         CristelLib.LOGGER.error("Scanned mod {} in {}ms", modId, durationMs);
+         */
 
         return new PathFinderData(autoConfig, structureConfig, dataPack, copyFile, structureSets == null ?
                 Set.of() :

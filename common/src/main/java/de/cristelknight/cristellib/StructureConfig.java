@@ -14,7 +14,7 @@ import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
-import de.cristelknight.cristellib.registry.ReadStructureSets;
+import de.cristelknight.cristellib.config.serialize.ReadStructureSets;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
 import de.cristelknight.cristellib.util.Util;
