@@ -38,6 +38,7 @@
     "minecraft": ">=${minecraft_version}"
   },
   "breaks": {
-    "t_and_t": "<=1.13.3"
+    "t_and_t": "<=1.13.3",
+    "expanded_ecosphere": "<=3.4.3"
   }
 }
