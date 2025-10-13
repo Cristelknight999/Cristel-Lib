@@ -42,7 +42,7 @@ public class BuiltInAPI implements CristelLibAPI {
 
     @Override
     public void registerStructureSets(CristelLibRegistry registry) {
-        registry.registerSetToConfig("minecraft", null, List.of(
+        registry.registerSetToConfig(CristelLib.MC_ID, null, List.of(
                         "ancient_cities", "buried_treasures", "desert_pyramids", "end_cities", "igloos", "jungle_temples", "nether_complexes", "nether_fossils",
                         "ocean_monuments", "ocean_ruins", "pillager_outposts", "ruined_portals", "shipwrecks", "swamp_huts", "villages", "woodland_mansions"
                 ),
@@ -50,7 +50,7 @@ public class BuiltInAPI implements CristelLibAPI {
 
 
         // No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
-        registry.registerSetToConfig("minecraft", ResourceLocation.withDefaultNamespace("strongholds"), MINECRAFT_ED);
+        registry.registerSetToConfig(CristelLib.MC_ID, ResourceLocation.withDefaultNamespace("strongholds"), MINECRAFT_ED);
     }
 
     @Override

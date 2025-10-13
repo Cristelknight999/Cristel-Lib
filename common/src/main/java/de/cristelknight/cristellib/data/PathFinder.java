@@ -24,7 +24,7 @@ public class PathFinder {
         Set<String> structureSets = ModFinder.shouldSkipModForACPre(modId, modsWithConfig) ? null : new HashSet<>();
 
         try {
-            if (modId.equals("minecraft")) {
+            if (modId.equals(CristelLib.MC_ID)) {
                 // Keep this logic unchanged: walks real config folder
                 walk(ConfigManager.CONFIG_LIB,
                         path -> Files.isRegularFile(path) && path.toString().endsWith(".json"),
@@ -47,13 +47,10 @@ public class PathFinder {
         double durationMs = (endTime - startTime) / 1_000_000.0;
         CristelLib.LOGGER.error("Scanned mod {} in {}ms", modId, durationMs);
 
-
-        PathFinder.PathFinderData data = new PathFinder.PathFinderData(autoConfig, structureConfig, dataPack, copyFile, structureSets == null ?
+        return new PathFinderData(autoConfig, structureConfig, dataPack, copyFile, structureSets == null ?
                 Set.of() :
                 structureSets
         );
-        CristelLib.LOGGER.error(data.toString());
-        return data;
     }
 
     private static void categorizePath(String path,
@@ -65,6 +62,7 @@ public class PathFinder {
 
         // Normalize slashes for consistency across OSes
         String normalized = path.replace('\\', '/');
+        path = normalized;
 
         if(!normalized.startsWith("/")) normalized = "/" + normalized;
 

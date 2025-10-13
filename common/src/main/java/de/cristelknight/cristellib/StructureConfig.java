@@ -112,11 +112,6 @@ public class StructureConfig {
     }
 
     private void removeStructureInSets(JsonObject structureSet, ResourceLocation setLocation) {
-        if(!enableDisableConfig.containsKey(setLocation)) {
-            CristelLib.LOGGER.error("{} {}", setLocation, enableDisableConfig.toString());
-            return;
-        }
-
         EDConfig setConfig = enableDisableConfig.get(setLocation);
 
         JsonArray array = structureSet.get("structures").getAsJsonArray();
@@ -128,16 +123,12 @@ public class StructureConfig {
                 if(setConfig.isStructureDisabled(structureName)) structureIterator.remove();
 
             }
-            else CristelLib.LOGGER.error("{} is not included in: {} for mod with path: {} " + setConfig.setStructureInfo().toString(), structureName, setLocation, path);
+            else
+                CristelLib.LOGGER.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
         }
     }
 
     private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation) {
-        if (!placementConfig.containsKey(setLocation)) {
-            CristelLib.LOGGER.error("{} {}", setLocation, placementConfig.toString());
-            return;
-        }
-
         JsonObject o = structureSet.get("placement").getAsJsonObject();
         PlacementConfig p = placementConfig.get(setLocation);
         o.addProperty("salt", p.salt());
@@ -221,7 +212,7 @@ public class StructureConfig {
 
     public ResourceLocation toDefaultRL(String location) {
         if(location.contains(":")) return ResourceLocation.parse(location);
-        else if(defaultNamespace.equals("minecraft")) return ResourceLocation.withDefaultNamespace(location);
+        else if(defaultNamespace.equals(CristelLib.MC_ID)) return ResourceLocation.withDefaultNamespace(location);
         else return ResourceLocation.fromNamespaceAndPath(defaultNamespace, location);
     }
 

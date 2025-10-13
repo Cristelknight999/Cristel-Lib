@@ -10,8 +10,8 @@ public record PlacementConfig(double frequency, int salt, int separation, int sp
 
     public PlacementConfig {
         // Ensure spacing is greater than or equal to separation
-        if (spacing < separation)
-            throw new IllegalArgumentException(CristelLib.getWithPrefix("Spacing must be greater than or equal to separation."));
+        if (spacing <= separation)
+            throw new IllegalArgumentException(CristelLib.getWithPrefix("Spacing must be greater than separation!"));
         if(frequency <= 0)
             throw new IllegalArgumentException(CristelLib.getWithPrefix("Frequency must be greater than zero."));
     }

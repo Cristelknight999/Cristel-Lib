@@ -33,7 +33,6 @@ public class ModFinder {
             JsonElement e = JanksonUtil.getElement(modID, path);
             JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path + " modId: " + modID).getAsJsonObject("placement");
             ResourceLocation location = getLocation(Path.of(path));
-            CristelLib.LOGGER.error(location.toString());
 
             if(supportedPlacements.contains(GsonHelper.getAsString(object, "type"))) {
                 registry.registerSetToConfig(modID, location, edConfig, placementConfig);
@@ -58,14 +57,14 @@ public class ModFinder {
         String namespace = rootPath.getName(1).toString();
         String path = Util.cutFileType(rootPath.subpath(4, rootPath.getNameCount()));
 
-        if(namespace.equals("minecraft")) {
+        if(namespace.equals(CristelLib.MC_ID)) {
             return ResourceLocation.withDefaultNamespace(path);
         }
         return ResourceLocation.fromNamespaceAndPath(namespace, path);
     }
 
     public static boolean shouldSkipModForACPre(String modID, Set<String> modsWithConfig) {
-        return modsWithConfig.contains(modID) || modID.equals("minecraft");
+        return modsWithConfig.contains(modID) || modID.equals(CristelLib.MC_ID);
     }
 
     public static boolean shouldSkipModForACAfter(String modID) {

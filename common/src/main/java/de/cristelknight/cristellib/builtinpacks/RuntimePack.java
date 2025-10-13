@@ -220,7 +220,7 @@ public class RuntimePack implements PackResources {
 
     @Override
     public void close() {
-        CristelLib.LOGGER.debug("Closing RDP: {}", this.id);
+        CristelLib.LOGGER.debug("Closing Runtime Data Pack: {}", this.id);
     }
 
     public void load(Path dir) throws IOException {

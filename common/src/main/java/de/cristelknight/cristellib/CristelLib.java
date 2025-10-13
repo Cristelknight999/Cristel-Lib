@@ -2,7 +2,6 @@ package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.api.CristelLibAPI;
-import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
@@ -19,6 +18,7 @@ import java.util.Set;
 
 public class CristelLib {
     public static final String MOD_ID = "cristellib";
+    public static final String MC_ID = ResourceLocation.DEFAULT_NAMESPACE;
 
     public static String getWithPrefix(String message){
         return String.format("[%s] %s", MOD_ID, message);

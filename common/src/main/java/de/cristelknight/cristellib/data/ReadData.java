@@ -59,7 +59,7 @@ public class ReadData {
             // should replace an existing config from another mod.
             // checkForReplace ensures that we only replace the correct config in the
             // original mod's set. If a replacement was applied, we skip adding it as a new config.
-            if (modId.equals("minecraft") && checkForReplace(modIdAndConfigs, Path.of(subPath), config))
+            if (modId.equals(CristelLib.MC_ID) && checkForReplace(modIdAndConfigs, Path.of(subPath), config))
                 continue;
 
             modIdAndConfigs.computeIfAbsent(modId, k -> new HashSet<>()).add(config);

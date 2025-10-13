@@ -56,8 +56,6 @@ public class CristelLibExpectPlatformImpl {
         String modID = id.getNamespace();
         String path = id.getPath();
 
-        CristelLib.LOGGER.error("trying to load pack: " + id);
-
         IModFile file = getModFile(modID);
         if(file == null) return null;
 
@@ -68,7 +66,6 @@ public class CristelLibExpectPlatformImpl {
                 Optional.of(new KnownPack(CristelLib.MOD_ID, id.toString(), ModList.get().getModFileById(modID).versionString()))
         );
 
-        CristelLib.LOGGER.error("load pack??: " + id);
         return new JarContentsPackResources(metadata, file.getContents(), path);
     }
 

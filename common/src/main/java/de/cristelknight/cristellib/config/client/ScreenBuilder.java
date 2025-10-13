@@ -309,7 +309,7 @@ public class ScreenBuilder {
 
     // Get correct screens helpers
     public static Pair<Boolean, Boolean> shouldCreateScreen(String modID, boolean mainStructure) {
-        if(modID.equals(CristelLib.MOD_ID) || modID.equals("minecraft")) return new Pair<>(false, false);
+        if(modID.equals(CristelLib.MOD_ID) || modID.equals(CristelLib.MC_ID)) return new Pair<>(false, false);
 
         boolean structure = mainStructure &&
                 CristelLibRegistry.getConfigs().containsKey(modID) &&

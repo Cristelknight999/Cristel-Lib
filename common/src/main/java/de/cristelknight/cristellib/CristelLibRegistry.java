@@ -20,7 +20,7 @@ public class CristelLibRegistry {
     }
 
     public void registerSetToConfig(String modID, String namespace, List<String> sets, StructureConfig... configs) {
-        boolean isMC = namespace == null || namespace.equals("minecraft");
+        boolean isMC = namespace == null || namespace.equals(CristelLib.MC_ID);
 
         registerSetToConfig(modID, sets.stream()
                 .map(string -> isMC

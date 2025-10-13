@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.fabric.impl.resource.loader.ModNioResourcePack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.Person;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -68,7 +69,11 @@ public class CristelLibExpectPlatformImpl {
     }
 
     public static List<String> getModIds() {
-        return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
+        return FabricLoader.getInstance().getAllMods().stream().filter(m -> {
+            Iterator<Person> it = m.getMetadata().getAuthors().iterator();
+            return !it.hasNext() || !it.next().getName().equals("FabricMC"); // filter stuff idk
+
+        }).map(mod -> mod.getMetadata().getId()).toList();
     }
 
     @SuppressWarnings("SameReturnValue")

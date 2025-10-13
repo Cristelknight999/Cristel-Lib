@@ -1,10 +1,7 @@
 package de.cristelknight.cristellib.util;
 
 import com.mojang.datafixers.util.Pair;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.CristelLibRegistry;
-import de.cristelknight.cristellib.ModLoadingUtil;
-import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.*;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.autoconfig.ModFinder;
@@ -99,12 +96,17 @@ public class Util {
         return map.keySet().stream().sorted().toList();
     }
 
+    private static final Set<String> SKIP_MODS = Set.of("neoforge", "java", CristelLib.MOD_ID,
+            "modmenu", "cloth-config", "cloth-basic-math"
+    );
+
     public static void readData(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry){
         updateOldFiles();
         Map<String, Set<String>> modIdAndSets = new HashMap<>();
         Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
 
         for(String modID : CristelLibExpectPlatform.getModIds()) {
+            if(SKIP_MODS.contains(modID)) continue;
             Set<String> structureSets = ReadData.readData(modID, autoConfigInfoData, configs);
             modIdAndSets.put(modID, structureSets);
         }
@@ -144,9 +146,4 @@ public class Util {
             FileUtils.copyDirectory(oldOldSubPath.toFile(), ConfigManager.CONFIG_LIB.resolve(subPath).toFile());
         }
     }
-
-    public static boolean isForge() {
-        return CristelLibExpectPlatform.getPlatform().equals(Platform.FORGE);
-    }
-
 }
