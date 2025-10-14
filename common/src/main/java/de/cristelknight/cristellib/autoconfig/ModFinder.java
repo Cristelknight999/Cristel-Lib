@@ -55,7 +55,8 @@ public class ModFinder {
 
     private static ResourceLocation getLocation(Path rootPath) {
         String namespace = rootPath.getName(1).toString();
-        String path = Util.cutFileType(rootPath.subpath(4, rootPath.getNameCount()));
+        String rawPath = Util.cutFileType(rootPath.subpath(4, rootPath.getNameCount()));
+        String path = Util.normalizeResourcePath(rawPath);
 
         if(namespace.equals(CristelLib.MC_ID)) {
             return ResourceLocation.withDefaultNamespace(path);

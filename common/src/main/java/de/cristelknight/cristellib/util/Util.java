@@ -59,6 +59,39 @@ public class Util {
     }
 
     /**
+     * Normalizes a potential Minecraft resource path fragment to forward slashes.
+     *
+     * Inputs:
+     *  - path: A platform-dependent path fragment (e.g., produced from java.nio.file.Path)
+     *
+     * Behavior:
+     *  - Replaces all '\\' with '/'
+     *  - Removes a single leading '/' if present
+     *  - Collapses duplicate '/'
+     *
+     * Output:
+     *  - A normalized path string safe to pass to ResourceLocation.fromNamespaceAndPath
+     */
+    public static String normalizeResourcePath(String path) {
+        if (path == null) {
+            throw new IllegalArgumentException("Path cannot be null");
+        }
+
+        String normalized = path.replace('\\', '/');
+
+        if (!normalized.isEmpty() && normalized.charAt(0) == '/') {
+            normalized = normalized.substring(1);
+        }
+
+        // Collapse any accidental duplicate slashes
+        while (normalized.contains("//")) {
+            normalized = normalized.replace("//", "/");
+        }
+
+        return normalized;
+    }
+
+    /**
      * Parses a filename into namespace and path parts using a custom separator.
      *
      * @param fileName the filename to parse
