@@ -13,7 +13,6 @@ import de.cristelknight.cristellib.util.Util;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
 
-import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 

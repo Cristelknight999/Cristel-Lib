@@ -3,7 +3,6 @@ package de.cristelknight.cristellib.autoconfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

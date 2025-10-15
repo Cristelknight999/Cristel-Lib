@@ -145,7 +145,7 @@ public class ScreenBuilder {
             rootSubCategory.setTooltip(tooltip(structureSetName, structureConfig.getComments()));
             NestedEDConfig nestedEDConfig = nestedStructureMap.get(structureSetName);
 
-            if (!checkForSingle(nestedEDConfig, structureSetName, structureConfig, structures, edCategory)) {
+            if (!checkForSingle(nestedEDConfig, structureSetName, structureConfig, structures, edCategory, "")) {
                 addEDSubCategory(rootSubCategory, null, nestedEDConfig, "", structures, structureConfig, structureSetName);
                 edCategory.addEntry(rootSubCategory.build());
             }
@@ -193,24 +193,30 @@ public class ScreenBuilder {
         }
     }
 
-    private boolean checkForSingle(NestedEDConfig nestedEDConfig, String structureSetName, StructureConfig structureConfig, Map<String, BooleanListEntry> structures, ConfigCategory edCategory) {
+    private boolean checkForSingle(NestedEDConfig nestedEDConfig, String structureSetName, StructureConfig structureConfig, Map<String, BooleanListEntry> structures, ConfigCategory edCategory, String pathPrefix) {
         if (nestedEDConfig.entries().size() != 1) return false;
-        NestedEDConfig.Entry entry = nestedEDConfig.entries().values().stream().findAny().get();
-        if (!entry.isBoolean()) return false;
+        var entries = nestedEDConfig.entries();
+        NestedEDConfig.Entry entry = Util.getFirst(entries.values());
+        String key = Util.getFirst(entries.keySet());
+        assert entry != null;
+        assert key != null;
+        String fullPath = pathPrefix.isEmpty() ? key : pathPrefix + "/" + key;
 
-        String key = nestedEDConfig.entries().keySet().stream().findAny().get();
+        if (!entry.isBoolean()) {
+            return checkForSingle(entry.nested(), structureSetName, structureConfig, structures, edCategory, fullPath);
+        }
 
-        Component[] component = tooltip(structureSetName + "." + key, structureConfig.getComments()).orElse(new MutableComponent[]{Component.literal(structureSetName)});
+        Component[] component = tooltip(structureSetName + "." + fullPath, structureConfig.getComments()).orElse(new MutableComponent[]{Component.literal(structureSetName)});
         BooleanListEntry toggle = entryBuilder.startBooleanToggle(
-                        Component.literal(key),
+                        Component.literal(fullPath),
                         entry.value()
                 ).setDefaultValue(true)
                 .setTooltip(component)
                 .build();
 
-        structures.put(key, toggle);
+        structures.put(fullPath, toggle);
 
-        if (getEDSubWarn(structureConfig, key, structureSetName)) return true;
+        if (getEDSubWarn(structureConfig, fullPath, structureSetName)) return true;
 
         edCategory.addEntry(toggle);
         return true;

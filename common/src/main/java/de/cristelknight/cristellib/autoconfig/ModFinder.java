@@ -17,8 +17,8 @@ import java.util.*;
 
 public class ModFinder {
     
-    public static Set<String> supportedPlacements = Set.of("minecraft:random_spread",
-            "mes:advanced_random_spread", "mns:advanced_random_spread", "mss:advanced_random_spread", "mvs:advanced_random_spread",
+    public static final Set<String> supportedPlacements = Set.of("minecraft:random_spread",
+            "moogs_structures:advanced_random_spread", "mes:advanced_random_spread", "mns:advanced_random_spread", "mss:advanced_random_spread", "mvs:advanced_random_spread",
             "repurposed_structures:advanced_random_spread"
     );
     
