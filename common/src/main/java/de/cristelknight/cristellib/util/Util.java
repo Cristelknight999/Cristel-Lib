@@ -15,10 +15,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Util {
 
@@ -77,7 +74,12 @@ public class Util {
         return new Pair<>(namespace, path);
     }
 
-    public static Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
+    public static final Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
+
+    public static <V> V getFirst(Collection<V> collection) {
+        Iterator<V> it = collection.iterator();
+        return it.hasNext() ? it.next() : null;
+    }
 
     public static <V, S> void addAll(Map<V, Set<S>> addTo, Map<V, Set<S>> addFrom){
         for(V key : addFrom.keySet()){
