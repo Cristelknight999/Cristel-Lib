@@ -37,7 +37,7 @@ public class JanksonUtil {
         }
         try (InputStreamReader reader = new InputStreamReader(im)) {
             return JsonParser.parseReader(reader);
-        } catch (IOException e) {
+        } catch (IOException | MalformedJsonException e) {
             CristelLib.LOGGER.warn("Couldn't read {} from mod: {}", location, getDataFromModId, e);
             return null;
         }
@@ -121,3 +121,4 @@ public class JanksonUtil {
 
  */
 }
+
