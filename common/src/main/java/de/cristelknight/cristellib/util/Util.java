@@ -114,19 +114,6 @@ public class Util {
         return it.hasNext() ? it.next() : null;
     }
 
-    public static <V, S> void addAll(Map<V, Set<S>> addTo, Map<V, Set<S>> addFrom){
-        for(V key : addFrom.keySet()){
-            if(addTo.containsKey(key)){
-                Set<S> valueSet = addTo.get(key);
-                valueSet.addAll(addFrom.get(key));
-                addTo.put(key, valueSet);
-            }
-            else {
-                addTo.put(key, addFrom.get(key));
-            }
-        }
-    }
-
     public static <T extends Comparable<T>> List<T> sortedKeyList(Map<T, ?> map) {
         return map.keySet().stream().sorted().toList();
     }
