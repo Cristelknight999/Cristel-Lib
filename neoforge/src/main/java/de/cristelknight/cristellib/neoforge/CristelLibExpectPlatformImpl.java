@@ -89,8 +89,8 @@ public class CristelLibExpectPlatformImpl {
             String modID = apiPair.getFirst().getFirst(); // just get main mod hopefully
             CristelLib.readAPI(registry, modID, api, configs);
         }
-        Util.readData(configs);
-        ModFinder.addConfigs(configs, registry);
+        Util.addAll(configs, Util.readData());
+        Util.addAll(configs, ModFinder.addConfigs(registry, configs.keySet()));
         return configs;
     }
 

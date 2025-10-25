@@ -109,37 +109,38 @@ public class Util {
 
     public static final Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
 
-    public static <V> V getFirst(Collection<V> collection) {
-        Iterator<V> it = collection.iterator();
-        return it.hasNext() ? it.next() : null;
+    public static <V, S> void addAll(Map<V, Set<S>> addTo, Map<V, Set<S>> addFrom){
+        for(V key : addFrom.keySet()){
+            if(addTo.containsKey(key)){
+                Set<S> valueSet = addTo.get(key);
+                valueSet.addAll(addFrom.get(key));
+                addTo.put(key, valueSet);
+            }
+            else {
+                addTo.put(key, addFrom.get(key));
+            }
+        }
     }
 
     public static <T extends Comparable<T>> List<T> sortedKeyList(Map<T, ?> map) {
         return map.keySet().stream().sorted().toList();
     }
 
-    private static final Set<String> SKIP_MODS = Set.of("neoforge", "java", CristelLib.MOD_ID,
-            "modmenu", "cloth-config", "cloth-basic-math"
-    );
-
-    public static void readData(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry){
-        updateOldFiles();
-        Map<String, Set<String>> modIdAndSets = new HashMap<>();
+    public static Map<String, Set<StructureConfig>> readData(){
+        Map<String, Set<StructureConfig>> modidAndConfigs = new HashMap<>();
         Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
-
+        updateOldFiles();
         for(String modID : CristelLibExpectPlatform.getModIds()) {
-            if(SKIP_MODS.contains(modID)) continue;
-            Set<String> structureSets = ReadData.readData(modID, autoConfigInfoData, configs);
-            modIdAndSets.put(modID, structureSets);
+            ReadData.getBuiltInPacks(modID);
+            ReadData.copyFile(modID);
+            //ReadData.modifyJson5File(modid);
+            ReadData.getStructureConfigs(modID, modidAndConfigs);
+            ReadData.getAutoConfigSettings(modID, autoConfigInfoData);
         }
 
         ACInfoData.currentData = autoConfigInfoData;
         ACConfig.updateConfig();
-
-        for(String modId : modIdAndSets.keySet()) {
-            if(ModFinder.shouldSkipModForACAfter(modId, configs.keySet())) continue;
-            ModFinder.addAutoConfigs(modId, modIdAndSets.get(modId), configs, registry);
-        }
+        return modidAndConfigs;
     }
 
     private static void updateOldFiles() {
