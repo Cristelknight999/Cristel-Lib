@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -23,13 +25,18 @@ public class JanksonUtil {
         return getElement(getDataFromModId, "data/" + location.getNamespace() + "/worldgen/structure_set/" + location.getPath() + ".json");
     }
     public static @Nullable com.google.gson.JsonElement getElement(String getDataFromModId, String location) {
-        InputStream in = CristelLibExpectPlatform.getResourceStream(getDataFromModId, location);
-        if(in == null) {
-            CristelLib.LOGGER.warn("Couldn't create Input Stream for sub path {} in modId {}", location, getDataFromModId);
+        InputStream im;
+        Path pathC = CristelLibExpectPlatform.getResourceDirectory(getDataFromModId, location);
+        //CristelLib.LOGGER.warn("PathC: " + pathC + " Location Path: " + location);
+
+        if(pathC == null) return null;
+        try {
+            im = Files.newInputStream(pathC);
+        } catch (IOException e) {
+            CristelLib.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
             return null;
         }
-
-        try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+        try (InputStreamReader reader = new InputStreamReader(im, StandardCharsets.UTF_8)) {
             return JsonParser.parseReader(reader);
         } catch (IOException e) {
             CristelLib.LOGGER.warn("Couldn't read {} from mod: {}", location, getDataFromModId, e);
