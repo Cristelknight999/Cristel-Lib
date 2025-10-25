@@ -1,11 +1,10 @@
 package de.cristelknight.cristellib.util;
 
 import com.mojang.datafixers.util.Pair;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.ModLoadingUtil;
-import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.*;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
+import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.ReadData;
 import net.minecraft.ChatFormatting;
@@ -16,10 +15,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Util {
 
@@ -60,6 +56,39 @@ public class Util {
     }
 
     /**
+     * Normalizes a potential Minecraft resource path fragment to forward slashes.
+     * <p>
+     * Inputs:
+     *  - path: A platform-dependent path fragment (e.g., produced from java.nio.file.Path)
+     * <p>
+     * Behavior:
+     *  - Replaces all '\\' with '/'
+     *  - Removes a single leading '/' if present
+     *  - Collapses duplicate '/'
+     * <p>
+     * Output:
+     *  - A normalized path string safe to pass to ResourceLocation.fromNamespaceAndPath
+     */
+    public static String normalizeResourcePath(String path) {
+        if (path == null) {
+            throw new IllegalArgumentException("Path cannot be null");
+        }
+
+        String normalized = path.replace('\\', '/');
+
+        if (!normalized.isEmpty() && normalized.charAt(0) == '/') {
+            normalized = normalized.substring(1);
+        }
+
+        // Collapse any accidental duplicate slashes
+        while (normalized.contains("//")) {
+            normalized = normalized.replace("//", "/");
+        }
+
+        return normalized;
+    }
+
+    /**
      * Parses a filename into namespace and path parts using a custom separator.
      *
      * @param fileName the filename to parse
@@ -78,38 +107,39 @@ public class Util {
         return new Pair<>(namespace, path);
     }
 
-    public static Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
+    public static final Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
 
-    public static <V, S> void addAll(Map<V, Set<S>> addTo, Map<V, Set<S>> addFrom){
-        for(V key : addFrom.keySet()){
-            if(addTo.containsKey(key)){
-                Set<S> valueSet = addTo.get(key);
-                valueSet.addAll(addFrom.get(key));
-                addTo.put(key, valueSet);
-            }
-            else {
-                addTo.put(key, addFrom.get(key));
-            }
-        }
+    public static <V> V getFirst(Collection<V> collection) {
+        Iterator<V> it = collection.iterator();
+        return it.hasNext() ? it.next() : null;
     }
 
     public static <T extends Comparable<T>> List<T> sortedKeyList(Map<T, ?> map) {
         return map.keySet().stream().sorted().toList();
     }
 
-    public static void readData(Map<String, Set<StructureConfig>> configs){
-        Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
+    private static final Set<String> SKIP_MODS = Set.of("neoforge", "java", CristelLib.MOD_ID,
+            "modmenu", "cloth-config", "cloth-basic-math"
+    );
+
+    public static void readData(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry){
         updateOldFiles();
+        Map<String, Set<String>> modIdAndSets = new HashMap<>();
+        Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
+
         for(String modID : CristelLibExpectPlatform.getModIds()) {
-            ReadData.getBuiltInPacks(modID);
-            ReadData.copyFile(modID);
-            //ReadData.modifyJson5File(modid);
-            ReadData.getStructureConfigs(modID, configs);
-            ReadData.getAutoConfigSettings(modID, autoConfigInfoData);
+            if(SKIP_MODS.contains(modID)) continue;
+            Set<String> structureSets = ReadData.readData(modID, autoConfigInfoData, configs);
+            modIdAndSets.put(modID, structureSets);
         }
 
         ACInfoData.currentData = autoConfigInfoData;
         ACConfig.updateConfig();
+
+        for(String modId : modIdAndSets.keySet()) {
+            if(ModFinder.shouldSkipModForACAfter(modId, configs.keySet())) continue;
+            ModFinder.addAutoConfigs(modId, modIdAndSets.get(modId), configs, registry);
+        }
     }
 
     private static void updateOldFiles() {
@@ -138,5 +168,4 @@ public class Util {
             FileUtils.copyDirectory(oldOldSubPath.toFile(), ConfigManager.CONFIG_LIB.resolve(subPath).toFile());
         }
     }
-
 }

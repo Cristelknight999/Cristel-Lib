@@ -23,6 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -140,6 +141,15 @@ public class ConfigManager {
         T config = readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
         if(gotFixed) writeAfterFix.accept(config);
         return config;
+    }
+
+    public static <T> T readFromSubPath(String modID, String subPath, Codec<T> codec, String errorMsg) {
+        InputStream stream = CristelLibExpectPlatform.getResourceStream(modID, subPath);
+        if(stream == null) {
+            throw new IllegalArgumentException(getWithPrefix(errorMsg)); //TODO: improve
+        }
+        com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
     }
 
     public static <T> T readFromJsonPath(String errorMsg, Path path, Codec<T> codec) {

@@ -10,6 +10,8 @@ import de.cristelknight.cristellib.config.client.ScreenBuilder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.util.Util;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -20,6 +22,7 @@ import net.minecraft.network.chat.Component;
 
 import java.util.Set;
 
+@Environment(EnvType.CLIENT)
 public class CristelLibClient implements ClientModInitializer {
 
     public static boolean shouldOpenScreen = false;

@@ -59,6 +59,7 @@ public class ConfigRegistry {
         holder.updateAndSave(newInstance);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Class<T> getClazzFromCodec(Codec<T> codec) {
         for(Map.Entry<Class<?>, ConfigHolder<?>> entry : CONFIGS.entrySet()) {
             if(entry.getValue().getSettings().getCodec().equals(codec)) return (Class<T>) entry.getKey();

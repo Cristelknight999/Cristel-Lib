@@ -1,4 +1,4 @@
-package de.cristelknight.cristellib.registry;
+package de.cristelknight.cristellib.config.serialize;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
@@ -57,7 +57,7 @@ public class ReadStructureSets {
     }
 
     private static boolean checkElement(JsonElement element, String modID, ResourceLocation setLocation) {
-        if(!element.isJsonObject()){
+        if(element == null || !element.isJsonObject()){
             CristelLib.LOGGER.error("Set for {} {} is not a JsonObject", modID, setLocation);
             return true;
         }

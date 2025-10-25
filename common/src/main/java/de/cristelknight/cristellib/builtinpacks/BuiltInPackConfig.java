@@ -21,6 +21,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
             ).apply(builder, BuiltInPackConfig::new)
     );
 
+    @SuppressWarnings("RedundantIfStatement")
     public static void updateConfig() {
         BuiltInPackConfig config = ConfigRegistry.get(BuiltInPackConfig.class);
 
