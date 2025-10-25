@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -271,7 +272,7 @@ public class RuntimePack implements PackResources {
         IoSupplier<InputStream> stream = this.getResource(PackType.SERVER_DATA, location);
         JsonObject jsonObject;
         try {
-            jsonObject = GsonHelper.parse(new BufferedReader(new InputStreamReader(stream.get())));
+            jsonObject = GsonHelper.parse(new BufferedReader(new InputStreamReader(stream.get(), StandardCharsets.UTF_8)));
         } catch (IOException | NullPointerException ex) {
             CristelLib.LOGGER.error("Couldn't get JsonObject from location: {}", location, ex);
             return null;

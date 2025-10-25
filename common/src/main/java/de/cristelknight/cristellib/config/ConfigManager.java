@@ -23,6 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -149,7 +150,7 @@ public class ConfigManager {
         } catch (IOException e) {
             throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
         }
-        com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream));
+        com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
         return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
     }
 

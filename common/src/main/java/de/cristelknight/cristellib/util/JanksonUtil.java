@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -35,9 +36,9 @@ public class JanksonUtil {
             CristelLib.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
             return null;
         }
-        try (InputStreamReader reader = new InputStreamReader(im)) {
+        try (InputStreamReader reader = new InputStreamReader(im, StandardCharsets.UTF_8)) {
             return JsonParser.parseReader(reader);
-        } catch (IOException | MalformedJsonException e) {
+        } catch (IOException e) {
             CristelLib.LOGGER.warn("Couldn't read {} from mod: {}", location, getDataFromModId, e);
             return null;
         }
