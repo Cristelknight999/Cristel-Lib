@@ -2,6 +2,7 @@ package de.cristelknight.cristellib.config.simple.datafixer;
 
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
+import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 
 import java.util.HashMap;
@@ -32,6 +33,12 @@ public class DataFixer {
         register(BuiltInPackConfig.class, jsonObject -> {
             if(jsonObject.containsKey("hideAllPacksInScreen")) return false;
             jsonObject.put("hideAllPacksInScreen", new JsonPrimitive(false));
+            return true;
+        });
+
+        register(ACConfig.class, jsonObject -> {
+            if(jsonObject.containsKey("autoConfigSubPath")) return false;
+            jsonObject.put("autoConfigSubPath", new JsonPrimitive(""));
             return true;
         });
     }

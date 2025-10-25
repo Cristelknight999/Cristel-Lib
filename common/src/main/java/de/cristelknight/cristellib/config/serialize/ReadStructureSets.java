@@ -57,7 +57,7 @@ public class ReadStructureSets {
     }
 
     private static boolean checkElement(JsonElement element, String modID, ResourceLocation setLocation) {
-        if(!element.isJsonObject()){
+        if(element == null || !element.isJsonObject()){
             CristelLib.LOGGER.error("Set for {} {} is not a JsonObject", modID, setLocation);
             return true;
         }

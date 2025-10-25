@@ -57,15 +57,15 @@ public class Util {
 
     /**
      * Normalizes a potential Minecraft resource path fragment to forward slashes.
-     *
+     * <p>
      * Inputs:
      *  - path: A platform-dependent path fragment (e.g., produced from java.nio.file.Path)
-     *
+     * <p>
      * Behavior:
      *  - Replaces all '\\' with '/'
      *  - Removes a single leading '/' if present
      *  - Collapses duplicate '/'
-     *
+     * <p>
      * Output:
      *  - A normalized path string safe to pass to ResourceLocation.fromNamespaceAndPath
      */

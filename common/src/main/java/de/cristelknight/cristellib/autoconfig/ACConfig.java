@@ -14,6 +14,7 @@ import java.util.List;
 public record ACConfig(
         boolean disableAutoConfig,
         boolean disableAutoConfigScreens,
+        String autoConfigSubPath,
         List<String> blacklistedMods,
         List<String> clientExcludedMods,
         List<String> modOverrideWhitelist
@@ -23,6 +24,7 @@ public record ACConfig(
             builder.group(
                     Codec.BOOL.fieldOf("disableAutoConfig").forGetter(ACConfig::disableAutoConfig),
                     Codec.BOOL.fieldOf("disableAutoConfigScreens").forGetter(ACConfig::disableAutoConfigScreens),
+                    Codec.STRING.fieldOf("autoConfigSubPath").forGetter(ACConfig::autoConfigSubPath),
                     Codec.list(Codec.STRING).fieldOf("blacklistedMods").forGetter(ACConfig::blacklistedMods),
                     Codec.list(Codec.STRING).fieldOf("clientExcludedMods").forGetter(ACConfig::clientExcludedMods),
                     Codec.list(Codec.STRING).fieldOf("modOverrideWhitelist").forGetter(ACConfig::modOverrideWhitelist)
@@ -61,7 +63,7 @@ public record ACConfig(
         blacklistedMods.addAll(defaultBlacklistedMods);
         clientExcludedMods.addAll(defaultClientExcludedMods);
 
-        ConfigRegistry.updateAndSave(new ACConfig(config.disableAutoConfig(), config.disableAutoConfigScreens(),
+        ConfigRegistry.updateAndSave(new ACConfig(config.disableAutoConfig(), config.disableAutoConfigScreens(), config.autoConfigSubPath(),
                 blacklistedMods, clientExcludedMods, modOverrideWhitelist));
     }
 
@@ -81,9 +83,10 @@ public record ACConfig(
             return new ACConfig(
                     false,
                     false,
+                    CristelLib.MOD_ID + "/",
                     ACInfoData.getBlackListedMods(),
                     ACInfoData.getClientBlackListedMods(),
-                    List.of()
+                    java.util.List.of()
             );
         }
 
@@ -102,7 +105,8 @@ public record ACConfig(
                     Disable automatic structure config generation.""");
                 map.put("disableAutoConfigScreens", """
                     Disable automatic screen generation for structure configs.""");
-
+                map.put("autoConfigSubPath", """
+                        Set the default sub path of all automatically generated configs. Requires a RESTART to apply!""");
                 map.put("blacklistedMods", """
                     Mods where automatic structure config generation is disabled.""");
                 map.put("clientExcludedMods", """

@@ -26,18 +26,24 @@ public class ModFinder {
         Set<StructureConfig> configSet = new HashSet<>();
 
         boolean customPath = ACInfoData.currentData.containsKey(modID) && !ACInfoData.currentData.get(modID).autoConfigPath().isEmpty();
-        StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : modID, "structure_toggle_config", ConfigType.ENABLE_DISABLE);
-        StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : modID, "structure_placement_config", ConfigType.PLACEMENT);
+        String customSubPath = ConfigRegistry.get(ACConfig.class).autoConfigSubPath();
+
+        StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : customSubPath + modID, "structure_toggle_config", ConfigType.ENABLE_DISABLE);
+        StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modID).autoConfigPath() : customSubPath + modID, "structure_placement_config", ConfigType.PLACEMENT);
 
         structureSets.forEach(path -> {
             JsonElement e = JanksonUtil.getElement(modID, path);
-            JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path + " modId: " + modID).getAsJsonObject("placement");
-            ResourceLocation location = getLocation(Path.of(path));
+            if(e != null) {
 
-            if(supportedPlacements.contains(GsonHelper.getAsString(object, "type"))) {
-                registry.registerSetToConfig(modID, location, edConfig, placementConfig);
+                JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path + " modId: " + modID).getAsJsonObject("placement");
+                ResourceLocation location = getLocation(Path.of(path));
+
+                if(supportedPlacements.contains(GsonHelper.getAsString(object, "type"))) {
+                    registry.registerSetToConfig(modID, location, edConfig, placementConfig);
+                }
+                else registry.registerSetToConfig(modID, location, edConfig);
+
             }
-            else registry.registerSetToConfig(modID, location, edConfig);
         });
 
         if(!placementConfig.isSetsEmpty()) configSet.add(placementConfig);
