@@ -87,12 +87,8 @@ public class ConfigManager {
 
     // Write
     public static <T> void writeConfig(StructureConfig config, Codec<T> codec, T from, boolean override) {
-        Path path = config.getPath();
-        if (!override && path.toFile().exists()) return;
-
         writeFile(config.getPath(), codec, config.getComments(), from, ConfigManager.createHeader(config.getHeader()), true);
     }
-
 
     public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, T from, String header, boolean isSorted) {
         JsonElement jsonElement = createElement(path, codec, JanksonOps.INSTANCE, from);

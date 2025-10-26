@@ -88,6 +88,19 @@ public class Util {
         return normalized;
     }
 
+    public static void renameFile(Path path, String newBaseName) {
+        String filename = path.getFileName().toString();
+        int dotIndex = filename.lastIndexOf('.');
+        String ext = (dotIndex == -1) ? "" : filename.substring(dotIndex);
+        Path newPath = path.resolveSibling(newBaseName + ext);
+        try {
+            Files.move(path, newPath);
+        } catch (IOException e) {
+            throw new RuntimeException(CristelLib.getWithPrefix("Tried to rename file at path: " + path + ", to: " + newBaseName));
+        }
+    }
+
+
     /**
      * Parses a filename into namespace and path parts using a custom separator.
      *
