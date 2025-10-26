@@ -246,7 +246,7 @@ public class ScreenBuilder {
     }
 
     private DoubleListEntry frequencyEntry(ConfigEntryBuilder configEntry, String name, double value, double defaultValue, SubCategoryBuilder subCategory){
-        DoubleListEntry intEntry = configEntry.startDoubleField(Component.literal(name), value).setDefaultValue(defaultValue).setMin(0.000001).setMax(1.0).build();
+        DoubleListEntry intEntry = configEntry.startDoubleField(Component.literal(name), value).setDefaultValue(defaultValue).setMin(0).setMax(1.0).build();
         subCategory.add(intEntry);
         return intEntry;
     }

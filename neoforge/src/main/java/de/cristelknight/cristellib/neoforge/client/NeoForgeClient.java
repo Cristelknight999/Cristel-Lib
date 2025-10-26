@@ -5,13 +5,9 @@ import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.config.client.ScreenBuilder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
-import de.cristelknight.cristellib.util.Util;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
