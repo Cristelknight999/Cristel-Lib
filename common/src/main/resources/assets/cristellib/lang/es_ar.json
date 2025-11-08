@@ -1,4 +1,7 @@
 {
-  "cristellib.builtinPack": "Paquete de datos incorporado, provisto por Cristel Lib",
-  "cristellib.nameAndSource": "%s (%s)"
+  "cristellib.nameAndSource": "%s (vía §d§nCristel Lib§r)",
+
+  "cristellib.autoCategoryInfo": "Esta pantalla fue generada por %s. Podés desactivar las pantallas automáticas en la configuración.\nLos creadores de mods pueden hacer clic acá para abrir la wiki y aprender más.",
+  "cristellib.placementCategoryTitle": "Colocación de estructuras",
+  "cristellib.toggleCategoryTitle": "Alternar estructuras"
 }
