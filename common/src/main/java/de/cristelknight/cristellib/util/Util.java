@@ -78,20 +78,7 @@ public class Util {
         return new Pair<>(namespace, path);
     }
 
-    public static Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
-
-    public static <V, S> void addAll(Map<V, Set<S>> addTo, Map<V, Set<S>> addFrom){
-        for(V key : addFrom.keySet()){
-            if(addTo.containsKey(key)){
-                Set<S> valueSet = addTo.get(key);
-                valueSet.addAll(addFrom.get(key));
-                addTo.put(key, valueSet);
-            }
-            else {
-                addTo.put(key, addFrom.get(key));
-            }
-        }
-    }
+    public static final Component CRISTEL_LIB = Component.literal("Cristel Lib").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
 
     public static <T extends Comparable<T>> List<T> sortedKeyList(Map<T, ?> map) {
         return map.keySet().stream().sorted().toList();

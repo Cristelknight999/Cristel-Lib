@@ -50,7 +50,6 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="expanded_ecosphere"
 type="incompatible"
-versionRange="[0,)"
+versionRange="[0,3.4.3]"
 ordering="NONE"
 side="BOTH"
-

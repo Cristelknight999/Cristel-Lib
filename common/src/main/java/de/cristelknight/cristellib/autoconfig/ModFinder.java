@@ -2,7 +2,6 @@ package de.cristelknight.cristellib.autoconfig;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
