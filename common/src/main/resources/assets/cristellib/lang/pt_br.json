@@ -1,0 +1,7 @@
+{
+  "cristellib.nameAndSource": "%s (via §d§nCristel Lib§r)",
+
+  "cristellib.autoCategoryInfo": "Esta tela é gerada por %s. Você pode desabilitar telas automáticas na configuração.\nCriadores de mods podem clicar aqui para abrir a wiki e saber mais.",
+  "cristellib.placementCategoryTitle": "Posicionamento da Estrutura",
+  "cristellib.toggleCategoryTitle": "Alternar Estruturas"
+}
