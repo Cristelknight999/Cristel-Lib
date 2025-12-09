@@ -1,7 +1,7 @@
 package de.cristelknight.cristellib.config.serialize.ed;
 
 import de.cristelknight.cristellib.StructureConfig;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,23 +25,23 @@ public class EDConfigTransformer {
         return map;
     }
 
-    public static Map<String, NestedEDConfig> mapToNestedStructures(Map<ResourceLocation, List<ResourceLocation>> sets, StructureConfig structureConfig) {
+    public static Map<String, NestedEDConfig> mapToNestedStructures(Map<Identifier, List<Identifier>> sets, StructureConfig structureConfig) {
         Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
 
-        for (Map.Entry<ResourceLocation, List<ResourceLocation>> mapEntry : sets.entrySet()) {
-            ResourceLocation location = mapEntry.getKey();
-            List<ResourceLocation> stringList = mapEntry.getValue();
+        for (Map.Entry<Identifier, List<Identifier>> mapEntry : sets.entrySet()) {
+            Identifier location = mapEntry.getKey();
+            List<Identifier> stringList = mapEntry.getValue();
 
             // Prepare the map for the NestedStructure
             Map<String, NestedEDConfig.Entry> entries = new HashMap<>();
 
             // Process each string in the list
-            for (ResourceLocation structure : stringList) {
+            for (Identifier structure : stringList) {
                 String structureName = structureConfig.toDefaultString(structure);
                 putStructureName(structureName, true, entries);
             }
 
-            // Create NestedStructure for this ResourceLocation
+            // Create NestedStructure for this Identifier
             NestedEDConfig nestedStructure = new NestedEDConfig(entries);
             nestedStructures.put(structureConfig.toDefaultString(location), nestedStructure);
         }
@@ -49,11 +49,11 @@ public class EDConfigTransformer {
         return nestedStructures;
     }
 
-    public static Map<String, NestedEDConfig> mapToNestedStructuresWithValues(Map<ResourceLocation, EDConfig> sets, StructureConfig structureConfig) {
+    public static Map<String, NestedEDConfig> mapToNestedStructuresWithValues(Map<Identifier, EDConfig> sets, StructureConfig structureConfig) {
         Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
 
-        for (Map.Entry<ResourceLocation, EDConfig> mapEntry : sets.entrySet()) {
-            ResourceLocation location = mapEntry.getKey();
+        for (Map.Entry<Identifier, EDConfig> mapEntry : sets.entrySet()) {
+            Identifier location = mapEntry.getKey();
             EDConfig stringList = mapEntry.getValue();
 
             // Prepare the map for the NestedStructure
@@ -66,7 +66,7 @@ public class EDConfigTransformer {
                 putStructureName(structure, value, entries);
             }
 
-            // Create NestedStructure for this ResourceLocation
+            // Create NestedStructure for this Identifier
             NestedEDConfig nestedStructure = new NestedEDConfig(entries);
             nestedStructures.put(structureConfig.toDefaultString(location), nestedStructure);
         }

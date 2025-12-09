@@ -7,7 +7,7 @@ import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import net.minecraft.SharedConstants;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,7 +18,7 @@ import java.util.Set;
 
 public class CristelLib {
     public static final String MOD_ID = "cristellib";
-    public static final String MC_ID = ResourceLocation.DEFAULT_NAMESPACE;
+    public static final String MC_ID = Identifier.DEFAULT_NAMESPACE;
 
     public static String getWithPrefix(String message){
         return String.format("[%s] %s", MOD_ID, message);
@@ -26,7 +26,7 @@ public class CristelLib {
 
     public static final Logger LOGGER = LogManager.getLogger("Cristel Lib");
 
-    public static final ResourceLocation CRISTEL_LIB_PACK_RL = ResourceLocation.fromNamespaceAndPath(MOD_ID, "runtime_pack");
+    public static final Identifier CRISTEL_LIB_PACK_RL = Identifier.fromNamespaceAndPath(MOD_ID, "runtime_pack");
 
     public static final RuntimePack RUNTIME_PACK = new RuntimePack(CRISTEL_LIB_PACK_RL, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major(), "Runtime Pack for built-in features", CristelLibExpectPlatform.getResourceStream(MOD_ID, "pack.png"));
 

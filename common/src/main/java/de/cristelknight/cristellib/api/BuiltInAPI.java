@@ -6,7 +6,7 @@ import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.config.ConfigType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 import java.util.Set;
@@ -50,7 +50,7 @@ public class BuiltInAPI implements CristelLibAPI {
 
 
         // No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
-        registry.registerSetToConfig(CristelLib.MC_ID, ResourceLocation.withDefaultNamespace("strongholds"), MINECRAFT_ED);
+        registry.registerSetToConfig(CristelLib.MC_ID, Identifier.withDefaultNamespace("strongholds"), MINECRAFT_ED);
     }
 
     @Override

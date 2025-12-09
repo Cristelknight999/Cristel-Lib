@@ -18,7 +18,7 @@ import de.cristelknight.cristellib.config.serialize.ReadStructureSets;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
 import de.cristelknight.cristellib.util.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -49,12 +49,12 @@ public class StructureConfig {
     private final List<StructureSetData> structureSetHolders;
 
     // default values
-    private final Supplier<Map<ResourceLocation, List<ResourceLocation>>> structuresForED;
-    private final Supplier<Map<ResourceLocation, PlacementConfig>> structurePlacement;
+    private final Supplier<Map<Identifier, List<Identifier>>> structuresForED;
+    private final Supplier<Map<Identifier, PlacementConfig>> structurePlacement;
 
     // current values (structure_set + Config)
-    public Map<ResourceLocation, EDConfig> enableDisableConfig = null;
-    public Map<ResourceLocation, PlacementConfig> placementConfig = null;
+    public Map<Identifier, EDConfig> enableDisableConfig = null;
+    public Map<Identifier, PlacementConfig> placementConfig = null;
 
 
     private StructureConfig(Path path, ConfigType type) {
@@ -110,7 +110,7 @@ public class StructureConfig {
     }
 
     private void checkForError() {
-        Set<ResourceLocation> setsToCheck = type.equals(ConfigType.ENABLE_DISABLE) ? enableDisableConfig.keySet() : placementConfig.keySet();
+        Set<Identifier> setsToCheck = type.equals(ConfigType.ENABLE_DISABLE) ? enableDisableConfig.keySet() : placementConfig.keySet();
 
         boolean error = false;
         for(StructureSetData data : structureSetHolders) {
@@ -130,14 +130,14 @@ public class StructureConfig {
         readConfig(true);
     }
 
-    private void removeStructureInSets(JsonObject structureSet, ResourceLocation setLocation) {
+    private void removeStructureInSets(JsonObject structureSet, Identifier setLocation) {
         EDConfig setConfig = enableDisableConfig.get(setLocation);
 
         JsonArray array = structureSet.get("structures").getAsJsonArray();
         Iterator<JsonElement> structureIterator = array.iterator();
         while (structureIterator.hasNext()) {
             JsonElement structure = structureIterator.next();
-            String structureName = toDefaultString(Objects.requireNonNull(ResourceLocation.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
+            String structureName = toDefaultString(Objects.requireNonNull(Identifier.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
             if (setConfig.containsStructure(structureName)) {
                 if(setConfig.isStructureDisabled(structureName)) structureIterator.remove();
 
@@ -147,7 +147,7 @@ public class StructureConfig {
         }
     }
 
-    private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation) {
+    private void updatePlacementsInSet(JsonObject structureSet, Identifier setLocation) {
         PlacementConfig p = placementConfig.get(setLocation);
         JsonObject o = structureSet.get("placement").getAsJsonObject();
         o.addProperty("salt", p.salt());
@@ -162,8 +162,8 @@ public class StructureConfig {
         o.addProperty("frequency", newF);
     }
 
-    private JsonElement getStructureSet(ResourceLocation location, String modID) {
-        ResourceLocation structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
+    private JsonElement getStructureSet(Identifier location, String modID) {
+        Identifier structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
         if (CristelLib.RUNTIME_PACK.hasResource(structureLocation)) {
             return CristelLib.RUNTIME_PACK.getResource(structureLocation);
         }
@@ -220,11 +220,11 @@ public class StructureConfig {
         return comments;
     }
 
-    public Map<ResourceLocation, List<ResourceLocation>> getDefaultStructures() {
+    public Map<Identifier, List<Identifier>> getDefaultStructures() {
         return structuresForED.get();
     }
 
-    public Map<ResourceLocation, PlacementConfig> getDefaultStructurePlacement() {
+    public Map<Identifier, PlacementConfig> getDefaultStructurePlacement() {
         return structurePlacement.get();
     }
 
@@ -236,13 +236,13 @@ public class StructureConfig {
         return type;
     }
 
-    public ResourceLocation toDefaultRL(String location) {
-        if(location.contains(":")) return ResourceLocation.parse(location);
-        else if(defaultNamespace.equals(CristelLib.MC_ID)) return ResourceLocation.withDefaultNamespace(location);
-        else return ResourceLocation.fromNamespaceAndPath(defaultNamespace, location);
+    public Identifier toDefaultRL(String location) {
+        if(location.contains(":")) return Identifier.parse(location);
+        else if(defaultNamespace.equals(CristelLib.MC_ID)) return Identifier.withDefaultNamespace(location);
+        else return Identifier.fromNamespaceAndPath(defaultNamespace, location);
     }
 
-    public String toDefaultString(ResourceLocation location) {
+    public String toDefaultString(Identifier location) {
         return location.getNamespace().equals(defaultNamespace)
                 ? location.getPath()
                 : location.toString();
@@ -252,7 +252,7 @@ public class StructureConfig {
         Map<String, Integer> namespaceCounts = new HashMap<>();
 
         for (StructureSetData data : structureSetHolders) {
-            for (ResourceLocation set : data.sets()) {
+            for (Identifier set : data.sets()) {
                 namespaceCounts.merge(set.getNamespace(), 1, Integer::sum);
             }
         }

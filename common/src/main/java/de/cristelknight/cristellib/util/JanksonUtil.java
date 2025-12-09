@@ -8,7 +8,7 @@ import com.google.gson.JsonParser;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.util.jankson.CommentArray;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class JanksonUtil {
-    public static @Nullable com.google.gson.JsonElement getSetElement(String getDataFromModId, ResourceLocation location) {
+    public static @Nullable com.google.gson.JsonElement getSetElement(String getDataFromModId, Identifier location) {
         return getElement(getDataFromModId, "data/" + location.getNamespace() + "/worldgen/structure_set/" + location.getPath() + ".json");
     }
     public static @Nullable com.google.gson.JsonElement getElement(String getDataFromModId, String location) {

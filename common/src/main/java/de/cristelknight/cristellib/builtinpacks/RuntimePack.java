@@ -7,7 +7,7 @@ import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.*;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.repository.KnownPack;
@@ -35,7 +35,7 @@ import java.util.zip.ZipInputStream;
 public class RuntimePack implements PackResources {
     public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private final Lock waiting = new ReentrantLock();
-    private final Map<ResourceLocation, Supplier<byte[]>> data = new ConcurrentHashMap<>();
+    private final Map<Identifier, Supplier<byte[]>> data = new ConcurrentHashMap<>();
     private final Map<List<String>, Supplier<byte[]>> root = new ConcurrentHashMap<>();
     public final int packVersion;
     private final String id;
@@ -43,7 +43,7 @@ public class RuntimePack implements PackResources {
     private final PackLocationInfo metadata;
 
 
-    public RuntimePack(ResourceLocation id, int version, String description, @Nullable InputStream imageStream) {
+    public RuntimePack(Identifier id, int version, String description, @Nullable InputStream imageStream) {
         this.packVersion = version;
         this.id = id.toString();
 
@@ -72,40 +72,40 @@ public class RuntimePack implements PackResources {
     }
 
 
-    public byte[] addStructureSet(ResourceLocation identifier, JsonObject set) {
+    public byte[] addStructureSet(Identifier identifier, JsonObject set) {
         return this.addDataForJsonLocation("worldgen/structure_set", identifier, set);
     }
 
 
-    public byte[] addBiome(ResourceLocation identifier, JsonObject biome) {
+    public byte[] addBiome(Identifier identifier, JsonObject biome) {
         return this.addDataForJsonLocation("worldgen/biome", identifier, biome);
     }
-    public byte[] addStructure(ResourceLocation identifier, JsonObject structure) {
+    public byte[] addStructure(Identifier identifier, JsonObject structure) {
         return this.addDataForJsonLocation("worldgen/structure", identifier, structure);
     }
-    public byte[] addLootTable(ResourceLocation identifier, JsonObject table) {
+    public byte[] addLootTable(Identifier identifier, JsonObject table) {
         return this.addDataForJsonLocation("loot_tables", identifier, table);
     }
 
-    public byte @Nullable [] addDataForJsonLocationFromPath(String prefix, ResourceLocation identifier, String fromSubPath, String fromModID) {
+    public byte @Nullable [] addDataForJsonLocationFromPath(String prefix, Identifier identifier, String fromSubPath, String fromModID) {
         if(JanksonUtil.getElement(fromModID, fromSubPath) instanceof JsonObject object){
             return addDataForJsonLocation(prefix, identifier, object);
         }
         return null;
     }
 
-    public byte[] addDataForJsonLocation(String prefix, ResourceLocation identifier, JsonObject object) {
+    public byte[] addDataForJsonLocation(String prefix, Identifier identifier, JsonObject object) {
         return this.addAndSerializeDataForLocation(prefix, "json", identifier, object);
     }
-    public byte[] addAndSerializeDataForLocation(String prefix, String end, ResourceLocation identifier, JsonObject object) {
-        return this.addData(ResourceLocation.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), RuntimePackUtil.serializeJson(object));
+    public byte[] addAndSerializeDataForLocation(String prefix, String end, Identifier identifier, JsonObject object) {
+        return this.addData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), RuntimePackUtil.serializeJson(object));
     }
-    public byte[] addData(ResourceLocation path, byte[] data) {
+    public byte[] addData(Identifier path, byte[] data) {
         this.data.put(path, () -> data);
         return data;
     }
 
-    public void removeData(ResourceLocation path) {
+    public void removeData(Identifier path) {
         this.data.remove(path);
     }
 
@@ -136,7 +136,7 @@ public class RuntimePack implements PackResources {
 
     @Nullable
     @Override
-    public IoSupplier<InputStream> getResource(@NotNull PackType packType, @NotNull ResourceLocation id) {
+    public IoSupplier<InputStream> getResource(@NotNull PackType packType, @NotNull Identifier id) {
         this.lock();
         Supplier<byte[]> supplier = this.data.get(id);
         if(supplier == null) {
@@ -147,14 +147,14 @@ public class RuntimePack implements PackResources {
         return () -> new ByteArrayInputStream(supplier.get());
     }
 
-    public boolean hasResource(ResourceLocation location){
+    public boolean hasResource(Identifier location){
         return data.containsKey(location);
     }
 
     @Override
     public void listResources(@NotNull PackType packType, @NotNull String namespace, @NotNull String prefix, @NotNull ResourceOutput resourceOutput) {
         this.lock();
-        for(ResourceLocation identifier : this.data.keySet()) {
+        for(Identifier identifier : this.data.keySet()) {
             Supplier<byte[]> supplier = this.data.get(identifier);
             if(supplier == null) {
                 this.waiting.unlock();
@@ -179,7 +179,7 @@ public class RuntimePack implements PackResources {
     public @NotNull Set<String> getNamespaces(@NotNull PackType packType) {
         this.lock();
         Set<String> namespaces = new HashSet<>();
-        for(ResourceLocation identifier : this.data.keySet()) {
+        for(Identifier identifier : this.data.keySet()) {
             namespaces.add(identifier.getNamespace());
         }
         this.waiting.unlock();
@@ -261,15 +261,15 @@ public class RuntimePack implements PackResources {
         return data;
     }
 
-    protected void load(String fullPath, Map<ResourceLocation, Supplier<byte[]>> map, byte[] data) {
+    protected void load(String fullPath, Map<Identifier, Supplier<byte[]>> map, byte[] data) {
         int sep = fullPath.indexOf('/');
         String namespace = fullPath.substring(0, sep);
         String path = fullPath.substring(sep + 1);
-        map.put(ResourceLocation.fromNamespaceAndPath(namespace, path), () -> data);
+        map.put(Identifier.fromNamespaceAndPath(namespace, path), () -> data);
     }
 
 
-    public @Nullable JsonObject getResource(ResourceLocation location) {
+    public @Nullable JsonObject getResource(Identifier location) {
         IoSupplier<InputStream> stream = this.getResource(PackType.SERVER_DATA, location);
         JsonObject jsonObject;
         try {
@@ -293,8 +293,8 @@ public class RuntimePack implements PackResources {
             }
 
             // Dump namespaced data (e.g. data/<namespace>/<resource>.json)
-            for (Map.Entry<ResourceLocation, Supplier<byte[]>> entry : this.data.entrySet()) {
-                ResourceLocation rl = entry.getKey();
+            for (Map.Entry<Identifier, Supplier<byte[]>> entry : this.data.entrySet()) {
+                Identifier rl = entry.getKey();
                 Path filePath = output.resolve(Paths.get("data", rl.getNamespace(), rl.getPath()));
                 Files.createDirectories(filePath.getParent());
                 Files.write(filePath, entry.getValue().get(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);

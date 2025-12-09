@@ -18,7 +18,7 @@ import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,17 +48,17 @@ public class ConfigManager {
     public static void createEDConfig(StructureConfig config, boolean override) {
         Map<String, NestedEDConfig> nestedStructureMap;
         if(config.enableDisableConfig == null) {
-            Map<ResourceLocation, List<ResourceLocation>> sets = config.getDefaultStructures();
+            Map<Identifier, List<Identifier>> sets = config.getDefaultStructures();
             nestedStructureMap = EDConfigTransformer.mapToNestedStructures(sets, config);
         } else nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(config.enableDisableConfig, config);
 
         writeConfig(config, NestedEDConfig.ED_CODEC, nestedStructureMap, override);
     }
 
-    public static Map<ResourceLocation, EDConfig> readEDConfig(StructureConfig config) {
+    public static Map<Identifier, EDConfig> readEDConfig(StructureConfig config) {
         Map<String, NestedEDConfig> configMap = readFromJanksonPath(config.getPath(), NestedEDConfig.ED_CODEC);
 
-        Map<ResourceLocation, EDConfig> map = new HashMap<>();
+        Map<Identifier, EDConfig> map = new HashMap<>();
         for (String structureSet : configMap.keySet()) {
             map.put(config.toDefaultRL(structureSet), new EDConfig(EDConfigTransformer.stringBooleanMap(configMap.get(structureSet), "")));
         }
@@ -66,12 +66,12 @@ public class ConfigManager {
     }
 
     public static void createPlacementConfig(StructureConfig config, boolean override) {
-        Map<ResourceLocation, PlacementConfig> sets = config.placementConfig == null ? config.getDefaultStructurePlacement() : config.placementConfig;
+        Map<Identifier, PlacementConfig> sets = config.placementConfig == null ? config.getDefaultStructurePlacement() : config.placementConfig;
         Map<String, PlacementConfig> sets2 = sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultString(entry.getKey()), Map.Entry::getValue));
         writeConfig(config, PlacementConfig.PLACEMENT_CODEC, sets2, override);
     }
 
-    public static Map<ResourceLocation, PlacementConfig> readPlacementConfig(StructureConfig config) {
+    public static Map<Identifier, PlacementConfig> readPlacementConfig(StructureConfig config) {
         Map<String, PlacementConfig> sets = readFromJanksonPath(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
         return sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultRL(entry.getKey()), Map.Entry::getValue));
     }

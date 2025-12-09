@@ -10,7 +10,7 @@ import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.codec.BuiltInPackData;
 import de.cristelknight.cristellib.data.codec.BuiltInPackDataWrapper;
 import de.cristelknight.cristellib.util.Util;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.network.chat.Component;
 
 import java.nio.file.Path;
@@ -79,7 +79,7 @@ public class ReadData {
 
             configs.add(config); // namespace exists but no match; just add
             return true;
-        } catch (ResourceLocationException ignored) {
+        } catch (IdentifierException ignored) {
             return false; // fallback: can't parse namespace, add to "minecraft"
         }
     }

@@ -1,7 +1,7 @@
 package de.cristelknight.cristellib.fabric.mixin;
 
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
-import net.fabricmc.fabric.impl.resource.loader.ResourceManagerHelperImpl;
+import net.fabricmc.fabric.impl.resource.ResourceLoaderImpl;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.Consumer;
 
-@Mixin(ResourceManagerHelperImpl.class)
+@Mixin(ResourceLoaderImpl.class)
 public class LoadPacks {
 
     @Inject(method = "registerBuiltinResourcePacks", at = @At("TAIL"))

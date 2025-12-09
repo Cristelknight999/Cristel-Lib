@@ -8,7 +8,7 @@ import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.ReadData;
 import net.minecraft.ChatFormatting;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.io.FileUtils;
 
@@ -67,7 +67,7 @@ public class Util {
      *  - Collapses duplicate '/'
      * <p>
      * Output:
-     *  - A normalized path string safe to pass to ResourceLocation.fromNamespaceAndPath
+     *  - A normalized path string safe to pass to Identifier.fromNamespaceAndPath
      */
     public static String normalizeResourcePath(String path) {
         if (path == null) {
@@ -112,7 +112,7 @@ public class Util {
     public static Pair<String, String> parseNamespaceAndPath(String fileName, char separator) throws IllegalArgumentException {
         int sepIndex = fileName.indexOf(separator);
         if (sepIndex < 1 || sepIndex == fileName.length() - 1) {
-            throw new ResourceLocationException("Invalid file name: " + fileName + ", missing or misplaced separator '" + separator + "'");
+            throw new IdentifierException("Invalid file name: " + fileName + ", missing or misplaced separator '" + separator + "'");
         }
 
         String namespace = fileName.substring(0, sepIndex); // keep case as-is

@@ -5,11 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.ConfigSettings;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 
 public record ACConfig(
         boolean disableAutoConfig,

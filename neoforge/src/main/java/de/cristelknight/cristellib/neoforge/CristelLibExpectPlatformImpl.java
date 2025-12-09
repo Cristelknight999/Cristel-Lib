@@ -10,7 +10,7 @@ import de.cristelknight.cristellib.util.Util;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.repository.KnownPack;
@@ -52,7 +52,7 @@ public class CristelLibExpectPlatformImpl {
         walk(file.getContents(), startingFolder, fileFilter, consumer);
     }
 
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
+    public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
         String modID = id.getNamespace();
         String path = id.getPath();
 

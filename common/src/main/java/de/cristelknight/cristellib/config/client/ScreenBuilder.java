@@ -30,7 +30,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.net.URI;
 import java.util.*;
@@ -104,11 +104,11 @@ public class ScreenBuilder {
         ConfigCategory placementCategory = builder.getOrCreateCategory(Component.translatable("cristellib.placementCategoryTitle"));
         addHeader(structureConfig, placementCategory, entryBuilder);
 
-        Map<ResourceLocation, PlacementConfig> placementConfigs = structureConfig.placementConfig;
-        Map<ResourceLocation, PlacementConfig> defaultPlacementConfigs = structureConfig.getDefaultStructurePlacement();
+        Map<Identifier, PlacementConfig> placementConfigs = structureConfig.placementConfig;
+        Map<Identifier, PlacementConfig> defaultPlacementConfigs = structureConfig.getDefaultStructurePlacement();
 
-        Map<ResourceLocation, ClientPlacementConfig> clientPlacementConfigs = new HashMap<>();
-        for (ResourceLocation structureSetLocation : Util.sortedKeyList(placementConfigs)) {
+        Map<Identifier, ClientPlacementConfig> clientPlacementConfigs = new HashMap<>();
+        for (Identifier structureSetLocation : Util.sortedKeyList(placementConfigs)) {
             PlacementConfig currentConfig = placementConfigs.get(structureSetLocation);
             PlacementConfig defaultConfig = defaultPlacementConfigs.get(structureSetLocation);
             if (defaultConfig == null) {
@@ -138,7 +138,7 @@ public class ScreenBuilder {
         addHeader(structureConfig, edCategory, entryBuilder);
 
         Map<String, NestedEDConfig> nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(structureConfig.enableDisableConfig, structureConfig);
-        Map<ResourceLocation, ClientEDConfig> clientEDConfigs = new HashMap<>();
+        Map<Identifier, ClientEDConfig> clientEDConfigs = new HashMap<>();
         for (String structureSetName : Util.sortedKeyList(nestedStructureMap)) {
             Map<String, BooleanListEntry> structures = new HashMap<>();
             SubCategoryBuilder rootSubCategory = entryBuilder.startSubCategory(Component.literal(structureSetName));
@@ -237,16 +237,16 @@ public class ScreenBuilder {
         SimpleScreenBuilder.saveConfigs(modID);
     }
 
-    private void updatePlacements(StructureConfig structureConfig, Map<ResourceLocation, ClientPlacementConfig> clientPlacementConfigs) {
-        Map<ResourceLocation, PlacementConfig> placementConfigs = structureConfig.placementConfig;
-        for (ResourceLocation structureName : clientPlacementConfigs.keySet()) {
+    private void updatePlacements(StructureConfig structureConfig, Map<Identifier, ClientPlacementConfig> clientPlacementConfigs) {
+        Map<Identifier, PlacementConfig> placementConfigs = structureConfig.placementConfig;
+        for (Identifier structureName : clientPlacementConfigs.keySet()) {
             placementConfigs.put(structureName, clientPlacementConfigs.get(structureName).toPlacement());
         }
     }
 
-    private void updateEDs(StructureConfig structureConfig, Map<ResourceLocation, ClientEDConfig> clientEDConfigs) {
-        Map<ResourceLocation, EDConfig> placementConfigs = structureConfig.enableDisableConfig;
-        for (ResourceLocation structureName : clientEDConfigs.keySet()) {
+    private void updateEDs(StructureConfig structureConfig, Map<Identifier, ClientEDConfig> clientEDConfigs) {
+        Map<Identifier, EDConfig> placementConfigs = structureConfig.enableDisableConfig;
+        for (Identifier structureName : clientEDConfigs.keySet()) {
             placementConfigs.put(structureName, clientEDConfigs.get(structureName).toED());
         }
     }
@@ -265,13 +265,13 @@ public class ScreenBuilder {
     }
 
     // Warn helpers
-    private static void getWarn(StructureConfig structureConfig, ResourceLocation structureSetName) {
+    private static void getWarn(StructureConfig structureConfig, Identifier structureSetName) {
         CristelLib.LOGGER.warn("Structure Set: {} has no default config, skipping!\nThis probably indicates that this config file is outdated and should be deleted to re-create it. (Path: {})", structureSetName.toString(), structureConfig.getPath());
     }
 
     private boolean getEDSubWarn(StructureConfig structureConfig, String fullPath, String structureSetName) {
-        ResourceLocation setLocation = structureConfig.toDefaultRL(structureSetName);
-        List<ResourceLocation> structures = structureConfig.getDefaultStructures().get(setLocation);
+        Identifier setLocation = structureConfig.toDefaultRL(structureSetName);
+        List<Identifier> structures = structureConfig.getDefaultStructures().get(setLocation);
         if (structures == null) {
             getWarn(structureConfig, setLocation);
             return true;

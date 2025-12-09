@@ -3,7 +3,7 @@ package de.cristelknight.cristellib;
 import de.cristelknight.cristellib.util.Platform;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 
 import java.io.InputStream;
@@ -27,7 +27,7 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
+    public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
         throw new AssertionError();
     }
 

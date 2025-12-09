@@ -9,7 +9,7 @@ import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 
 import java.nio.file.Path;
@@ -36,7 +36,7 @@ public class ModFinder {
             if(e != null) {
 
                 JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path + " modId: " + modID).getAsJsonObject("placement");
-                ResourceLocation location = getLocation(Path.of(path));
+                Identifier location = getLocation(Path.of(path));
 
                 if(supportedPlacements.contains(GsonHelper.getAsString(object, "type"))) {
                     registry.registerSetToConfig(modID, location, edConfig, placementConfig);
@@ -59,15 +59,15 @@ public class ModFinder {
     }
 
 
-    private static ResourceLocation getLocation(Path rootPath) {
+    private static Identifier getLocation(Path rootPath) {
         String namespace = rootPath.getName(1).toString();
         String rawPath = Util.cutFileType(rootPath.subpath(4, rootPath.getNameCount()));
         String path = Util.normalizeResourcePath(rawPath);
 
         if(namespace.equals(CristelLib.MC_ID)) {
-            return ResourceLocation.withDefaultNamespace(path);
+            return Identifier.withDefaultNamespace(path);
         }
-        return ResourceLocation.fromNamespaceAndPath(namespace, path);
+        return Identifier.fromNamespaceAndPath(namespace, path);
     }
 
     public static boolean shouldSkipModForACPre(String modID, Set<String> modsWithConfig) {

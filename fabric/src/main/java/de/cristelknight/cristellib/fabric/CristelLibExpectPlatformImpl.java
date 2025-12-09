@@ -8,13 +8,13 @@ import de.cristelknight.cristellib.data.PathFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
-import net.fabricmc.fabric.impl.resource.loader.ModNioResourcePack;
+import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
+import net.fabricmc.fabric.impl.resource.pack.ModNioPackResources;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.Person;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import org.jetbrains.annotations.Nullable;
@@ -33,11 +33,11 @@ public class CristelLibExpectPlatformImpl {
         return FabricLoader.getInstance().getConfigDir();
     }
 
-    public static PackResources registerBuiltinResourcePack(ResourceLocation id, Component displayName) {
+    public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
         String modID = id.getNamespace();
         ModContainer container = FabricLoader.getInstance().getModContainer(modID).orElse(null);
         if(container != null){
-            return ModNioResourcePack.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, ResourcePackActivationType.ALWAYS_ENABLED, false);
+            return ModNioPackResources.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, PackActivationType.ALWAYS_ENABLED, false);
         }
         else {
             CristelLib.LOGGER.warn("Couldn't get mod container for modID: {}", modID);

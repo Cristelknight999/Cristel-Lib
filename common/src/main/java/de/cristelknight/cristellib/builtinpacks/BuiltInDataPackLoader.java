@@ -4,7 +4,7 @@ import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackSelectionConfig;
@@ -21,11 +21,11 @@ import static de.cristelknight.cristellib.CristelLib.getWithPrefix;
 
 public class BuiltInDataPackLoader {
 
-    public static void registerAlwaysOnPack(ResourceLocation path, Component displayName) {
+    public static void registerAlwaysOnPack(Identifier path, Component displayName) {
         registerPack(path, displayName, () -> true);
     }
 
-    public static void registerPack(ResourceLocation path, Component displayName, Supplier<Boolean> supplier) {
+    public static void registerPack(Identifier path, Component displayName, Supplier<Boolean> supplier) {
         registerPack(CristelLibExpectPlatform.registerBuiltinResourcePack(path, displayName), displayName, supplier);
     }
 

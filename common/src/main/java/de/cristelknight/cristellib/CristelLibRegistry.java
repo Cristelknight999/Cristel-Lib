@@ -2,7 +2,7 @@ package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 import java.util.Set;
@@ -24,17 +24,17 @@ public class CristelLibRegistry {
 
         registerSetToConfig(modID, sets.stream()
                 .map(string -> isMC
-                        ? ResourceLocation.withDefaultNamespace(string)
-                        : ResourceLocation.fromNamespaceAndPath(namespace, string)
+                        ? Identifier.withDefaultNamespace(string)
+                        : Identifier.fromNamespaceAndPath(namespace, string)
                 )
                 .toList(), configs);
     }
 
-    public void registerSetToConfig(String modID, List<ResourceLocation> sets, StructureConfig... configs) {
+    public void registerSetToConfig(String modID, List<Identifier> sets, StructureConfig... configs) {
         for (StructureConfig config : configs) config.addSet(new StructureSetData(modID, sets));
     }
 
-    public void registerSetToConfig(String modID, ResourceLocation set, StructureConfig... configs) {
+    public void registerSetToConfig(String modID, Identifier set, StructureConfig... configs) {
         for (StructureConfig config : configs) config.addSet(new StructureSetData(modID, List.of(set)));
     }
 
