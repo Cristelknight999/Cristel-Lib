@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.datafixers.util.Pair;
+import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.config.client.ScreenBuilder;
@@ -62,7 +63,7 @@ public class CristelLibClient implements ClientModInitializer {
         FabricClientCommandSource source = ctx.getSource();
 
         if(!Util.isClothConfigLoaded()) {
-            source.sendError(Component.literal("No cloth config installed!"));
+            source.sendError(Component.literal("Cloth Config is not installed!"));
             return 0;
         }
         if(!ModLoadingUtil.isModLoaded(modID)) {
@@ -81,7 +82,7 @@ public class CristelLibClient implements ClientModInitializer {
         Pair<Boolean, Boolean> structureSimple = ScreenBuilder.shouldCreateScreen(modID, structureEnabled);
         boolean structure = structureSimple.getFirst();
         boolean simple = structureSimple.getSecond();
-        if(!structure && !simple) {
+        if((!structure && !simple) && !modID.equals(CristelLib.MOD_ID)) {
             source.sendError(Component.literal("Mod: " + modID + " has no (enabled) screen!"));
             return 0;
         }
