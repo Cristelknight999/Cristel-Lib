@@ -15,6 +15,7 @@ import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -188,7 +189,7 @@ public class RuntimePack implements PackResources {
 
     @Nullable
     @Override
-    public <T> T getMetadataSection(MetadataSectionType<T> metadataSectionType) {
+    public <T> T getMetadataSection(@NonNull MetadataSectionType<T> metadataSectionType) {
         InputStream stream = null;
         try {
             IoSupplier<InputStream> supplier = this.getRootResource("pack.mcmeta");
@@ -196,9 +197,11 @@ public class RuntimePack implements PackResources {
                 stream = supplier.get();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(CristelLib.getWithPrefix("Error reading pack.mcmeta from: " + packId()), e);
         }
-        if(stream == null) CristelLib.LOGGER.error("Couldn't find pack.mcmeta of the Runtime Pack: {}", id);
+        if(stream == null) {
+            throw new RuntimeException(CristelLib.getWithPrefix("Couldn't find pack.mcmeta of Runtime Pack: " + packId()));
+        }
         return FilePackResources.getMetadataFromStream(metadataSectionType, stream, metadata);
     }
 

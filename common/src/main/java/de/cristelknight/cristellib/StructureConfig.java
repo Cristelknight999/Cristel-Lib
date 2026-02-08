@@ -109,15 +109,20 @@ public class StructureConfig {
         }));
     }
 
+    //TODO:
     private void checkForError() {
         Set<Identifier> setsToCheck = type.equals(ConfigType.ENABLE_DISABLE) ? enableDisableConfig.keySet() : placementConfig.keySet();
 
         boolean error = false;
         for(StructureSetData data : structureSetHolders) {
-            boolean hasAll = setsToCheck.containsAll(data.sets());
+            List<Identifier> newlyReadSets = data.sets();
+            boolean hasAll = setsToCheck.containsAll(newlyReadSets);
             if (!hasAll) {
                 error = true;
-                break;
+                var newlyReadSetsCopy = new ArrayList<>(newlyReadSets);
+                newlyReadSetsCopy.removeAll(setsToCheck);
+                CristelLib.LOGGER.error("Structure sets are missing from config: {}", newlyReadSetsCopy);
+                //break;
             }
         }
         if(!error) return;

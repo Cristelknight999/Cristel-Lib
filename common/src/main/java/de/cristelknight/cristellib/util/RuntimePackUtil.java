@@ -32,7 +32,7 @@ public class RuntimePackUtil {
         try {
             writer.close();
         } catch(IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(CristelLib.getWithPrefix("Failed to serialize JsonObject"), e);
         }
         return ubaos.getBytes();
     }

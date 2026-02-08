@@ -96,7 +96,7 @@ public class Util {
         try {
             Files.move(path, newPath);
         } catch (IOException e) {
-            throw new RuntimeException(CristelLib.getWithPrefix("Tried to rename file at path: " + path + ", to: " + newBaseName));
+            CristelLib.LOGGER.error("Failed to rename file at path: {}, to: {}", path, newBaseName, e);
         }
     }
 
@@ -167,7 +167,7 @@ public class Util {
                 Files.move(oldPath, ConfigManager.CONFIG_LIB.resolve("~OUTDATED DIRECTORY~ data"));
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            CristelLib.LOGGER.error("Failed to update custom configs in <instance>/config/cristellib/data/", e);
         }
     }
 
