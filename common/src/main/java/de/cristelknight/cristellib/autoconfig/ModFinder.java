@@ -23,7 +23,7 @@ public class ModFinder {
     
     public static final Set<String> supportedPlacements = Set.of("minecraft:random_spread",
             "mes:advanced_random_spread", "mns:advanced_random_spread", "mss:advanced_random_spread", "mvs:advanced_random_spread",
-            "repurposed_structures:advanced_random_spread"
+            "repurposed_structures:advanced_random_spread", "cataclysm:cataclysm_random_spread"
     );
     
     public static void addConfigs(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry) {
@@ -39,12 +39,16 @@ public class ModFinder {
             structureSets.forEach(path -> {
                 JsonElement e = JanksonUtil.getElement(modID, path.toString());
                 if(e != null) {
-                    JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path).getAsJsonObject("placement");
+                    JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path);
+                    boolean placement = object.has("placement");
+                    boolean structures = object.has("structures");
                     ResourceLocation location = getLocation(path);
-                    if(supportedPlacements.contains(GsonHelper.getAsString(object, "type"))) {
+                    if(structures && placement && supportedPlacements.contains(GsonHelper.getAsString(object.getAsJsonObject("placement"), "type"))) {
                         registry.registerSetToConfig(modID, location, edConfig, placementConfig);
                     }
-                    else registry.registerSetToConfig(modID, location, edConfig);
+                    else if (structures) {
+                        registry.registerSetToConfig(modID, location, edConfig);
+                    }
                 }
             });
 

@@ -113,7 +113,7 @@ public class StructureConfig {
 
     private void removeStructureInSets(JsonObject structureSet, ResourceLocation setLocation) {
         if(!enableDisableConfig.containsKey(setLocation)) {
-            CristelLib.LOGGER.error("{} {}", setLocation, enableDisableConfig.toString());
+            //CristelLib.LOGGER.error("{} {}", setLocation, enableDisableConfig.toString());
             return;
         }
 
@@ -135,7 +135,7 @@ public class StructureConfig {
 
     private void updatePlacementsInSet(JsonObject structureSet, ResourceLocation setLocation) {
         if (!placementConfig.containsKey(setLocation)) {
-            CristelLib.LOGGER.error("{} {}", setLocation, placementConfig.toString());
+            //CristelLib.LOGGER.error("{} {}", setLocation, placementConfig.toString());
             return;
         }
 
