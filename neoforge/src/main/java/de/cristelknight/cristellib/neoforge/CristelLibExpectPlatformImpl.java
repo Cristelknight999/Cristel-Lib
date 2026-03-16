@@ -121,7 +121,7 @@ public class CristelLibExpectPlatformImpl {
         return ModList.get()
                 .getModContainerById(modId)
                 .map(container -> container.getModInfo().getDisplayName())
-                .orElse(modId); // fallback to modid if nothing is found
+                .orElse(modId); // fallback to modId if nothing is found
     }
 
     public static boolean isClient() {

@@ -40,13 +40,13 @@ public enum ModVersionComparator {
         }
     }/*,
     SAME_TO_NEXT_MINOR("~") {
-        public boolean test(String modid, String version) {
-            return ModLoadingUtil.compareMinor(modid, version);
+        public boolean test(String modId, String version) {
+            return ModLoadingUtil.compareMinor(modId, version);
         }
     },
     SAME_TO_NEXT_MAJOR("^") {
-        public boolean test(String modid, String version) {
-            return ModLoadingUtil.compareMajor(modid, version);
+        public boolean test(String modId, String version) {
+            return ModLoadingUtil.compareMajor(modId, version);
         }
     }*/;
 

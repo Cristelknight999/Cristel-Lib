@@ -11,13 +11,13 @@ public record StructureSetData(String modID, List<Identifier> sets) {
 
     public static final Codec<StructureSetData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
-                    Codec.STRING.fieldOf("modid").forGetter(config -> String.valueOf(config.modID())),
+                    Codec.STRING.fieldOf("modId").forGetter(config -> String.valueOf(config.modID())),
                     Codec.list(Identifier.CODEC).fieldOf("structure_set").orElse(List.of()).forGetter(config -> config.sets)
             ).apply(builder, StructureSetData::new)
     );
 
     @Override
     public @NotNull String toString() {
-        return modID() + " " + sets.toString();
+        return "StructureSetData: " + modID() + ": " + sets.toString();
     }
 }

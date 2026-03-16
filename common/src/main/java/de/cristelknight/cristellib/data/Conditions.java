@@ -8,13 +8,22 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.ModLoadingUtil;
+import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.util.ModVersionComparator;
 import net.minecraft.util.GsonHelper;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class Conditions {
+
+    private static Map<String, Codec<ICondition>> CONDITIONS = new HashMap<>();
+
+    public static void registerCond(String type, Codec<ICondition> codec) {
+
+    }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static boolean readConditions(Optional<List<JsonElement>> conditions){
@@ -34,6 +43,9 @@ public class Conditions {
     public static boolean readCondition(JsonObject object){
         String type = GsonHelper.getAsString(object, "type");
         if(type.equals("mod_loaded")){
+            object.remove("type");
+            ModLoadedCondition condition = ConfigManager.readElement("idj", ModLoadedCondition.CODEC, JsonOps.INSTANCE, object);
+            condition.test()
             return ModLoadingUtil.isModLoaded(GsonHelper.getAsString(object, "mod"));
         }
         else if(type.equals("mod_loaded_with_version")){
@@ -55,5 +67,4 @@ public class Conditions {
             dynamic -> dynamic.convert(JsonOps.INSTANCE).getValue(),
             jsonObject -> new Dynamic<>(JsonOps.INSTANCE, jsonObject)
     )).optionalFieldOf("conditions");
-
 }
