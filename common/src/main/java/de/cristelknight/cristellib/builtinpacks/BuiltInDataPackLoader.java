@@ -49,7 +49,7 @@ public class BuiltInDataPackLoader {
         for (BuiltInPack entry : PACK_LIST) {
             PackResources pack = entry.packResource();
 
-            // Check orConditions
+            // Check conditions
             if (!entry.supplier().get() ||
                     config.disabledPacks().contains(pack.packId()) ||
                     pack.getNamespaces(PackType.SERVER_DATA).isEmpty()) continue;

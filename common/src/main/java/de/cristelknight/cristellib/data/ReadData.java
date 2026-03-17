@@ -9,7 +9,7 @@ import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.codec.BuiltInPackData;
 import de.cristelknight.cristellib.data.codec.BuiltInPackDataWrapper;
-import de.cristelknight.cristellib.data.condition.Conditions;
+import de.cristelknight.cristellib.data.condition.ConditionNode;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.IdentifierException;
 import net.minecraft.network.chat.Component;
@@ -100,7 +100,7 @@ public class ReadData {
     }
 
     private static void loadPack(BuiltInPackData pack) {
-        boolean bl = Conditions.readConditions(pack.conditions());
+        boolean bl = ConditionNode.testConditionNode(pack.conditionNode());
         BuiltInDataPackLoader.registerPack(pack.location(), Component.nullToEmpty(pack.displayName()), () -> bl);
     }
 
@@ -110,7 +110,7 @@ public class ReadData {
 
             CopyFileData copyFileData = ConfigManager.readFromSubPath(subPath, modId, CopyFileData.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
 
-            if (Conditions.readConditions(copyFileData.conditions())) {
+            if (Conditions.readConditions(copyFileData.conditionNode())) {
                 copyFileFromJar(copyFileData.location(), copyFileData.destination());
             }
         }
