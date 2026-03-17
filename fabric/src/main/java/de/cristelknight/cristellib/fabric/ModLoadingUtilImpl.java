@@ -10,13 +10,13 @@ import java.util.Optional;
 
 public class ModLoadingUtilImpl {
 
-    public static boolean isModLoaded(String modID) {
-        return FabricLoader.getInstance().isModLoaded(modID);
+    public static boolean isModLoaded(String modId) {
+        return FabricLoader.getInstance().isModLoaded(modId);
     }
 
-    public static Optional<Integer> compare(String modID, String version) {
-        if (ModLoadingUtil.isModLoaded(modID)) {
-            Version modVersion = FabricLoader.getInstance().getModContainer(modID).get().getMetadata().getVersion();
+    public static Optional<Integer> compare(String modId, String version) {
+        if (ModLoadingUtil.isModLoaded(modId)) {
+            Version modVersion = FabricLoader.getInstance().getModContainer(modId).get().getMetadata().getVersion();
             Version min;
             try {
                 min = Version.parse(version);

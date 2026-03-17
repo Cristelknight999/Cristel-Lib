@@ -136,8 +136,8 @@ public class ConfigManager {
         return config;
     }
 
-    public static <T> T readFromSubPath(String modID, String subPath, Codec<T> codec, String errorMsg) {
-        InputStream stream = CristelLibExpectPlatform.getResourceStream(modID, subPath);
+    public static <T> T readFromSubPath(String modId, String subPath, Codec<T> codec, String errorMsg) {
+        InputStream stream = CristelLibExpectPlatform.getResourceStream(modId, subPath);
         if(stream == null) {
             throw new IllegalArgumentException(getWithPrefix(errorMsg)); //TODO: improve
         }

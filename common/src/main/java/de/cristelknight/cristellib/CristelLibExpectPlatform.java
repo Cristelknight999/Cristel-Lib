@@ -37,7 +37,7 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static String getModDisplayName(String modID) {
+    public static String getModDisplayName(String modId) {
         throw new AssertionError();
     }
 

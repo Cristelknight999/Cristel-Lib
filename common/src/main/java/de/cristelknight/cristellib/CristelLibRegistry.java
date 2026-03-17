@@ -19,10 +19,10 @@ public class CristelLibRegistry {
         else throw new RuntimeException(CristelLib.getWithPrefix("Tried to access Registry before initialized."));
     }
 
-    public void registerSetToConfig(String modID, String namespace, List<String> sets, StructureConfig... configs) {
+    public void registerSetToConfig(String modId, String namespace, List<String> sets, StructureConfig... configs) {
         boolean isMC = namespace == null || namespace.equals(CristelLib.MC_ID);
 
-        registerSetToConfig(modID, sets.stream()
+        registerSetToConfig(modId, sets.stream()
                 .map(string -> isMC
                         ? Identifier.withDefaultNamespace(string)
                         : Identifier.fromNamespaceAndPath(namespace, string)
@@ -30,12 +30,12 @@ public class CristelLibRegistry {
                 .toList(), configs);
     }
 
-    public void registerSetToConfig(String modID, List<Identifier> sets, StructureConfig... configs) {
-        for (StructureConfig config : configs) config.addSet(new StructureSetData(modID, sets));
+    public void registerSetToConfig(String modId, List<Identifier> sets, StructureConfig... configs) {
+        for (StructureConfig config : configs) config.addSet(new StructureSetData(modId, sets));
     }
 
-    public void registerSetToConfig(String modID, Identifier set, StructureConfig... configs) {
-        for (StructureConfig config : configs) config.addSet(new StructureSetData(modID, List.of(set)));
+    public void registerSetToConfig(String modId, Identifier set, StructureConfig... configs) {
+        for (StructureConfig config : configs) config.addSet(new StructureSetData(modId, List.of(set)));
     }
 
 }

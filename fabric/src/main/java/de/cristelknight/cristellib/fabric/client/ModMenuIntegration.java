@@ -29,14 +29,14 @@ public class ModMenuIntegration implements ModMenuApi {
         boolean structureEnabled = !acConfig.disableAutoConfigScreens();
 
         Map<String, ConfigScreenFactory<?>> screens = new HashMap<>();
-        for(String modID : ScreenBuilder.allConfigMods(structureEnabled)){
-            Pair<Boolean, Boolean> structureSimple = ScreenBuilder.shouldCreateScreen(modID, structureEnabled);
+        for(String modId : ScreenBuilder.allConfigMods(structureEnabled)){
+            Pair<Boolean, Boolean> structureSimple = ScreenBuilder.shouldCreateScreen(modId, structureEnabled);
             boolean structure = structureSimple.getFirst();
             boolean simple = structureSimple.getSecond();
             if(!structure && !simple) continue;
 
-            screens.put(modID, (providedConfigScreenFactories) ->
-                    new ScreenBuilder(modID).create(providedConfigScreenFactories, structure, simple)
+            screens.put(modId, (providedConfigScreenFactories) ->
+                    new ScreenBuilder(modId).create(providedConfigScreenFactories, structure, simple)
             );
         }
 

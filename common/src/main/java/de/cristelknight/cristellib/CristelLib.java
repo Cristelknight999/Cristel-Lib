@@ -52,16 +52,16 @@ public class CristelLib {
         }
     }
 
-    public static void readAPI(CristelLibRegistry registry, String modID, CristelLibAPI api, Map<String, Set<StructureConfig>> configs) {
+    public static void readAPI(CristelLibRegistry registry, String modId, CristelLibAPI api, Map<String, Set<StructureConfig>> configs) {
         try {
             api.registerBuiltInPacks();
             Set<StructureConfig> set = new HashSet<>();
             api.registerConfigs(set);
-            configs.put(modID, set);
+            configs.put(modId, set);
             api.registerStructureSets(registry);
             set.forEach(StructureConfig::getDefaultNamespace);
         } catch (Throwable e) {
-            CristelLib.LOGGER.error("Mod: {} provides a broken implementation of CristelLibAPI", modID, e);
+            CristelLib.LOGGER.error("Mod: {} provides a broken implementation of CristelLibAPI", modId, e);
         }
     }
 }

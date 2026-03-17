@@ -34,13 +34,13 @@ public class CristelLibExpectPlatformImpl {
     }
 
     public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
-        String modID = id.getNamespace();
-        ModContainer container = FabricLoader.getInstance().getModContainer(modID).orElse(null);
+        String modId = id.getNamespace();
+        ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
         if(container != null){
             return ModNioPackResources.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, PackActivationType.ALWAYS_ENABLED, false);
         }
         else {
-            CristelLib.LOGGER.warn("Couldn't get mod container for modID: {}", modID);
+            CristelLib.LOGGER.warn("Couldn't get mod container for modId: {}", modId);
             return null;
         }
     }
@@ -81,11 +81,11 @@ public class CristelLibExpectPlatformImpl {
         return Platform.FABRIC;
     }
 
-    public static String getModDisplayName(String modID) {
+    public static String getModDisplayName(String modId) {
         return FabricLoader.getInstance()
-                .getModContainer(modID)
+                .getModContainer(modId)
                 .map(container -> container.getMetadata().getName()) // human-readable name
-                .orElse(modID); // fallback to ID if not found
+                .orElse(modId); // fallback to ID if not found
     }
 
     public static boolean isClient() {

@@ -29,17 +29,17 @@ public class NeoForgeClient {
         ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
         boolean structureMain = !acConfig.disableAutoConfig() && !acConfig.disableAutoConfigScreens();
 
-        for(String modID : ScreenBuilder.allConfigMods(structureMain)){
-            Pair<Boolean, Boolean> structureSimple = ScreenBuilder.shouldCreateScreen(modID, structureMain);
+        for(String modId : ScreenBuilder.allConfigMods(structureMain)){
+            Pair<Boolean, Boolean> structureSimple = ScreenBuilder.shouldCreateScreen(modId, structureMain);
             boolean structure = structureSimple.getFirst();
             boolean simple = structureSimple.getSecond();
             if(!structure && !simple) continue;
 
-            Optional<? extends ModContainer> container = ModList.get().getModContainerById(modID);
+            Optional<? extends ModContainer> container = ModList.get().getModContainerById(modId);
             if(container.isEmpty() || container.get().getCustomExtension(IConfigScreenFactory.class).isPresent()) continue;
 
             container.get().registerExtensionPoint(IConfigScreenFactory.class, (mc, screenFactory) ->
-                    new ScreenBuilder(modID).create(screenFactory, structure, simple));
+                    new ScreenBuilder(modId).create(screenFactory, structure, simple));
         }
     }
 

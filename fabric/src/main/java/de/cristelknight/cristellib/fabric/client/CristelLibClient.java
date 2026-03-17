@@ -78,49 +78,49 @@ public class CristelLibClient implements ClientModInitializer {
         }
     }
 
-    private static int showScreen(CommandContext<FabricClientCommandSource> ctx, String modID) {
+    private static int showScreen(CommandContext<FabricClientCommandSource> ctx, String modId) {
         FabricClientCommandSource source = ctx.getSource();
 
         if(!Util.isClothConfigLoaded()) {
             source.sendError(Component.literal("Cloth Config is not installed!"));
             return 0;
         }
-        if(!ModLoadingUtil.isModLoaded(modID)) {
-            source.sendError(Component.literal("Mod: " + modID + " is not installed!"));
+        if(!ModLoadingUtil.isModLoaded(modId)) {
+            source.sendError(Component.literal("Mod: " + modId + " is not installed!"));
             return 0;
         }
         ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
         boolean structureEnabled = !acConfig.disableAutoConfigScreens();
 
         Set<String> allScreens = ScreenBuilder.allConfigMods(structureEnabled);
-        if(!allScreens.contains(modID)) {
-            source.sendError(Component.literal("Mod: " + modID + " has no (enabled) screen!"));
+        if(!allScreens.contains(modId)) {
+            source.sendError(Component.literal("Mod: " + modId + " has no (enabled) screen!"));
             return 0;
         }
 
         Pair<Boolean, Boolean> structureSimple;
-        if(modID.equals(CristelLib.MOD_ID))
+        if(modId.equals(CristelLib.MOD_ID))
         {
             structureSimple = new Pair<>(true, true);
         }
         else
         {
-            structureSimple = ScreenBuilder.shouldCreateScreen(modID, structureEnabled);
+            structureSimple = ScreenBuilder.shouldCreateScreen(modId, structureEnabled);
         }
 
         boolean structure = structureSimple.getFirst();
         boolean simple = structureSimple.getSecond();
         if((!structure && !simple)) {
-            source.sendError(Component.literal("Mod: " + modID + " has no (enabled) screen!"));
+            source.sendError(Component.literal("Mod: " + modId + " has no (enabled) screen!"));
             return 0;
         }
 
         shouldOpenScreen = true;
         Minecraft.getInstance().execute(() -> {
-            pending = new ScreenBuilder(modID).create(null, structure, simple);
+            pending = new ScreenBuilder(modId).create(null, structure, simple);
         });
 
-        source.sendFeedback(Component.literal("Opened screen for " + modID));
+        source.sendFeedback(Component.literal("Opened screen for " + modId));
         return 1;
     }
 

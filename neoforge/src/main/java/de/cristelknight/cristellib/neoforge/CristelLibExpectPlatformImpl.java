@@ -53,17 +53,17 @@ public class CristelLibExpectPlatformImpl {
     }
 
     public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
-        String modID = id.getNamespace();
+        String modId = id.getNamespace();
         String path = id.getPath();
 
-        IModFile file = getModFile(modID);
+        IModFile file = getModFile(modId);
         if(file == null) return null;
 
         PackLocationInfo metadata = new PackLocationInfo(
                 id.toString(),
                 displayName,
                 new BuiltinResourcePackSource(),
-                Optional.of(new KnownPack(CristelLib.MOD_ID, id.toString(), ModList.get().getModFileById(modID).versionString()))
+                Optional.of(new KnownPack(CristelLib.MOD_ID, id.toString(), ModList.get().getModFileById(modId).versionString()))
         );
 
         return new JarContentsPackResources(metadata, file.getContents(), path);
@@ -90,8 +90,8 @@ public class CristelLibExpectPlatformImpl {
 
         for (Pair<List<String>, CristelLibAPI> apiPair : apis) {
             CristelLibAPI api = apiPair.getSecond();
-            String modID = apiPair.getFirst().getFirst(); // just get main mod hopefully
-            CristelLib.readAPI(registry, modID, api, configs);
+            String modId = apiPair.getFirst().getFirst(); // just get main mod hopefully
+            CristelLib.readAPI(registry, modId, api, configs);
         }
         Util.readData(configs, registry);
         return configs;

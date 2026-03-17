@@ -20,16 +20,16 @@ import java.util.*;
 @Environment(EnvType.CLIENT)
 public class SimpleScreenBuilder {
 
-    public static void saveConfigs(String modID) {
+    public static void saveConfigs(String modId) {
         Map<String, Set<SimpleConfigScreen>> simpleConfigsWithScreen = ClientConfigRegistry.getAllConfigsWithScreen();
-        if(!simpleConfigsWithScreen.containsKey(modID)) return;
+        if(!simpleConfigsWithScreen.containsKey(modId)) return;
 
-        for(SimpleConfigScreen simpleConfig : simpleConfigsWithScreen.get(modID))  {
-            SimpleScreenBuilder.saveConfig(simpleConfig.simpleConfig(), modID);
+        for(SimpleConfigScreen simpleConfig : simpleConfigsWithScreen.get(modId))  {
+            SimpleScreenBuilder.saveConfig(simpleConfig.simpleConfig(), modId);
         }
     }
 
-    public static <T> void saveConfig(Class<T> config, String modID) {
+    public static <T> void saveConfig(Class<T> config, String modId) {
         T configInstance = ConfigRegistry.get(config);
         try {
             // Rebuild and save updated config instance
@@ -37,7 +37,7 @@ public class SimpleScreenBuilder {
 
             ConfigHolder<T> holder = ConfigRegistry.holder(config);
             holder.update(updated);
-            Objects.requireNonNull(ClientConfigRegistry.getScreen(modID, config)).onScreenSave().run();
+            Objects.requireNonNull(ClientConfigRegistry.getScreen(modId, config)).onScreenSave().run();
             holder.save();
         } catch (Exception e) {
             CristelLib.LOGGER.error("Couldn't save config screen: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());

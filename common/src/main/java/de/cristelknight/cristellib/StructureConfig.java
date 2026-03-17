@@ -87,11 +87,11 @@ public class StructureConfig {
         checkForError();
 
         structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
-            String modID = holder.modID();
+            String modId = holder.modId();
 
-            JsonElement structureSetElement = getStructureSet(setLocation, modID);
+            JsonElement structureSetElement = getStructureSet(setLocation, modId);
             if (!(structureSetElement instanceof JsonObject structureSet)) {
-                CristelLib.LOGGER.warn("Set for {} {} is not a JsonObject, skipping...", modID, setLocation);
+                CristelLib.LOGGER.warn("Set for {} {} is not a JsonObject, skipping...", modId, setLocation);
                 return;
             }
 
@@ -167,12 +167,12 @@ public class StructureConfig {
         o.addProperty("frequency", newF);
     }
 
-    private JsonElement getStructureSet(Identifier location, String modID) {
+    private JsonElement getStructureSet(Identifier location, String modId) {
         Identifier structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
         if (CristelLib.RUNTIME_PACK.hasResource(structureLocation)) {
             return CristelLib.RUNTIME_PACK.getResource(structureLocation);
         }
-        return JanksonUtil.getSetElement(modID, location);
+        return JanksonUtil.getSetElement(modId, location);
     }
 
 

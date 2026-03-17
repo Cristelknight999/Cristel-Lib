@@ -140,10 +140,10 @@ public class Util {
         Map<String, Set<String>> modIdAndSets = new HashMap<>();
         Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
 
-        for(String modID : CristelLibExpectPlatform.getModIds()) {
-            if(SKIP_MODS.contains(modID)) continue;
-            Set<String> structureSets = ReadData.readData(modID, autoConfigInfoData, configs);
-            modIdAndSets.put(modID, structureSets);
+        for(String modId : CristelLibExpectPlatform.getModIds()) {
+            if(SKIP_MODS.contains(modId)) continue;
+            Set<String> structureSets = ReadData.readData(modId, autoConfigInfoData, configs);
+            modIdAndSets.put(modId, structureSets);
         }
 
         ACInfoData.currentData = autoConfigInfoData;

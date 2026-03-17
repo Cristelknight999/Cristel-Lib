@@ -36,7 +36,7 @@ public class ReadData {
             ACInfoData acInfoData = ConfigManager.readFromSubPath(modId, subPath, ACInfoData.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
 
             if (data.containsKey(modId)) {
-                CristelLib.LOGGER.warn("Overriding Auto Config data for modID: {} from path: {}", modId, subPath);
+                CristelLib.LOGGER.warn("Overriding Auto Config data for modId: {} from path: {}", modId, subPath);
             }
             data.put(modId, acInfoData);
         }
@@ -117,11 +117,11 @@ public class ReadData {
     }
 
     private static void copyFileFromJar(ResourceLocation from, String to) {
-        String modID = from.getNamespace();
+        String modId = from.getNamespace();
         String location = from.getPath();
 
 
-        List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(modID);
+        List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(modId);
         for (Path p : inputUrl) {
             Path fromFile = p.resolve(location);
             File toFile = Util.pathFromString(to).toFile();
