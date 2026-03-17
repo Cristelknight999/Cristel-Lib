@@ -65,7 +65,7 @@ public class CristelLibClient implements ClientModInitializer {
 
     public static class ScreenSuggestionProvider implements SuggestionProvider<FabricClientCommandSource> {
         @Override
-        public CompletableFuture<Suggestions> getSuggestions(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+        public CompletableFuture<Suggestions> getSuggestions(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder builder) {
             ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
             boolean structureEnabled = !acConfig.disableAutoConfigScreens();
             Set<String> allScreens = ScreenBuilder.allConfigMods(structureEnabled);

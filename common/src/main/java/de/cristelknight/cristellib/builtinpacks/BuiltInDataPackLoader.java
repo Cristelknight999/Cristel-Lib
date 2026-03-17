@@ -11,6 +11,7 @@ import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,7 @@ public class BuiltInDataPackLoader {
         for (BuiltInPack entry : PACK_LIST) {
             PackResources pack = entry.packResource();
 
-            // Check conditions
+            // Check orConditions
             if (!entry.supplier().get() ||
                     config.disabledPacks().contains(pack.packId()) ||
                     pack.getNamespaces(PackType.SERVER_DATA).isEmpty()) continue;
@@ -68,12 +69,12 @@ public class BuiltInDataPackLoader {
 
             Pack profile = Pack.readMetaAndCreate(metadata, new Pack.ResourcesSupplier() {
                 @Override
-                public @NotNull PackResources openPrimary(PackLocationInfo var1) {
+                public @NotNull PackResources openPrimary(@NonNull PackLocationInfo var1) {
                     return pack;
                 }
 
                 @Override
-                public @NotNull PackResources openFull(PackLocationInfo var1, Pack.Metadata metadata) {
+                public @NotNull PackResources openFull(@NonNull PackLocationInfo var1, Pack.@NonNull Metadata metadata) {
                     // Don't support overlays in builtin packs.
                     return pack;
                 }
