@@ -6,6 +6,7 @@ import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
+import de.cristelknight.cristellib.data.condition.ConditionRegistry;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
@@ -38,6 +39,7 @@ public class CristelLib {
 
     public static void preInit(){
         DataFixer.registerFixer();
+        ConditionRegistry.init();
         CristelLibRegistry.configs = ImmutableMap.copyOf(CristelLibExpectPlatform.getConfigs(REGISTRY));
         BuiltInDataPackLoader.freeze();
         BuiltInPackConfig.updateConfig();

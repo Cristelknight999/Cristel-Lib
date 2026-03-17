@@ -9,6 +9,7 @@ import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.codec.BuiltInPackData;
 import de.cristelknight.cristellib.data.codec.BuiltInPackDataWrapper;
+import de.cristelknight.cristellib.data.condition.Conditions;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.IdentifierException;
 import net.minecraft.network.chat.Component;

@@ -13,7 +13,6 @@ import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
-import de.cristelknight.cristellib.data.ModLoadedCondition;
 import de.cristelknight.cristellib.util.JanksonUtil;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.Identifier;
@@ -165,10 +164,5 @@ public class ConfigManager {
             throw new IllegalArgumentException(getWithPrefix(errorMsg) + " " + error.get().message());
         }
         return decode.result().orElseThrow().getFirst();
-    }
-
-    public static ModLoadedCondition readElement(String idj, MapCodec<ModLoadedCondition> codec, JsonOps instance, com.google.gson.JsonObject object) {
-
-        return null;
     }
 }
