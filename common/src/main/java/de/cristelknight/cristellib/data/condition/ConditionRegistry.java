@@ -1,6 +1,7 @@
 package de.cristelknight.cristellib.data.condition;
 
 import com.mojang.serialization.Codec;
+import de.cristelknight.cristellib.data.condition.conditions.ConfigValueCondition;
 import de.cristelknight.cristellib.data.condition.conditions.ModLoadedCondition;
 import de.cristelknight.cristellib.data.condition.conditions.NotCondition;
 import de.cristelknight.cristellib.data.condition.conditions.OrCondition;
@@ -39,6 +40,7 @@ public class ConditionRegistry {
         registerCondition("mod_loaded", ModLoadedCondition.CODEC);
         registerCondition("or", OrCondition.CODEC);
         registerCondition("not", NotCondition.CODEC);
+        registerCondition("config_value", ConfigValueCondition.CODEC);
     }
 
 }

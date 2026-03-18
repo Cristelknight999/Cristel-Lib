@@ -34,12 +34,8 @@ public class ConfigRegistry {
             ClientConfigRegistry.registerScreen(modIdForScreen, screenName, onScreenSave, clazz);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> T get(Class<T> clazz) {
-        ConfigHolder<T> holder = (ConfigHolder<T>) CONFIGS.get(clazz);
-        if (holder == null)
-            throw new IllegalStateException("No config registered for: " + clazz.getName());
-        return holder.getInstance();
+        return holder(clazz).getInstance();
     }
 
     public static <T> ConfigSettings<T> getSettings(Class<T> clazz) {
@@ -48,14 +44,15 @@ public class ConfigRegistry {
 
     @SuppressWarnings("unchecked")
     public static <T> ConfigHolder<T> holder(Class<T> clazz) {
-        return (ConfigHolder<T>) CONFIGS.get(clazz);
+        ConfigHolder<T> holder = (ConfigHolder<T>) CONFIGS.get(clazz);
+        if (holder == null)
+            throw new IllegalStateException("No config registered for: " + clazz.getName());
+        return holder;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> void updateAndSave(T newInstance) {
-        @SuppressWarnings("unchecked")
-        ConfigHolder<T> holder = (ConfigHolder<T>) CONFIGS.get(newInstance.getClass());
-        if (holder == null)
-            throw new IllegalStateException("No config registered for: " + newInstance.getClass().getName());
+        ConfigHolder<T> holder = (ConfigHolder<T>) holder(newInstance.getClass());
         holder.updateAndSave(newInstance);
     }
 
