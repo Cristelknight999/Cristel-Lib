@@ -7,11 +7,11 @@ import de.cristelknight.cristellib.data.condition.ICondition;
 
 import java.util.List;
 
-public record OrCondition(List<ConditionNode> conditionNodes) implements ICondition {
+public record OrCondition(List<ConditionNode> conditionNodes) implements ICondition<OrCondition> {
 
     public static final Codec<OrCondition> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.list(ConditionNode.CODEC).fieldOf("any").forGetter(OrCondition::conditionNodes)
+                    Codec.list(ConditionNode.CODEC).fieldOf("condition").forGetter(OrCondition::conditionNodes)
             ).apply(instance, OrCondition::new));
 
     @Override
@@ -21,5 +21,10 @@ public record OrCondition(List<ConditionNode> conditionNodes) implements ICondit
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public Codec<OrCondition> getCodec() {
+        return CODEC;
     }
 }

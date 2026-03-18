@@ -9,7 +9,7 @@ import de.cristelknight.cristellib.util.ModVersionComparator;
 
 import java.util.Optional;
 
-public record ModLoadedCondition(String modId, Optional<String> optionalVersion) implements ICondition {
+public record ModLoadedCondition(String modId, Optional<String> optionalVersion) implements ICondition<ModLoadedCondition> {
 
     public static final Codec<ModLoadedCondition> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -32,4 +32,11 @@ public record ModLoadedCondition(String modId, Optional<String> optionalVersion)
         CristelLib.LOGGER.warn("Couldn't compare \"version\": \"{}\" of \"mod\": \"{}\"", version, modId);
         return false;
     }
+
+    @Override
+    public Codec<ModLoadedCondition> getCodec() {
+        return CODEC;
+    }
+
+
 }

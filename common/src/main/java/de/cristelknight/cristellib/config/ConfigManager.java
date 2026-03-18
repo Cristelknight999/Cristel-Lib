@@ -87,26 +87,26 @@ public class ConfigManager {
         writeFile(config.getPath(), codec, config.getComments(), from, ConfigManager.createHeader(config.getHeader()), true);
     }
 
-    public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, T from, String header, boolean isSorted) {
-        JsonElement jsonElement = createElement(path, codec, JanksonOps.INSTANCE, from);
+    public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, T from, String rawHeader, boolean isSorted) {
+        JsonElement jsonElement = createElement(String.format("Jankson file creation for \"%s\" failed due to the following error(s):", path.toString()), codec, JanksonOps.INSTANCE, from);
 
         if (jsonElement instanceof JsonObject jsonObject) {
             jsonElement = JanksonUtil.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
         }
         try {
             Files.createDirectories(path.getParent());
-            String output = header + jsonElement.toJson(JSON_GRAMMAR);
+            String output = rawHeader + jsonElement.toJson(JSON_GRAMMAR);
             Files.write(path, output.getBytes());
         } catch (IOException e) {
             CristelLib.LOGGER.error(e.toString());
         }
     }
 
-    public static <T, K> K createElement(Path path, Codec<T> codec, DynamicOps<K> ops, T from) {
+    public static <T, K> K createElement(String errorMsg, Codec<T> codec, DynamicOps<K> ops, T from) {
         DataResult<K> dataResult = codec.encodeStart(ops, from);
         Optional<DataResult.Error<K>> error = dataResult.error();
         if (error.isPresent()) {
-            throw new IllegalArgumentException(getWithPrefix(String.format("Jankson file creation for \"%s\" failed due to the following error(s):\n%s", path.toString(), error.get().message())));
+            throw new IllegalArgumentException(getWithPrefix(errorMsg + "\n" + error.get().message()));
         }
 
         return dataResult.result().orElseThrow();
@@ -139,20 +139,9 @@ public class ConfigManager {
     public static <T> T readFromSubPath(String modId, String subPath, Codec<T> codec, String errorMsg) {
         InputStream stream = CristelLibExpectPlatform.getResourceStream(modId, subPath);
         if(stream == null) {
-            throw new IllegalArgumentException(getWithPrefix(errorMsg)); //TODO: improve
+            throw new IllegalArgumentException(getWithPrefix("Couldn't create ImputStream for subPath: " + subPath + " in ModContainer with id: " + modId));
         }
         com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-        return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
-    }
-
-    public static <T> T readFromJsonPath(String errorMsg, Path path, Codec<T> codec) {
-        InputStream stream;
-        try {
-            stream = Files.newInputStream(path);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
-        }
-        com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream));
         return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
     }
 
@@ -161,7 +150,7 @@ public class ConfigManager {
         Optional<DataResult.Error<Pair<T, K>>> error = decode.error();
 
         if (error.isPresent()) {
-            throw new IllegalArgumentException(getWithPrefix(errorMsg) + " " + error.get().message());
+            throw new IllegalArgumentException(getWithPrefix(errorMsg) + "\n" + error.get().message());
         }
         return decode.result().orElseThrow().getFirst();
     }

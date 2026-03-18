@@ -11,17 +11,27 @@ import java.util.Map;
 
 public class ConditionRegistry {
 
-    private static final Map<String, Codec<? extends ICondition>> CONDITIONS = new HashMap<>();
+    private static final Map<String, Codec<? extends ICondition<?>>> CONDITIONS = new HashMap<>();
 
-    protected static Codec<? extends ICondition> getCodec(String type) {
+    protected static Codec<? extends ICondition<?>> getCodec(String type) {
         return CONDITIONS.get(type);
     }
 
-    private static void registerCondition(String type, Codec<? extends ICondition> codec) {
+    protected static String getType(Codec<? extends ICondition<?>> codec) {
+        for (Map.Entry<String, Codec<? extends ICondition<?>>> codecEntry : CONDITIONS.entrySet()) {
+            if (codecEntry.getValue().equals(codec)) {
+                return codecEntry.getKey();
+            }
+        }
+        return null;
+    }
+
+    private static void registerCondition(String type, Codec<? extends ICondition<?>> codec) {
         CONDITIONS.put(type, codec);
     }
 
-    public static void registerCondition(Identifier type, Codec<? extends ICondition> codec) {
+    @SuppressWarnings("unused")
+    public static void registerCondition(Identifier type, Codec<? extends ICondition<?>> codec) {
         registerCondition(type.toString(), codec);
     }
 
