@@ -38,5 +38,4 @@ public record ModLoadedCondition(String modId, Optional<String> optionalVersion)
         return CODEC;
     }
 
-
 }

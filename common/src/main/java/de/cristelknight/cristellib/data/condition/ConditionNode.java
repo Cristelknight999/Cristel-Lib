@@ -12,6 +12,7 @@ public record ConditionNode(Either<List<ICondition<?>>, ICondition<?>> either) {
         this(Either.right(condition));
     }
 
+    @SuppressWarnings("unused")
     public ConditionNode(List<ICondition<?>> conditions) {
         this(Either.left(conditions));
     }
@@ -21,7 +22,9 @@ public record ConditionNode(Either<List<ICondition<?>>, ICondition<?>> either) {
         return condition.isEmpty() || condition.get().test();
     }
 
-    public static final Codec<Either<List<ICondition<?>>, ICondition<?>>> EITHER_CODEC = Codec.either(Codec.list(ICondition.FULL_CODEC), ICondition.FULL_CODEC);
+    public static final Codec<Either<List<ICondition<?>>, ICondition<?>>> EITHER_CODEC = Codec.either(
+            Codec.list(ICondition.FULL_CODEC), ICondition.FULL_CODEC
+    );
 
     public static final Codec<ConditionNode> CODEC = EITHER_CODEC.xmap(
             ConditionNode::new,

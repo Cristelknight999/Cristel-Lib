@@ -27,4 +27,5 @@ public record OrCondition(List<ConditionNode> conditionNodes) implements ICondit
     public Codec<OrCondition> getCodec() {
         return CODEC;
     }
+
 }

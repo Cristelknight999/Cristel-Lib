@@ -37,7 +37,8 @@ public class ConfigRegistry {
     @SuppressWarnings("unchecked")
     public static <T> T get(Class<T> clazz) {
         ConfigHolder<T> holder = (ConfigHolder<T>) CONFIGS.get(clazz);
-        if (holder == null) throw new IllegalStateException("No config registered for: " + clazz.getName());
+        if (holder == null)
+            throw new IllegalStateException("No config registered for: " + clazz.getName());
         return holder.getInstance();
     }
 
@@ -53,16 +54,16 @@ public class ConfigRegistry {
     public static <T> void updateAndSave(T newInstance) {
         @SuppressWarnings("unchecked")
         ConfigHolder<T> holder = (ConfigHolder<T>) CONFIGS.get(newInstance.getClass());
-        if (holder == null) {
+        if (holder == null)
             throw new IllegalStateException("No config registered for: " + newInstance.getClass().getName());
-        }
         holder.updateAndSave(newInstance);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Class<T> getClazzFromCodec(Codec<T> codec) {
         for(Map.Entry<Class<?>, ConfigHolder<?>> entry : CONFIGS.entrySet()) {
-            if(entry.getValue().getSettings().getCodec().equals(codec)) return (Class<T>) entry.getKey();
+            if(entry.getValue().getSettings().getCodec().equals(codec))
+                return (Class<T>) entry.getKey();
         }
         return null;
     }

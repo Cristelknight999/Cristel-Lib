@@ -101,7 +101,8 @@ public class SimpleScreenBuilder {
     }
 
 
-    // Helper: store changes in a map for each config + field (you'll want a better data structure here)
+    // Helper: store changes in a map for each config + field
+    // TODO: better data structure here
     private static final Map<Class<?>, Map<String, Object>> pendingUpdates = new HashMap<>();
 
     private static  <T> void updateFieldValue(Class<T> config, String fieldName, Object value) {

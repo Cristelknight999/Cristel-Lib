@@ -27,7 +27,7 @@ public class ClientConfigRegistry {
         return Set.of();
     }
 
-    public static <T> void registerScreen(String modIdForScreen, String screenName, Runnable onScreenSave, Class<T> simpleConfig) {
+    public static void registerScreen(String modIdForScreen, String screenName, Runnable onScreenSave, Class<?> simpleConfig) {
         CONFIGS_WITH_SCREEN.computeIfAbsent(modIdForScreen, k -> new HashSet<>()).add(new SimpleConfigScreen(simpleConfig, screenName, onScreenSave));
     }
 

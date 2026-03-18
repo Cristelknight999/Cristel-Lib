@@ -25,15 +25,18 @@ public interface ICondition<T extends ICondition<T>> {
         String type = GsonHelper.getAsString(object, "type");
         Codec<? extends ICondition<?>> conditionCodec = ConditionRegistry.getCodec(type);
         object.remove("type");
-        return ConfigManager.readElement("Couldn't read conditionNode of type: " + type, conditionCodec, JsonOps.INSTANCE, object);
+        return ConfigManager.readElement("Couldn't read ICondition of type: " + type, conditionCodec, JsonOps.INSTANCE, object);
     }
 
     private static <T extends ICondition<?>> JsonObject encode(T condition) {
         Codec<T> codec = (Codec<T>) condition.getCodec();
+        String type = ConditionRegistry.getType(codec);
+        if (type == null)
+            throw new RuntimeException(CristelLib.getWithPrefix("Unregistered Codec for ICondition"));
+
         JsonElement e = ConfigManager.createElement("Couldn't encode ICondition", codec, JsonOps.INSTANCE, condition);
         if (!(e instanceof JsonObject object))
             throw new RuntimeException(CristelLib.getWithPrefix("Expected ICondition to be an Object"));
-        String type = ConditionRegistry.getType(codec);
 
         JsonObject reordered = new JsonObject();
         reordered.addProperty("type", type);
