@@ -3,12 +3,11 @@ package de.cristelknight.cristellib.fabric.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.datafixers.util.Pair;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.config.client.ScreenBuilder;
@@ -99,7 +98,7 @@ public class CristelLibClient implements ClientModInitializer {
         }
 
         Pair<Boolean, Boolean> structureSimple;
-        if(modId.equals(CristelLib.MOD_ID))
+        if(modId.equals(Constants.MOD_ID))
         {
             structureSimple = new Pair<>(true, true);
         }

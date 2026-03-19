@@ -1,4 +1,4 @@
-package de.cristelknight.cristellib.util;
+package de.cristelknight.cristellib.util.runtimepack;
 
 import org.jetbrains.annotations.NotNull;
 

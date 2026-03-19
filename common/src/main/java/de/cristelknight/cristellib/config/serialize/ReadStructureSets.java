@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
@@ -60,7 +60,7 @@ public class ReadStructureSets {
 
     private static boolean checkElement(JsonElement element, String modId, Identifier setLocation) {
         if(element == null || !element.isJsonObject()){
-            CristelLib.LOGGER.error("Set for {} {} is not a JsonObject", modId, setLocation);
+            Constants.LOGGER.error("Set for {} {} is not a JsonObject", modId, setLocation);
             return true;
         }
         return false;

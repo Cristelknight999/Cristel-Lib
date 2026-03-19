@@ -15,9 +15,9 @@ import de.cristelknight.cristellib.config.serialize.ReadStructureSets;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
+import de.cristelknight.cristellib.util.FileHelper;
 import de.cristelknight.cristellib.util.JsonHelper;
-import de.cristelknight.cristellib.util.RuntimePackUtil;
-import de.cristelknight.cristellib.util.Util;
+import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
 import net.minecraft.resources.Identifier;
 
 import java.nio.file.Path;
@@ -27,7 +27,7 @@ public class StructureConfig {
 
     public static final Codec<StructureConfig> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
-                    Codec.STRING.fieldOf("name").forGetter(config -> Util.fileName(config.getPath())),
+                    Codec.STRING.fieldOf("name").forGetter(config -> FileHelper.fileName(config.getPath())),
                     Codec.STRING.fieldOf("path").forGetter(config -> String.valueOf(config.path.getParent())),
                     Codec.STRING.optionalFieldOf("header", "").forGetter(config -> config.header),
                     ConfigType.CODEC.fieldOf("config_type").forGetter(config -> config.type),
@@ -62,7 +62,7 @@ public class StructureConfig {
     }
 
     private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetData> structureSetHolders) { // for CODEC
-        this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type,  ImmutableList.copyOf(structureSetHolders));
+        this(FileHelper.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type,  ImmutableList.copyOf(structureSetHolders));
     }
 
     private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
@@ -91,7 +91,7 @@ public class StructureConfig {
 
             JsonElement structureSetElement = getStructureSet(setLocation, modId);
             if (!(structureSetElement instanceof JsonObject structureSet)) {
-                CristelLib.LOGGER.warn("Set for {} {} is not a JsonObject, skipping...", modId, setLocation);
+                Constants.LOGGER.warn("Set for {} {} is not a JsonObject, skipping...", modId, setLocation);
                 return;
             }
 
@@ -121,7 +121,7 @@ public class StructureConfig {
                 error = true;
                 var newlyReadSetsCopy = new ArrayList<>(newlyReadSets);
                 newlyReadSetsCopy.removeAll(setsToCheck);
-                CristelLib.LOGGER.error("Structure sets are missing from config: {}", newlyReadSetsCopy);
+                Constants.LOGGER.error("Structure sets are missing from config: {}", newlyReadSetsCopy);
                 //break;
             }
         }
@@ -129,8 +129,8 @@ public class StructureConfig {
 
         enableDisableConfig = null;
         placementConfig = null;
-        String name = Util.fileName(path);
-        Util.renameFile(path, name + "-had-error");
+        String name = FileHelper.fileName(path);
+        FileHelper.renameFile(path, name + "-had-error");
         writeConfig(true);
         readConfig(true);
     }
@@ -148,7 +148,7 @@ public class StructureConfig {
 
             }
             else
-                CristelLib.LOGGER.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
+                Constants.LOGGER.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
         }
     }
 
@@ -243,7 +243,7 @@ public class StructureConfig {
 
     public Identifier toDefaultRL(String location) {
         if(location.contains(":")) return Identifier.parse(location);
-        else if(defaultNamespace.equals(CristelLib.MC_ID)) return Identifier.withDefaultNamespace(location);
+        else if(defaultNamespace.equals(Constants.MC_ID)) return Identifier.withDefaultNamespace(location);
         else return Identifier.fromNamespaceAndPath(defaultNamespace, location);
     }
 

@@ -3,7 +3,7 @@ package de.cristelknight.cristellib.fabric.client;
 import com.mojang.datafixers.util.Pair;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.config.client.ScreenBuilder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
@@ -19,7 +19,7 @@ public class ModMenuIntegration implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return screenFactory -> Util.isClothConfigLoaded() ? new ScreenBuilder(CristelLib.MOD_ID).create(screenFactory,true, true) : null;
+        return screenFactory -> Util.isClothConfigLoaded() ? new ScreenBuilder(Constants.MOD_ID).create(screenFactory,true, true) : null;
     }
 
     @Override

@@ -2,13 +2,13 @@ package de.cristelknight.cristellib.autoconfig;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
+import de.cristelknight.cristellib.util.FileHelper;
 import de.cristelknight.cristellib.util.JsonHelper;
-import de.cristelknight.cristellib.util.Util;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 
@@ -63,17 +63,17 @@ public class ModFinder {
 
     private static Identifier getLocation(Path rootPath) {
         String namespace = rootPath.getName(1).toString();
-        String rawPath = Util.cutFileType(rootPath.subpath(4, rootPath.getNameCount()));
-        String path = Util.normalizeResourcePath(rawPath);
+        String rawPath = FileHelper.cutFileType(rootPath.subpath(4, rootPath.getNameCount()));
+        String path = FileHelper.normalizeResourcePath(rawPath);
 
-        if(namespace.equals(CristelLib.MC_ID)) {
+        if(namespace.equals(Constants.MC_ID)) {
             return Identifier.withDefaultNamespace(path);
         }
         return Identifier.fromNamespaceAndPath(namespace, path);
     }
 
     public static boolean shouldSkipModForACPre(String modId, Set<String> modsWithConfig) {
-        return modsWithConfig.contains(modId) || modId.equals(CristelLib.MC_ID);
+        return modsWithConfig.contains(modId) || modId.equals(Constants.MC_ID);
     }
 
     public static boolean shouldSkipModForACAfter(String modId, Set<String> modsWithConfig) {

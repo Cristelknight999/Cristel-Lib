@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.data;
 
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.config.ConfigManager;
@@ -8,7 +8,8 @@ import de.cristelknight.cristellib.config.ConfigManager;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -23,7 +24,7 @@ public class PathFinder {
         Set<String> structureSets = ModFinder.shouldSkipModForACPre(modId, modsWithConfig) ? null : new HashSet<>();
 
         try {
-            if (modId.equals(CristelLib.MC_ID)) {
+            if (modId.equals(Constants.MC_ID)) {
                 // Keep this logic unchanged: walks real config folder
                 walk(ConfigManager.CONFIG_LIB,
                         path -> Files.isRegularFile(path) && path.toString().endsWith(".json"),
@@ -39,7 +40,7 @@ public class PathFinder {
                 );
             }
         } catch (IOException e) {
-            throw new RuntimeException(CristelLib.getWithPrefix("Error while trying to walk through mod files"), e);
+            throw new RuntimeException(Constants.getWithPrefix("Error while trying to walk through mod files"), e);
         }
 
         /*

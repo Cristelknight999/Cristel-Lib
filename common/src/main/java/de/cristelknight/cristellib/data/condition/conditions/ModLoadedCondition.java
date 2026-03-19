@@ -2,7 +2,7 @@ package de.cristelknight.cristellib.data.condition.conditions;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.data.condition.ICondition;
 import de.cristelknight.cristellib.util.ModVersionComparator;
@@ -29,7 +29,7 @@ public record ModLoadedCondition(String modId, Optional<String> optionalVersion)
 
             return comparator.test(modId, version.replaceFirst(sign, ""));
         }
-        CristelLib.LOGGER.warn("Couldn't compare \"version\": \"{}\" of \"mod\": \"{}\"", version, modId);
+        Constants.LOGGER.warn("Couldn't compare \"version\": \"{}\" of \"mod\": \"{}\"", version, modId);
         return false;
     }
 

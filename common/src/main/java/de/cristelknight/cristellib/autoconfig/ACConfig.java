@@ -2,7 +2,7 @@ package de.cristelknight.cristellib.autoconfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.ConfigSettings;
 import net.minecraft.util.Util;
@@ -71,7 +71,7 @@ public record ACConfig(
     public static final ConfigSettings<ACConfig> SETTINGS = new ConfigSettings<>() {
         @Override
         public String getSubPath() {
-            return CristelLib.MOD_ID + "/auto_config_settings";
+            return Constants.MOD_ID + "/auto_config_settings";
         }
 
         @Override
@@ -84,7 +84,7 @@ public record ACConfig(
             return new ACConfig(
                     false,
                     false,
-                    CristelLib.MOD_ID + "/",
+                    Constants.MOD_ID + "/",
                     ACInfoData.getBlackListedMods(),
                     ACInfoData.getClientBlackListedMods(),
                     java.util.List.of()
@@ -123,6 +123,6 @@ public record ACConfig(
 
     static {
         ConfigRegistry.registerWithScreen(ACConfig.class, SETTINGS,
-                CristelLib.MOD_ID, "Auto-config", ACConfig::updateConfig);
+                Constants.MOD_ID, "Auto-config", ACConfig::updateConfig);
     }
 }

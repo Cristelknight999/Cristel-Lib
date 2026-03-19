@@ -16,11 +16,11 @@ public class CristelLibRegistry {
 
     public static ImmutableMap<String, Set<StructureConfig>> getConfigs() {
         if(!configs.isEmpty()) return configs;
-        else throw new RuntimeException(CristelLib.getWithPrefix("Tried to access Registry before initialized."));
+        else throw new RuntimeException(Constants.getWithPrefix("Tried to access Registry before initialized."));
     }
 
     public void registerSetToConfig(String modId, String namespace, List<String> sets, StructureConfig... configs) {
-        boolean isMC = namespace == null || namespace.equals(CristelLib.MC_ID);
+        boolean isMC = namespace == null || namespace.equals(Constants.MC_ID);
 
         registerSetToConfig(modId, sets.stream()
                 .map(string -> isMC

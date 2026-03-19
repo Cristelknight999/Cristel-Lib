@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.api;
 
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
@@ -42,7 +43,7 @@ public class BuiltInAPI implements CristelLibAPI {
 
     @Override
     public void registerStructureSets(CristelLibRegistry registry) {
-        registry.registerSetToConfig(CristelLib.MC_ID, null, List.of(
+        registry.registerSetToConfig(Constants.MC_ID, null, List.of(
                         "ancient_cities", "buried_treasures", "desert_pyramids", "end_cities", "igloos", "jungle_temples", "nether_complexes", "nether_fossils",
                         "ocean_monuments", "ocean_ruins", "pillager_outposts", "ruined_portals", "shipwrecks", "swamp_huts", "villages", "woodland_mansions"
                 ),
@@ -50,7 +51,7 @@ public class BuiltInAPI implements CristelLibAPI {
 
 
         // No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
-        registry.registerSetToConfig(CristelLib.MC_ID, Identifier.withDefaultNamespace("strongholds"), MINECRAFT_ED);
+        registry.registerSetToConfig(Constants.MC_ID, Identifier.withDefaultNamespace("strongholds"), MINECRAFT_ED);
     }
 
     @Override

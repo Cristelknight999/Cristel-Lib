@@ -3,17 +3,20 @@ package de.cristelknight.cristellib.config;
 import blue.endless.jankson.*;
 import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.*;
-import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.StructureConfig;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
 import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
-import de.cristelknight.cristellib.util.JanksonHelper;
+import de.cristelknight.cristellib.util.jankson.CommentArray;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.Identifier;
 
@@ -28,7 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static de.cristelknight.cristellib.CristelLib.getWithPrefix;
+import static de.cristelknight.cristellib.Constants.getWithPrefix;
 
 public class ConfigManager {
 
@@ -91,14 +94,14 @@ public class ConfigManager {
         JsonElement jsonElement = createElement(String.format("Jankson file creation for \"%s\" failed due to the following error(s):", path.toString()), codec, JanksonOps.INSTANCE, from);
 
         if (jsonElement instanceof JsonObject jsonObject) {
-            jsonElement = JanksonHelper.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
+            jsonElement = addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
         }
         try {
             Files.createDirectories(path.getParent());
             String output = rawHeader + jsonElement.toJson(JSON_GRAMMAR);
             Files.write(path, output.getBytes());
         } catch (IOException e) {
-            CristelLib.LOGGER.error(e.toString());
+            Constants.LOGGER.error(e.toString());
         }
     }
 
@@ -153,5 +156,54 @@ public class ConfigManager {
             throw new IllegalArgumentException(getWithPrefix(errorMsg) + "\n" + error.get().message());
         }
         return decode.result().orElseThrow().getFirst();
+    }
+
+    public static JsonObject addCommentsAndAlphabeticallySortRecursively(Map<String, String> comments, JsonObject object, String parentKey, boolean alphabeticallySorted) {
+        if(comments.isEmpty() && !alphabeticallySorted) return object;
+        for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+            String objectKey = entry.getKey();
+            String commentsKey = parentKey + objectKey;
+
+            String comment = object.getComment(entry.getKey());
+            if (comments.containsKey(commentsKey) && comment == null) {
+                String commentToAdd = comments.get(commentsKey);
+                object.setComment(objectKey, commentToAdd);
+                comment = commentToAdd;
+            }
+
+            JsonElement value = entry.getValue();
+            if (value instanceof JsonArray array) {
+                JsonArray sortedJsonElements = new JsonArray();
+                for (JsonElement element : array) {
+                    if (element instanceof JsonObject nestedObject) {
+                        sortedJsonElements.add(addCommentsAndAlphabeticallySortRecursively(comments, nestedObject, entry.getKey() + ".", alphabeticallySorted));
+                    } else if (element instanceof JsonArray array1) {
+                        CommentArray commentArray = new CommentArray();
+                        commentArray.addAll(array1);
+                        sortedJsonElements.add(commentArray);
+                    }
+                }
+                if (!sortedJsonElements.isEmpty()) {
+                    object.put(objectKey, sortedJsonElements, comment);
+                }
+            }
+
+            if (value instanceof JsonObject nestedObject) {
+                object.put(objectKey, addCommentsAndAlphabeticallySortRecursively(comments, nestedObject, entry.getKey() + ".", alphabeticallySorted), comment);
+            }
+        }
+
+        if (alphabeticallySorted) {
+            JsonObject alphabeticallySortedJsonObject = new JsonObject();
+            TreeMap<String, JsonElement> map = new TreeMap<>(String::compareTo);
+            map.putAll(object);
+            alphabeticallySortedJsonObject.putAll(map);
+            alphabeticallySortedJsonObject.forEach((key, entry) -> {
+                alphabeticallySortedJsonObject.setComment(key, object.getComment(key));
+            });
+
+            return alphabeticallySortedJsonObject;
+        }
+        return object;
     }
 }

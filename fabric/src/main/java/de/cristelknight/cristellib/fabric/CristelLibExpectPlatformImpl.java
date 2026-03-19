@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.fabric;
 
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
@@ -40,7 +41,7 @@ public class CristelLibExpectPlatformImpl {
             return ModNioPackResources.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, PackActivationType.ALWAYS_ENABLED, false);
         }
         else {
-            CristelLib.LOGGER.warn("Couldn't get mod container for modId: {}", modId);
+            Constants.LOGGER.warn("Couldn't get mod container for modId: {}", modId);
             return null;
         }
     }
@@ -50,7 +51,7 @@ public class CristelLibExpectPlatformImpl {
             try {
                 PathFinder.walk(root.resolve(startingFolder), fileFilter, consumer);
             } catch (IOException e) {
-                throw new RuntimeException(CristelLib.getWithPrefix("Error while trying to walk through mod files"), e);
+                throw new RuntimeException(Constants.getWithPrefix("Error while trying to walk through mod files"), e);
             }
         }
     }
@@ -100,7 +101,7 @@ public class CristelLibExpectPlatformImpl {
         try {
             inputStream = Files.newInputStream(pathC);
         } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
+            Constants.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
             return null;
         }
         return inputStream;
@@ -112,10 +113,10 @@ public class CristelLibExpectPlatformImpl {
         ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
         if(container != null){
             Path path = container.findPath(subPath).orElse(null);
-            if(path == null) CristelLib.LOGGER.debug("Path for subPath: {} in modId: {} is null", subPath, modId);
+            if(path == null) Constants.LOGGER.debug("Path for subPath: {} in modId: {} is null", subPath, modId);
             return path;
         }
-        CristelLib.LOGGER.debug("Mod container for modId: {} is null", modId);
+        Constants.LOGGER.debug("Mod container for modId: {} is null", modId);
         return null;
     }
 

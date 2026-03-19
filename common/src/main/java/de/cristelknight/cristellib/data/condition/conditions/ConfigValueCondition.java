@@ -6,7 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.simple.ConfigHolder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
@@ -35,7 +35,7 @@ public record ConfigValueCondition(String className, String key, JsonElement exp
         try {
             clazz = Class.forName(className); // TODO: should initialize or not?
         } catch (ClassNotFoundException e) {
-            CristelLib.LOGGER.warn("Couldn't parse class_name: {} for ConfigValueCondition", className);
+            Constants.LOGGER.warn("Couldn't parse class_name: {} for ConfigValueCondition", className);
             return false;
         }
         JsonElement element = fromClass(clazz);

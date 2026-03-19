@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.neoforge;
 
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
@@ -51,7 +51,7 @@ public class ModLoadingUtilImpl {
 
     public static ArtifactVersion getPreLoadedModVersion(String modId) {
         ModInfo info = getPreLoadedModInfo(modId);
-        if (info == null) throw new RuntimeException(CristelLib.getWithPrefix("Couldn't find mod: " + modId));
+        if (info == null) throw new RuntimeException(Constants.getWithPrefix("Couldn't find mod: " + modId));
         return info.getVersion();
     }
 }

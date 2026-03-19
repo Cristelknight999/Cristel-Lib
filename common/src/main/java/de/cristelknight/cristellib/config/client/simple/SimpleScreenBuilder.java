@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.config.client.simple;
 
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.config.client.simple.custom.SimpleScreenTypes;
 import de.cristelknight.cristellib.config.simple.ConfigHolder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
@@ -40,7 +40,7 @@ public class SimpleScreenBuilder {
             Objects.requireNonNull(ClientConfigRegistry.getScreen(modId, config)).onScreenSave().run();
             holder.save();
         } catch (Exception e) {
-            CristelLib.LOGGER.error("Couldn't save config screen: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());
+            Constants.LOGGER.error("Couldn't save config screen: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());
         }
     }
 
@@ -69,7 +69,7 @@ public class SimpleScreenBuilder {
                 value = component.getAccessor().invoke(configInstance);
                 defaultValue = component.getAccessor().invoke(settings.getDefault());
             } catch (Exception e) {
-                CristelLib.LOGGER.error("Couldn't read config value for config: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());
+                Constants.LOGGER.error("Couldn't read config value for config: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());
                 continue;
             }
 

@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.neoforge;
 
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.neoforge.client.NeoForgeClient;
 import de.cristelknight.cristellib.neoforge.extrapackutil.RepositorySourceMaker;
@@ -10,7 +11,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 
-@Mod(CristelLib.MOD_ID)
+@Mod(Constants.MOD_ID)
 public class CristelLibForge {
 
     public CristelLibForge(IEventBus bus) {

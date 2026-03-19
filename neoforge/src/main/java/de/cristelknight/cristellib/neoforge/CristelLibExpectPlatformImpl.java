@@ -1,6 +1,7 @@
 package de.cristelknight.cristellib.neoforge;
 
 import com.mojang.datafixers.util.Pair;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.builtinpacks.BuiltinResourcePackSource;
@@ -46,7 +47,7 @@ public class CristelLibExpectPlatformImpl {
     public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
         IModFile file = getModFile(modId);
         if(file == null){
-            CristelLib.LOGGER.error("Couldn't get mod file for modId: {}", modId);
+            Constants.LOGGER.error("Couldn't get mod file for modId: {}", modId);
             return;
         }
         walk(file.getContents(), startingFolder, fileFilter, consumer);
@@ -63,7 +64,7 @@ public class CristelLibExpectPlatformImpl {
                 id.toString(),
                 displayName,
                 new BuiltinResourcePackSource(),
-                Optional.of(new KnownPack(CristelLib.MOD_ID, id.toString(), ModList.get().getModFileById(modId).versionString()))
+                Optional.of(new KnownPack(Constants.MOD_ID, id.toString(), ModList.get().getModFileById(modId).versionString()))
         );
 
         return new JarContentsPackResources(metadata, file.getContents(), path);
@@ -77,7 +78,7 @@ public class CristelLibExpectPlatformImpl {
         try {
             inputStream = file.getContents().openFile(subPath);
         } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't create Input Stream for sub path: {} in mod: {}", subPath, modId, e);
+            Constants.LOGGER.warn("Couldn't create Input Stream for sub path: {} in mod: {}", subPath, modId, e);
             return null;
         }
 
@@ -135,14 +136,14 @@ public class CristelLibExpectPlatformImpl {
         if (modList == null) {
             ModInfo info = getPreLoadedModInfo(modId);
             if (info == null) {
-                CristelLib.LOGGER.warn("Mod info for modId: {} is null", modId);
+                Constants.LOGGER.warn("Mod info for modId: {} is null", modId);
                 return null;
             }
             file = info.getOwningFile().getFile();
         } else {
             ModContainer container = modList.getModContainerById(modId).orElse(null);
             if (container == null) {
-                CristelLib.LOGGER.warn("Mod container for modId: {} is null", modId);
+                Constants.LOGGER.warn("Mod container for modId: {} is null", modId);
                 return null;
             }
             file = container.getModInfo().getOwningFile().getFile();

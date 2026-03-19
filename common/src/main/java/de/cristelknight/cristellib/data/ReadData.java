@@ -2,7 +2,7 @@ package de.cristelknight.cristellib.data;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
@@ -10,7 +10,7 @@ import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.codec.BuiltInPackData;
 import de.cristelknight.cristellib.data.codec.BuiltInPackDataWrapper;
 import de.cristelknight.cristellib.data.condition.ConditionNode;
-import de.cristelknight.cristellib.util.Util;
+import de.cristelknight.cristellib.util.FileHelper;
 import net.minecraft.IdentifierException;
 import net.minecraft.network.chat.Component;
 
@@ -36,7 +36,7 @@ public class ReadData {
             ACInfoData acInfoData = ConfigManager.readFromSubPath(modId, subPath, ACInfoData.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
 
             if (data.containsKey(modId)) {
-                CristelLib.LOGGER.warn("Overriding Auto Config data for modId: {} from path: {}", modId, subPath);
+                Constants.LOGGER.warn("Overriding Auto Config data for modId: {} from path: {}", modId, subPath);
             }
             data.put(modId, acInfoData);
         }
@@ -52,7 +52,7 @@ public class ReadData {
             // should replace an existing config from another mod.
             // checkForReplace ensures that we only replace the correct config in the
             // original mod's set. If a replacement was applied, we skip adding it as a new config.
-            if (modId.equals(CristelLib.MC_ID) && checkForReplace(modIdAndConfigs, Path.of(subPath), config))
+            if (modId.equals(Constants.MC_ID) && checkForReplace(modIdAndConfigs, Path.of(subPath), config))
                 continue;
 
             modIdAndConfigs.computeIfAbsent(modId, k -> new HashSet<>()).add(config);
@@ -64,14 +64,14 @@ public class ReadData {
             // Use '@' as separator in filenames
             // e.g., t_and_t@t_and_t_ED.json → t_and_t:t_and_t_ED
 
-            Pair<String, String> pair = Util.parseNamespaceAndPath(Util.fileName(path), '@');
+            Pair<String, String> pair = FileHelper.parseNamespaceAndPath(FileHelper.fileName(path), '@');
             String namespace = pair.getFirst();
 
             Set<StructureConfig> configs = modIdAndConfigs.computeIfAbsent(namespace, k -> new HashSet<>());
 
             for (Iterator<StructureConfig> it = configs.iterator(); it.hasNext(); ) {
                 StructureConfig old = it.next();
-                if (!Util.fileName(old.getPath()).equals(pair.getSecond())) continue;
+                if (!FileHelper.fileName(old.getPath()).equals(pair.getSecond())) continue;
 
                 it.remove();
                 configs.add(config);
@@ -129,7 +129,7 @@ public class ReadData {
             try {
                 FileUtils.copyURLToFile(fromFile.toUri().toURL(), toFile);
             } catch (IOException e) {
-                CristelLib.LOGGER.error("Couldn't copy file from: {} to: {}", fromFile, toFile, e);
+                Constants.LOGGER.error("Couldn't copy file from: {} to: {}", fromFile, toFile, e);
             }
         }
 

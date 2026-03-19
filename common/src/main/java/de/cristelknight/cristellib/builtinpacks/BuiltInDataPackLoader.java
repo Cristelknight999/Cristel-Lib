@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.builtinpacks;
 
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import net.minecraft.network.chat.Component;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static de.cristelknight.cristellib.CristelLib.getWithPrefix;
+import static de.cristelknight.cristellib.Constants.getWithPrefix;
 
 public class BuiltInDataPackLoader {
 
@@ -36,7 +36,7 @@ public class BuiltInDataPackLoader {
     }
 
     public static List<String> getCustomIDs(){
-        return PACK_LIST.stream().map(pack -> pack.packResource().packId()).filter(id -> !id.equals(CristelLib.CRISTEL_LIB_PACK_RL.toString())).toList();
+        return PACK_LIST.stream().map(pack -> pack.packResource().packId()).filter(id -> !id.equals(Constants.CRISTEL_LIB_PACK_ID.toString())).toList();
     }
 
     private static final List<BuiltInPack> PACK_LIST = new ArrayList<>();
@@ -81,7 +81,7 @@ public class BuiltInDataPackLoader {
             }, PackType.SERVER_DATA, info2);
 
             if (profile == null) {
-                CristelLib.LOGGER.error("Pack Profile with display name: {} is null", displayName);
+                Constants.LOGGER.error("Pack Profile with display name: {} is null", displayName);
                 continue;
             }
             consumer.accept(profile);

@@ -1,7 +1,7 @@
 package de.cristelknight.cristellib.neoforge.client;
 
 import com.mojang.datafixers.util.Pair;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.config.client.ScreenBuilder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
@@ -17,12 +17,12 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 import java.util.Optional;
 
-@EventBusSubscriber(modid = CristelLib.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.CLIENT)
 public class NeoForgeClient {
 
     public static void registerMainConfigScreen() {
         ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> (mc, screenFactory) ->
-                new ScreenBuilder(CristelLib.MOD_ID).create(screenFactory, true, true));
+                new ScreenBuilder(Constants.MOD_ID).create(screenFactory, true, true));
     }
 
     public static void addOtherConfigScreens() {

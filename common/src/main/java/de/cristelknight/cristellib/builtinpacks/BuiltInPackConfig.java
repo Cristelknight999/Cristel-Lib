@@ -2,7 +2,7 @@ package de.cristelknight.cristellib.builtinpacks;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.ConfigSettings;
 import net.minecraft.util.Util;
@@ -49,7 +49,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
     public static final ConfigSettings<BuiltInPackConfig> SETTINGS = new ConfigSettings<>() {
         @Override
         public String getSubPath() {
-            return CristelLib.MOD_ID + "/built_in_packs";
+            return Constants.MOD_ID + "/built_in_packs";
         }
 
         @Override
@@ -81,6 +81,6 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
 
     static {
         ConfigRegistry.registerWithScreen(BuiltInPackConfig.class, SETTINGS,
-                CristelLib.MOD_ID, "Built-in Packs", BuiltInPackConfig::updateConfig);
+                Constants.MOD_ID, "Built-in Packs", BuiltInPackConfig::updateConfig);
     }
 }

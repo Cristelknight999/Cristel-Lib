@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.fabric;
 
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.ModLoadingUtil;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
@@ -21,7 +21,7 @@ public class ModLoadingUtilImpl {
             try {
                 min = Version.parse(version);
             } catch (VersionParsingException e) {
-                CristelLib.LOGGER.error("Couldn't parse version: {}", version);
+                Constants.LOGGER.error("Couldn't parse version: {}", version);
                 return Optional.empty();
             }
             return Optional.of(modVersion.compareTo(min));

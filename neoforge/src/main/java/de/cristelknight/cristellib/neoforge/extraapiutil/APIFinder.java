@@ -2,7 +2,7 @@ package de.cristelknight.cristellib.neoforge.extraapiutil;
 
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.api.CristelPlugin;
 import net.neoforged.fml.ModList;
@@ -35,13 +35,13 @@ public class APIFinder {
                 try {
                     clazz = (Class<CristelLibAPI>) Class.forName(ad.memberName());
                 } catch (ClassNotFoundException e) {
-                    CristelLib.LOGGER.error("Failed to load api class: {} for @CristelPlugin annotation", ad.clazz(), e);
+                    Constants.LOGGER.error("Failed to load api class: {} for @CristelPlugin annotation", ad.clazz(), e);
                     continue;
                 }
                 try {
                     instances.add(new Pair<>(modIds, clazz.getDeclaredConstructor().newInstance()));
                 } catch (Throwable throwable) {
-                    CristelLib.LOGGER.error("Failed to load api: {}", ad.memberName(), throwable);
+                    Constants.LOGGER.error("Failed to load api: {}", ad.memberName(), throwable);
                 }
             }
         }

@@ -3,9 +3,9 @@ package de.cristelknight.cristellib.builtinpacks;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.util.JsonHelper;
-import de.cristelknight.cristellib.util.RuntimePackUtil;
+import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.FilePackResources;
@@ -55,7 +55,7 @@ public class RuntimePack implements PackResources {
                 this.id,
                 Component.literal(description),
                 new BuiltinResourcePackSource(),
-                Optional.of(new KnownPack(CristelLib.MOD_ID, this.id, String.valueOf(version)))
+                Optional.of(new KnownPack(Constants.MOD_ID, this.id, String.valueOf(version)))
         );
 
         if(imageStream != null){
@@ -200,10 +200,10 @@ public class RuntimePack implements PackResources {
                 stream = supplier.get();
             }
         } catch (IOException e) {
-            throw new RuntimeException(CristelLib.getWithPrefix("Error reading pack.mcmeta from: " + packId()), e);
+            throw new RuntimeException(Constants.getWithPrefix("Error reading pack.mcmeta from: " + packId()), e);
         }
         if(stream == null) {
-            throw new RuntimeException(CristelLib.getWithPrefix("Couldn't find pack.mcmeta of Runtime Pack: " + packId()));
+            throw new RuntimeException(Constants.getWithPrefix("Couldn't find pack.mcmeta of Runtime Pack: " + packId()));
         }
         return FilePackResources.getMetadataFromStream(metadataSectionType, stream, metadata);
     }
@@ -227,7 +227,7 @@ public class RuntimePack implements PackResources {
 
     @Override
     public void close() {
-        CristelLib.LOGGER.debug("Closing Runtime Data Pack: {}", this.id);
+        Constants.LOGGER.debug("Closing Runtime Data Pack: {}", this.id);
     }
 
     public void load(Path dir) throws IOException {
@@ -281,7 +281,7 @@ public class RuntimePack implements PackResources {
         try {
             jsonObject = GsonHelper.parse(new BufferedReader(new InputStreamReader(stream.get(), StandardCharsets.UTF_8)));
         } catch (IOException | NullPointerException ex) {
-            CristelLib.LOGGER.error("Couldn't get JsonObject from location: {}", location, ex);
+            Constants.LOGGER.error("Couldn't get JsonObject from location: {}", location, ex);
             return null;
         }
         return jsonObject;
