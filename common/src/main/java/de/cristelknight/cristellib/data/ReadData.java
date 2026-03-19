@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class ReadData {
 
@@ -26,7 +27,6 @@ public class ReadData {
         getAutoConfigSettings(modId, finder.autoConfig(), autoConfigInfoData);
         getStructureConfigs(modId, finder.structureConfig(), structureConfigData);
         getBuiltInPacks(modId, finder.dataPack());
-        //copyFile(modId, finder.copyFile());
 
         return finder.structureSets(); // return for later processing
     }
@@ -90,8 +90,8 @@ public class ReadData {
 
             Either<BuiltInPackData, BuiltInPackDataWrapper> either = ConfigManager.readFromSubPath(modId, subPath, BuiltInPackData.PACKS_CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
 
-            either.left().ifPresent(ReadData::loadPack);
-            either.right().ifPresent(wrapper -> {
+            either.ifLeft(ReadData::loadPack);
+            either.ifRight(wrapper -> {
                 List<BuiltInPackData> packs = new ArrayList<>(wrapper.packs());
                 Collections.reverse(packs);
                 packs.forEach(ReadData::loadPack);
@@ -100,40 +100,8 @@ public class ReadData {
     }
 
     private static void loadPack(BuiltInPackData pack) {
-        boolean bl = ConditionNode.testConditionNode(pack.conditionNode());
-        BuiltInDataPackLoader.registerPack(pack.location(), Component.nullToEmpty(pack.displayName()), () -> bl);
+        Supplier<Boolean> bl = () -> ConditionNode.testConditionNode(pack.conditionNode());
+        BuiltInDataPackLoader.registerPack(pack.location(), Component.nullToEmpty(pack.displayName()), bl);
     }
-
-    /*
-    private static void copyFile(String modId, Set<String> subPaths) {
-        for (String subPath : subPaths) {
-
-            CopyFileData copyFileData = ConfigManager.readFromSubPath(subPath, modId, CopyFileData.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
-
-            if (Conditions.readConditions(copyFileData.conditionNode())) {
-                copyFileFromJar(copyFileData.location(), copyFileData.destination());
-            }
-        }
-    }
-
-    private static void copyFileFromJar(ResourceLocation from, String to) {
-        String modId = from.getNamespace();
-        String location = from.getPath();
-
-
-        List<Path> inputUrl = CristelLibExpectPlatform.getRootPaths(modId);
-        for (Path p : inputUrl) {
-            Path fromFile = p.resolve(location);
-            File toFile = Util.pathFromString(to).toFile();
-            if (fromFile == null || toFile == null || toFile.exists()) continue;
-            try {
-                FileUtils.copyURLToFile(fromFile.toUri().toURL(), toFile);
-            } catch (IOException e) {
-                Constants.LOGGER.error("Couldn't copy file from: {} to: {}", fromFile, toFile, e);
-            }
-        }
-
-    }
-    */
 
 }
