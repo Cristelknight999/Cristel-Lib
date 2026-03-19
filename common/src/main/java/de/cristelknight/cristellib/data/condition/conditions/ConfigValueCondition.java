@@ -53,10 +53,8 @@ public record ConfigValueCondition(String className, String key, JsonElement exp
 
     private static <T> JsonElement fromClass(Class<T> clazz) {
         ConfigHolder<T> holder = ConfigRegistry.holder(clazz);
-        return ConfigManager.createElement(":(", holder.getSettings().getCodec(), JsonOps.INSTANCE, holder.getInstance());
+        return ConfigManager.createElement("Couldn't write config for class: " + clazz.getName(), holder.getSettings().getCodec(), JsonOps.INSTANCE, holder.getInstance());
     }
-
-
 
     @Override
     public Codec<ConfigValueCondition> getCodec() {

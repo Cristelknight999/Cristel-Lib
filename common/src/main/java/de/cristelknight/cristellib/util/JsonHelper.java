@@ -38,10 +38,12 @@ public class JsonHelper {
         }
     }
 
-    // finding by key:
+    // finding by key
     public static List<JsonElement> findAll(String searchedKey, JsonObject object, String parentKey) {
-        List<JsonElement> results = new ArrayList<>();
+        if(searchedKey.isEmpty() && parentKey.isEmpty())
+            return List.of(object);
 
+        List<JsonElement> results = new ArrayList<>();
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             String fullKey = parentKey + entry.getKey();
             JsonElement value = entry.getValue();
@@ -67,8 +69,6 @@ public class JsonHelper {
     }
 
     private static boolean collectMatches(List<JsonElement> results, String searchedKey, String fullKey, JsonElement value) {
-        CristelLib.LOGGER.error("searchedKey: {} currentKey: {}", searchedKey, fullKey);
-
         Match match = matches(searchedKey, fullKey);
         switch (match) {
             case MATCH:
