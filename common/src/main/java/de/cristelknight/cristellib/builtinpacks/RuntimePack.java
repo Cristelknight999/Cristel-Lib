@@ -4,11 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.util.JsonHelper;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.*;
+import net.minecraft.server.packs.FilePackResources;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
@@ -89,7 +92,7 @@ public class RuntimePack implements PackResources {
     }
 
     public byte @Nullable [] addDataForJsonLocationFromPath(String prefix, Identifier identifier, String fromSubPath, String fromModID) {
-        if(JanksonUtil.getElement(fromModID, fromSubPath) instanceof JsonObject object){
+        if(JsonHelper.getElement(fromModID, fromSubPath) instanceof JsonObject object){
             return addDataForJsonLocation(prefix, identifier, object);
         }
         return null;

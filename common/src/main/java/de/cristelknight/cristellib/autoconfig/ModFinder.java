@@ -7,13 +7,15 @@ import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
-import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.util.JsonHelper;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ModFinder {
     
@@ -32,7 +34,7 @@ public class ModFinder {
         StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modId).autoConfigPath() : customSubPath + modId, "structure_placement_config", ConfigType.PLACEMENT);
 
         structureSets.forEach(path -> {
-            JsonElement e = JanksonUtil.getElement(modId, path);
+            JsonElement e = JsonHelper.getElement(modId, path);
             if(e != null) {
 
                 JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path + " modId: " + modId).getAsJsonObject("placement");

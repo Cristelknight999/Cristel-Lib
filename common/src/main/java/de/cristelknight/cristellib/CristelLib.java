@@ -1,14 +1,12 @@
 package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonPrimitive;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import de.cristelknight.cristellib.data.condition.ConditionRegistry;
-import de.cristelknight.cristellib.data.condition.conditions.ConfigValueCondition;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
@@ -52,9 +50,7 @@ public class CristelLib {
                 structureConfig.addSetsToRuntimePack();
             }
         }
-
-        ConfigValueCondition cond = new ConfigValueCondition("de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig", "hideAllPacksInScreen", new JsonPrimitive(true));
-        CristelLib.LOGGER.error(cond.test());
+        
     }
 
     public static void readAPI(CristelLibRegistry registry, String modId, CristelLibAPI api, Map<String, Set<StructureConfig>> configs) {

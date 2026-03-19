@@ -11,11 +11,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.ConfigType;
+import de.cristelknight.cristellib.config.serialize.ReadStructureSets;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
-import de.cristelknight.cristellib.config.serialize.ReadStructureSets;
-import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.util.JsonHelper;
 import de.cristelknight.cristellib.util.RuntimePackUtil;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.resources.Identifier;
@@ -172,7 +172,7 @@ public class StructureConfig {
         if (CristelLib.RUNTIME_PACK.hasResource(structureLocation)) {
             return CristelLib.RUNTIME_PACK.getResource(structureLocation);
         }
-        return JanksonUtil.getSetElement(modId, location);
+        return JsonHelper.getSetElement(modId, location);
     }
 
 

@@ -9,11 +9,13 @@ import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
-import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.util.JsonHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class ReadStructureSets {
 
@@ -22,7 +24,7 @@ public class ReadStructureSets {
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modId = holder.modId();
 
-            JsonElement e = JanksonUtil.getSetElement(modId, setLocation);
+            JsonElement e = JsonHelper.getSetElement(modId, setLocation);
             if(checkElement(e, modId, setLocation)) return;
 
 
@@ -44,7 +46,7 @@ public class ReadStructureSets {
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modId = holder.modId();
 
-            JsonElement e = JanksonUtil.getSetElement(modId, setLocation);
+            JsonElement e = JsonHelper.getSetElement(modId, setLocation);
             if(checkElement(e, modId, setLocation)) return;
 
 

@@ -13,7 +13,7 @@ import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
-import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.util.JanksonHelper;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.Identifier;
 
@@ -91,7 +91,7 @@ public class ConfigManager {
         JsonElement jsonElement = createElement(String.format("Jankson file creation for \"%s\" failed due to the following error(s):", path.toString()), codec, JanksonOps.INSTANCE, from);
 
         if (jsonElement instanceof JsonObject jsonObject) {
-            jsonElement = JanksonUtil.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
+            jsonElement = JanksonHelper.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
         }
         try {
             Files.createDirectories(path.getParent());

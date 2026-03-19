@@ -1,6 +1,5 @@
 package de.cristelknight.cristellib.data.condition.conditions;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
@@ -12,8 +11,9 @@ import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.simple.ConfigHolder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.data.condition.ICondition;
+import de.cristelknight.cristellib.util.JsonHelper;
 
-import java.util.Map;
+import java.util.List;
 
 public record ConfigValueCondition(String className, String key, JsonElement expected) implements ICondition<ConfigValueCondition> {
 
@@ -33,7 +33,7 @@ public record ConfigValueCondition(String className, String key, JsonElement exp
     public boolean test() {
         Class<?> clazz;
         try {
-            clazz = Class.forName(className);
+            clazz = Class.forName(className); // TODO: should initialize or not?
         } catch (ClassNotFoundException e) {
             CristelLib.LOGGER.warn("Couldn't parse class_name: {} for ConfigValueCondition", className);
             return false;
@@ -42,11 +42,13 @@ public record ConfigValueCondition(String className, String key, JsonElement exp
         if(!(element instanceof JsonObject object))
             return false;
         
-        JsonElement actual = find(key, object, "");
-        if (actual == null)
-            return false;
+        List<JsonElement> possibleFinds = JsonHelper.findAll(key, object, "");
+        for(JsonElement actual : possibleFinds) {
+            if(actual.equals(expected)) // TODO: semantic comparison
+                return true;
+        }
         
-        return actual.equals(expected); // TODO: semantic comparison
+        return false;
     }
 
     private static <T> JsonElement fromClass(Class<T> clazz) {
@@ -54,47 +56,7 @@ public record ConfigValueCondition(String className, String key, JsonElement exp
         return ConfigManager.createElement(":(", holder.getSettings().getCodec(), JsonOps.INSTANCE, holder.getInstance());
     }
 
-    public static JsonElement find(String searchedKey, JsonObject object, String parentKey) {
-        for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
-            String fullKey = parentKey + entry.getKey();
-            JsonElement value = entry.getValue();
 
-            JsonElement find = getElement(searchedKey, fullKey, value);
-            if (find != null)
-                return find;
-        }
-
-        return null;
-    }
-
-    public static JsonElement findInArray(String searchedKey, JsonArray array, String parentKey) {
-        for (int i = 0; i < array.size(); i++) {
-            JsonElement element = array.get(i);
-            String fullKey = parentKey + "." + getIndex(i);
-
-            JsonElement find = getElement(searchedKey, fullKey, element);
-            if (find != null)
-                return find;
-        }
-        return null;
-    }
-
-    public static JsonElement getElement(String searchedKey, String fullKey, JsonElement value) {
-        if (searchedKey.equals(fullKey))
-            return value;
-
-        if (value instanceof JsonArray array)
-            return findInArray(searchedKey, array, fullKey + ".");
-
-        if (value instanceof JsonObject nestedObject)
-            return find(searchedKey, nestedObject, fullKey + ".");
-
-        return null;
-    }
-
-    private static String getIndex(int i) {
-        return "\\" + i + "\\";
-    }
 
     @Override
     public Codec<ConfigValueCondition> getCodec() {
