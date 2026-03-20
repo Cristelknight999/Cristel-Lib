@@ -3,16 +3,19 @@ package de.cristelknight.cristellib.config.client.extension.extensions;
 import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.client.ClientEDConfig;
 import de.cristelknight.cristellib.config.client.ClientPlacementConfig;
 import de.cristelknight.cristellib.config.client.ClientStructureConfig;
 import de.cristelknight.cristellib.config.client.extension.ConfigScreenExtension;
+import de.cristelknight.cristellib.config.client.extension.ExtensionRegistry;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
 import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
 import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.util.Util;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -21,6 +24,8 @@ import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import me.shedaniel.clothconfig2.gui.entries.IntegerListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -31,6 +36,7 @@ import java.util.*;
 
 import static de.cristelknight.cristellib.config.client.ScreenBuilder.tooltip;
 
+@Environment(EnvType.CLIENT)
 public class ConfigScreenTest extends ConfigScreenExtension {
 
     private final Set<ClientStructureConfig> clientStructureConfigs = new HashSet<>();
@@ -38,6 +44,15 @@ public class ConfigScreenTest extends ConfigScreenExtension {
     public ConfigScreenTest(String modId) {
         super(modId);
     }
+
+    public static final ExtensionRegistry.LoadPredicate SHOULD_LOAD = modId -> {
+        if(!CristelLibRegistry.getConfigs().containsKey(modId))
+            return false;
+
+        ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
+        boolean structureEnabled = !acConfig.disableAutoConfig() && !acConfig.disableAutoConfigScreens();
+        return structureEnabled && !acConfig.clientExcludedMods().contains(modId);
+    };
 
     @Override
     public void addToBuilder(ConfigBuilder builder, ConfigEntryBuilder entryBuilder) {

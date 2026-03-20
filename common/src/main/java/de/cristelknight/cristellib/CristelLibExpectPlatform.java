@@ -8,7 +8,6 @@ import net.minecraft.server.packs.PackResources;
 
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -48,11 +47,6 @@ public class CristelLibExpectPlatform {
 
     @ExpectPlatform
     public static boolean isClient(){
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
-    public static List<String> getModIds() {
         throw new AssertionError();
     }
 

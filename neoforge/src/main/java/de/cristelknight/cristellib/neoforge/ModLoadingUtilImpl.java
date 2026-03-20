@@ -4,13 +4,31 @@ import de.cristelknight.cristellib.Constants;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
+import net.neoforged.neoforgespi.language.IModInfo;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class ModLoadingUtilImpl {
+
+    public static List<String> getModIds() {
+        ModList modList = ModList.get();
+        List<String> modIds = new ArrayList<>();
+        if (modList != null) {
+            for (IModInfo modInfo : modList.getMods()) {
+                modIds.add(modInfo.getModId());
+            }
+        } else {
+            for (IModInfo modInfo : FMLLoader.getCurrent().getLoadingModList().getMods()) {
+                modIds.add(modInfo.getModId());
+            }
+        }
+        return modIds;
+    }
 
     public static boolean isModLoaded(String modId) {
         ModList modList = ModList.get();

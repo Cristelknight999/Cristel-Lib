@@ -6,9 +6,14 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ModLoadingUtilImpl {
+
+    public static List<String> getModIds() {
+        return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
+    }
 
     public static boolean isModLoaded(String modId) {
         return FabricLoader.getInstance().isModLoaded(modId);

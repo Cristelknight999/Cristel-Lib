@@ -6,12 +6,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import com.mojang.datafixers.util.Pair;
-import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.ModLoadingUtil;
-import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.config.client.ScreenBuilder;
-import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.util.Util;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -30,13 +26,13 @@ import java.util.concurrent.CompletableFuture;
 @Environment(EnvType.CLIENT)
 public class CristelLibClient implements ClientModInitializer {
 
-    public static boolean shouldOpenScreen = false;
+    private static boolean shouldOpenScreen = false;
 
-    public static Screen pending = null;
+    private static Screen pending = null;
 
     @Override
     public void onInitializeClient() {
-        registerClient();
+        registerClientCommands();
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (shouldOpenScreen) {
@@ -47,13 +43,13 @@ public class CristelLibClient implements ClientModInitializer {
         });
     }
 
-    public static void registerClient() {
+    private static void registerClientCommands() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            registerScreen(dispatcher);
+            registerOpenScreenCmd(dispatcher);
         });
     }
 
-    private static void registerScreen(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+    private static void registerOpenScreenCmd(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(ClientCommandManager.literal("cristellib_screen")
                 .then(ClientCommandManager.argument("mod_id", StringArgumentType.string()).suggests(new ScreenSuggestionProvider())
                         .executes(ctx ->
@@ -62,12 +58,10 @@ public class CristelLibClient implements ClientModInitializer {
         );
     }
 
-    public static class ScreenSuggestionProvider implements SuggestionProvider<FabricClientCommandSource> {
+    private static class ScreenSuggestionProvider implements SuggestionProvider<FabricClientCommandSource> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder builder) {
-            ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
-            boolean structureEnabled = !acConfig.disableAutoConfigScreens();
-            Set<String> allScreens = ScreenBuilder.allConfigMods(structureEnabled);
+            Set<String> allScreens = ScreenBuilder.allModsWithScreen();
 
             for (String screen : allScreens) {
                 builder.suggest(screen);
@@ -88,36 +82,18 @@ public class CristelLibClient implements ClientModInitializer {
             source.sendError(Component.literal("Mod: " + modId + " is not installed!"));
             return 0;
         }
-        ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
-        boolean structureEnabled = !acConfig.disableAutoConfigScreens();
 
-        Set<String> allScreens = ScreenBuilder.allConfigMods(structureEnabled);
-        if(!allScreens.contains(modId)) {
-            source.sendError(Component.literal("Mod: " + modId + " has no (enabled) screen!"));
-            return 0;
-        }
-
-        Pair<Boolean, Boolean> structureSimple;
-        if(modId.equals(Constants.MOD_ID))
-        {
-            structureSimple = new Pair<>(true, true);
-        }
-        else
-        {
-            structureSimple = ScreenBuilder.shouldCreateScreen(modId, structureEnabled);
-        }
-
-        boolean structure = structureSimple.getFirst();
-        boolean simple = structureSimple.getSecond();
-        if((!structure && !simple)) {
-            source.sendError(Component.literal("Mod: " + modId + " has no (enabled) screen!"));
-            return 0;
-        }
-
-        shouldOpenScreen = true;
         Minecraft.getInstance().execute(() -> {
-            pending = new ScreenBuilder(modId).create(null, structure, simple);
+            pending = new ScreenBuilder(modId).create(null);
+            if (pending != null) {
+                shouldOpenScreen = true;
+            }
         });
+
+        if(!shouldOpenScreen) {
+            source.sendError(Component.literal("Mod: " + modId + " has no (enabled) screen!"));
+            return 0;
+        }
 
         source.sendFeedback(Component.literal("Opened screen for " + modId));
         return 1;

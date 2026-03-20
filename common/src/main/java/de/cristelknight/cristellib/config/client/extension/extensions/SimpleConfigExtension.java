@@ -13,12 +13,14 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.AbstractFieldBuilder;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.Component;
 
 import java.lang.reflect.RecordComponent;
 import java.util.*;
 
-
+@Environment(EnvType.CLIENT)
 public class SimpleConfigExtension extends ConfigScreenExtension {
 
     // Helper: store changes in a map for each config + field

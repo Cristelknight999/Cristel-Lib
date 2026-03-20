@@ -3,13 +3,13 @@ package de.cristelknight.cristellib.neoforge;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.CristelLibRegistry;
+import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.builtinpacks.BuiltinResourcePackSource;
 import de.cristelknight.cristellib.neoforge.extraapiutil.APIFinder;
 import de.cristelknight.cristellib.util.Platform;
 import de.cristelknight.cristellib.util.Util;
-import de.cristelknight.cristellib.CristelLibRegistry;
-import de.cristelknight.cristellib.StructureConfig;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -21,11 +21,9 @@ import net.neoforged.fml.jarcontents.JarContents;
 import net.neoforged.fml.jarcontents.JarResource;
 import net.neoforged.fml.jarcontents.JarResourceVisitor;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
 import net.neoforged.neoforge.resource.JarContentsPackResources;
-import net.neoforged.neoforgespi.language.IModInfo;
 import net.neoforged.neoforgespi.locating.IModFile;
 
 import java.io.IOException;
@@ -96,21 +94,6 @@ public class CristelLibExpectPlatformImpl {
         }
         Util.readData(configs, registry);
         return configs;
-    }
-
-    public static List<String> getModIds() {
-        ModList modList = ModList.get();
-        List<String> modIds = new ArrayList<>();
-        if (modList != null) {
-            for (IModInfo modInfo : modList.getMods()) {
-                modIds.add(modInfo.getModId());
-            }
-        } else {
-            for (IModInfo modInfo : FMLLoader.getCurrent().getLoadingModList().getMods()) {
-                modIds.add(modInfo.getModId());
-            }
-        }
-        return modIds;
     }
 
     @SuppressWarnings("SameReturnValue")

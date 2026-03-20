@@ -36,12 +36,13 @@ public class Util {
             "modmenu", "cloth-config", "cloth-basic-math"
     );
 
+    // TODO: fix this mess, do excludes properly
     public static void readData(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry){
         updateOldFiles();
         Map<String, Set<String>> modIdAndSets = new HashMap<>();
         Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
 
-        for(String modId : CristelLibExpectPlatform.getModIds()) {
+        for(String modId : ModLoadingUtil.getModIds()) {
             if(SKIP_MODS.contains(modId)) continue;
             Set<String> structureSets = ReadData.readData(modId, autoConfigInfoData, configs);
             modIdAndSets.put(modId, structureSets);
