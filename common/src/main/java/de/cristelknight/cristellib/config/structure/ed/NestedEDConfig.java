@@ -17,7 +17,7 @@ public record NestedEDConfig(Map<String, Entry> entries) {
                 Codec.BOOL,
                 Codec.lazyInitialized(() -> NestedEDConfig.CODEC)
         ).xmap(
-                either -> either.map(b -> new Entry(b, null), n -> new Entry(null, n)), //read
+                either -> either.map(Entry::ofBoolean, Entry::ofNested), //read
                 entry -> entry.isBoolean() ? Either.left(entry.value) : Either.right(entry.nested) //write
         );
 

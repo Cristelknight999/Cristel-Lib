@@ -1,13 +1,9 @@
 package de.cristelknight.cristellib.fabric;
 
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.CristelLibRegistry;
-import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.data.PathFinder;
 import de.cristelknight.cristellib.util.Platform;
-import de.cristelknight.cristellib.util.Util;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
 import net.fabricmc.fabric.impl.resource.pack.ModNioPackResources;
@@ -23,14 +19,32 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+@SuppressWarnings("unused")
 public class CristelLibExpectPlatformImpl {
 
     public static Path getConfigDirectory() {
         return FabricLoader.getInstance().getConfigDir();
+    }
+
+    public static InputStream getResourceStream(String modId, String subPath) {
+        InputStream inputStream;
+        Path pathC = getResourceDirectory(modId, subPath);
+
+        if (pathC == null) return null;
+        try {
+            inputStream = Files.newInputStream(pathC);
+        } catch (IOException e) {
+            Constants.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
+            return null;
+        }
+        return inputStream;
     }
 
     public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
@@ -54,24 +68,6 @@ public class CristelLibExpectPlatformImpl {
         }
     }
 
-    public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
-        Map<String, Set<StructureConfig>> configs = new HashMap<>();
-        // Read Custom Code Configs
-        FabricLoader.getInstance().getEntrypointContainers("cristellib", CristelLibAPI.class).forEach(entrypoint -> {
-            String modId = entrypoint.getProvider().getMetadata().getId();
-            CristelLibAPI api = entrypoint.getEntrypoint();
-            CristelLib.readAPI(registry, modId, api, configs);
-        });
-
-        Util.readData(configs, registry); // Read Custom Data Configs
-        return configs;
-    }
-
-    @SuppressWarnings("SameReturnValue")
-    public static Platform getPlatform() {
-        return Platform.FABRIC;
-    }
-
     public static String getModDisplayName(String modId) {
         return FabricLoader.getInstance()
                 .getModContainer(modId)
@@ -79,24 +75,23 @@ public class CristelLibExpectPlatformImpl {
                 .orElse(modId); // fallback to ID if not found
     }
 
+    @SuppressWarnings("SameReturnValue")
+    public static Platform getPlatform() {
+        return Platform.FABRIC;
+    }
+
     public static boolean isClient() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
     }
 
-    public static InputStream getResourceStream(String modId, String subPath) {
-        InputStream inputStream;
-        Path pathC = getResourceDirectory(modId, subPath);
-
-        if (pathC == null) return null;
-        try {
-            inputStream = Files.newInputStream(pathC);
-        } catch (IOException e) {
-            Constants.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
-            return null;
-        }
-        return inputStream;
+    public static Map<String, CristelLibAPI> getApis() {
+        Map<String, CristelLibAPI> apiMap = new HashMap<>();
+        FabricLoader.getInstance().getEntrypointContainers(Constants.MOD_ID, CristelLibAPI.class).forEach(entrypoint -> {
+            String modId = entrypoint.getProvider().getMetadata().getId();
+            apiMap.put(modId, entrypoint.getEntrypoint());
+        });
+        return apiMap;
     }
-
 
     // Internal
     private static @Nullable Path getResourceDirectory(String modId, String subPath) {

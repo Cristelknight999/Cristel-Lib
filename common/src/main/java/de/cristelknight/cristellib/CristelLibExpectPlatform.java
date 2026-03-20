@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib;
 
+import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.util.Platform;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.chat.Component;
@@ -9,7 +10,6 @@ import net.minecraft.server.packs.PackResources;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -31,11 +31,6 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
     public static String getModDisplayName(String modId) {
         throw new AssertionError();
     }
@@ -52,6 +47,11 @@ public class CristelLibExpectPlatform {
 
     @ExpectPlatform
     public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static Map<String, CristelLibAPI> getApis() {
         throw new AssertionError();
     }
 }

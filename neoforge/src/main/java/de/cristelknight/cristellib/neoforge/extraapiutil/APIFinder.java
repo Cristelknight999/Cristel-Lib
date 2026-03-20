@@ -1,15 +1,13 @@
 package de.cristelknight.cristellib.neoforge.extraapiutil;
 
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.api.CristelLibAPI;
-import de.cristelknight.cristellib.api.CristelPlugin;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModInfo;
 import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.objectweb.asm.Type;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -17,11 +15,11 @@ public class APIFinder {
 
 
     @SuppressWarnings("unchecked")
-    public static List<Pair<List<String>, CristelLibAPI>> scanForAPIs() {
-        List<Pair<List<String>, CristelLibAPI>> instances = Lists.newArrayList();
+    public static <T> List<Pair<List<String>, T>> scanForAPIs(Class<?> annotationClazz, Class<T> returnClazz) {
+        List<Pair<List<String>, T>> instances = new ArrayList<>();
         for (ModFileScanData data : ModList.get().getAllScanData()) {
             List<ModFileScanData.AnnotationData> ebsTargets = data.getAnnotations().stream().
-                    filter(annotationData -> Type.getType(CristelPlugin.class).equals(annotationData.annotationType())).
+                    filter(annotationData -> Type.getType(annotationClazz).equals(annotationData.annotationType())).
                     toList();
 
             List<String> modIds = data.getIModInfoData().stream()
@@ -29,13 +27,18 @@ public class APIFinder {
                     .map(IModInfo::getModId)
                     .toList();
 
-            for (ModFileScanData.AnnotationData ad : ebsTargets) {
-                Class<CristelLibAPI> clazz;
+            for(ModFileScanData.AnnotationData ad : ebsTargets){
+                Class<T> clazz;
 
                 try {
-                    clazz = (Class<CristelLibAPI>) Class.forName(ad.memberName());
+                    Class<?> clazz2 = Class.forName(ad.memberName());
+                    if(!returnClazz.isAssignableFrom(clazz2)) {
+                        Constants.LOGGER.error("Failed to load api class {} for @{} annotation", ad.clazz().getClassName(), annotationClazz.getSimpleName());
+                        continue;
+                    }
+                    clazz = (Class<T>) clazz2;
                 } catch (ClassNotFoundException e) {
-                    Constants.LOGGER.error("Failed to load api class: {} for @CristelPlugin annotation", ad.clazz(), e);
+                    Constants.LOGGER.error("Failed to load api class {} for @{} annotation", ad.clazz().getClassName(), annotationClazz.getSimpleName(), e);
                     continue;
                 }
                 try {

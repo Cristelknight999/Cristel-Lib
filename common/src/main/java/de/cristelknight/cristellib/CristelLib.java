@@ -7,9 +7,11 @@ import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import de.cristelknight.cristellib.data.condition.ConditionRegistry;
+import de.cristelknight.cristellib.util.Util;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.packs.PackType;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +34,7 @@ public class CristelLib {
     public static void preInit() {
         DataFixer.registerFixer();
         ConditionRegistry.init();
-        CristelLibRegistry.configs = ImmutableMap.copyOf(CristelLibExpectPlatform.getConfigs(REGISTRY));
+        CristelLibRegistry.configs = ImmutableMap.copyOf(getConfigs());
         BuiltInDataPackLoader.freeze();
         BuiltInPackConfig.updateConfig();
 
@@ -45,13 +47,25 @@ public class CristelLib {
 
     }
 
-    public static void readAPI(CristelLibRegistry registry, String modId, CristelLibAPI api, Map<String, Set<StructureConfig>> configs) {
+    private static Map<String, Set<StructureConfig>> getConfigs() {
+        Map<String, Set<StructureConfig>> configs = new HashMap<>();
+
+        for (Map.Entry<String, CristelLibAPI> entry : CristelLibExpectPlatform.getApis().entrySet()) {
+            String modId = entry.getKey();
+            CristelLibAPI api = entry.getValue();
+            CristelLib.readAPI(modId, api, configs);
+        }
+        Util.readData(configs, REGISTRY);
+        return configs;
+    }
+
+    private static void readAPI(String modId, CristelLibAPI api, Map<String, Set<StructureConfig>> configs) {
         try {
             api.registerBuiltInPacks();
             Set<StructureConfig> set = new HashSet<>();
             api.registerConfigs(set);
             configs.put(modId, set);
-            api.registerStructureSets(registry);
+            api.registerStructureSets(REGISTRY);
             set.forEach(StructureConfig::getDefaultNamespace);
         } catch (Throwable e) {
             Constants.LOGGER.error("Mod: {} provides a broken implementation of CristelLibAPI", modId, e);

@@ -2,14 +2,11 @@ package de.cristelknight.cristellib.neoforge;
 
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.CristelLibRegistry;
-import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.api.CristelLibAPI;
+import de.cristelknight.cristellib.api.CristelPlugin;
 import de.cristelknight.cristellib.builtinpacks.BuiltinResourcePackSource;
 import de.cristelknight.cristellib.neoforge.extraapiutil.APIFinder;
 import de.cristelknight.cristellib.util.Platform;
-import de.cristelknight.cristellib.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -29,7 +26,10 @@ import net.neoforged.neoforgespi.locating.IModFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -42,13 +42,19 @@ public class CristelLibExpectPlatformImpl {
         return FMLPaths.CONFIGDIR.get();
     }
 
-    public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
+    public static InputStream getResourceStream(String modId, String subPath) {
         IModFile file = getModFile(modId);
-        if (file == null) {
-            Constants.LOGGER.error("Couldn't get mod file for modId: {}", modId);
-            return;
+        if (file == null) return null;
+
+        InputStream inputStream;
+        try {
+            inputStream = file.getContents().openFile(subPath);
+        } catch (IOException e) {
+            Constants.LOGGER.warn("Couldn't create Input Stream for sub path: {} in mod: {}", subPath, modId, e);
+            return null;
         }
-        walk(file.getContents(), startingFolder, fileFilter, consumer);
+
+        return inputStream;
     }
 
     public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
@@ -68,37 +74,13 @@ public class CristelLibExpectPlatformImpl {
         return new JarContentsPackResources(metadata, file.getContents(), path);
     }
 
-    public static InputStream getResourceStream(String modId, String subPath) {
+    public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
         IModFile file = getModFile(modId);
-        if (file == null) return null;
-
-        InputStream inputStream;
-        try {
-            inputStream = file.getContents().openFile(subPath);
-        } catch (IOException e) {
-            Constants.LOGGER.warn("Couldn't create Input Stream for sub path: {} in mod: {}", subPath, modId, e);
-            return null;
+        if (file == null) {
+            Constants.LOGGER.error("Couldn't get mod file for modId: {}", modId);
+            return;
         }
-
-        return inputStream;
-    }
-
-    public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
-        Map<String, Set<StructureConfig>> configs = new HashMap<>();
-        List<Pair<List<String>, CristelLibAPI>> apis = APIFinder.scanForAPIs();
-
-        for (Pair<List<String>, CristelLibAPI> apiPair : apis) {
-            CristelLibAPI api = apiPair.getSecond();
-            String modId = apiPair.getFirst().getFirst(); // just get main mod hopefully
-            CristelLib.readAPI(registry, modId, api, configs);
-        }
-        Util.readData(configs, registry);
-        return configs;
-    }
-
-    @SuppressWarnings("SameReturnValue")
-    public static Platform getPlatform() {
-        return Platform.FORGE;
+        walk(file.getContents(), startingFolder, fileFilter, consumer);
     }
 
     public static String getModDisplayName(String modId) {
@@ -108,8 +90,25 @@ public class CristelLibExpectPlatformImpl {
                 .orElse(modId); // fallback to modId if nothing is found
     }
 
+    @SuppressWarnings("SameReturnValue")
+    public static Platform getPlatform() {
+        return Platform.FORGE;
+    }
+
     public static boolean isClient() {
         return FMLEnvironment.getDist().isClient();
+    }
+
+
+    public static Map<String, CristelLibAPI> getApis() {
+        Map<String, CristelLibAPI> apiMap = new HashMap<>();
+        List<Pair<List<String>, CristelLibAPI>> apis = APIFinder.scanForAPIs(CristelPlugin.class, CristelLibAPI.class);
+
+        for (Pair<List<String>, CristelLibAPI> apiPair : apis) {
+            String modId = apiPair.getFirst().getFirst(); // just get main mod hopefully
+            apiMap.put(modId, apiPair.getSecond());
+        }
+        return apiMap;
     }
 
     // Internal
