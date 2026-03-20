@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.config.client.extension;
 
-import de.cristelknight.cristellib.config.client.extension.extensions.ConfigScreenTest;
+import de.cristelknight.cristellib.config.client.extension.extensions.StructureConfigExtension;
 import de.cristelknight.cristellib.config.client.extension.extensions.SimpleConfigExtension;
 import de.cristelknight.cristellib.config.client.simple.ClientConfigRegistry;
 import net.fabricmc.api.EnvType;
@@ -18,6 +18,7 @@ public class ExtensionRegistry {
         return EXTENSIONS;
     }
 
+    @SuppressWarnings("unused")
     public static void registerConfigScreenExtension(ExtensionFactory<?> extension) {
         registerConfigScreenExtension(extension, (modId) -> true);
     }
@@ -27,7 +28,7 @@ public class ExtensionRegistry {
     }
 
     static {
-        registerConfigScreenExtension(ConfigScreenTest::new, ConfigScreenTest.SHOULD_LOAD);
+        registerConfigScreenExtension(StructureConfigExtension::new, StructureConfigExtension.SHOULD_LOAD);
         registerConfigScreenExtension(SimpleConfigExtension::new, ClientConfigRegistry::hasScreens);
     }
 

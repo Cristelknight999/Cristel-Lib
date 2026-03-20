@@ -6,15 +6,15 @@ import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.config.ConfigType;
-import de.cristelknight.cristellib.config.client.ClientEDConfig;
-import de.cristelknight.cristellib.config.client.ClientPlacementConfig;
-import de.cristelknight.cristellib.config.client.ClientStructureConfig;
+import de.cristelknight.cristellib.config.client.structure.ClientEDConfig;
+import de.cristelknight.cristellib.config.client.structure.ClientPlacementConfig;
+import de.cristelknight.cristellib.config.client.structure.ClientStructureConfig;
 import de.cristelknight.cristellib.config.client.extension.ConfigScreenExtension;
 import de.cristelknight.cristellib.config.client.extension.ExtensionRegistry;
-import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
-import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
-import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
-import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.structure.ed.EDConfig;
+import de.cristelknight.cristellib.config.structure.ed.EDConfigTransformer;
+import de.cristelknight.cristellib.config.structure.ed.NestedEDConfig;
+import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.util.Util;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -37,11 +37,11 @@ import java.util.*;
 import static de.cristelknight.cristellib.config.client.ScreenBuilder.tooltip;
 
 @Environment(EnvType.CLIENT)
-public class ConfigScreenTest extends ConfigScreenExtension {
+public class StructureConfigExtension extends ConfigScreenExtension {
 
     private final Set<ClientStructureConfig> clientStructureConfigs = new HashSet<>();
 
-    public ConfigScreenTest(String modId) {
+    public StructureConfigExtension(String modId) {
         super(modId);
     }
 

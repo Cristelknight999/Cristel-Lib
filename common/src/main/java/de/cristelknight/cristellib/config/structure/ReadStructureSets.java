@@ -1,4 +1,4 @@
-package de.cristelknight.cristellib.config.serialize;
+package de.cristelknight.cristellib.config.structure;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.config.ConfigManager;
-import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
 import de.cristelknight.cristellib.util.JsonHelper;
 import net.minecraft.resources.Identifier;

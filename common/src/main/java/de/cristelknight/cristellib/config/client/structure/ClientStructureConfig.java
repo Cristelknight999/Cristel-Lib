@@ -1,4 +1,4 @@
-package de.cristelknight.cristellib.config.client;
+package de.cristelknight.cristellib.config.client.structure;
 
 import de.cristelknight.cristellib.StructureConfig;
 import net.fabricmc.api.EnvType;

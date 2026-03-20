@@ -12,7 +12,6 @@ public class ConfigRegistry {
 
     private static final Map<Class<?>, ConfigHolder<?>> CONFIGS = new HashMap<>();
 
-
     public static <T> void register(Class<T> clazz, ConfigSettings<T> spec) {
         CONFIGS.put(clazz, new ConfigHolder<>(spec));
         get(clazz); // read or create config
@@ -21,6 +20,7 @@ public class ConfigRegistry {
     /**
      * REQUIRES CLOTH CONFIG TO DISPLAY
      */
+    @SuppressWarnings("unused")
     public static <T> void registerWithScreen(Class<T> clazz, ConfigSettings<T> spec, String modIdForScreen, String screenName) {
         registerWithScreen(clazz, spec, modIdForScreen, screenName, () -> {});
     }
