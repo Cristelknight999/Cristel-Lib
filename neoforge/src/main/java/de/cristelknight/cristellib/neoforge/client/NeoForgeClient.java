@@ -23,10 +23,10 @@ public class NeoForgeClient {
     }
 
     public static void addOtherConfigScreens() {
-        for(String modId : ScreenBuilder.allModsWithScreen()) {
+        for (String modId : ScreenBuilder.allModsWithScreen()) {
 
             Optional<? extends ModContainer> container = ModList.get().getModContainerById(modId);
-            if(container.isEmpty() || container.get().getCustomExtension(IConfigScreenFactory.class).isPresent()) continue;
+            if (container.isEmpty() || container.get().getCustomExtension(IConfigScreenFactory.class).isPresent()) continue;
 
             container.get().registerExtensionPoint(IConfigScreenFactory.class, (mc, screenFactory) ->
                     new ScreenBuilder(modId).create(screenFactory));
@@ -35,7 +35,7 @@ public class NeoForgeClient {
 
     @SubscribeEvent
     public static void onLoadComplete(FMLLoadCompleteEvent event) {
-        if(!Util.isClothConfigLoaded()) return;
+        if (!Util.isClothConfigLoaded()) return;
         event.enqueueWork(NeoForgeClient::addOtherConfigScreens);
     }
 

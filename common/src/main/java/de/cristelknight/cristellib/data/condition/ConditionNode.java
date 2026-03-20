@@ -32,16 +32,16 @@ public record ConditionNode(Either<List<ICondition<?>>, ICondition<?>> either) {
     );
 
     public boolean test() {
-        if(either.left().isPresent())
+        if (either.left().isPresent())
             return evaluateConditions(either.left().get());
-        if(either.right().isPresent())
+        if (either.right().isPresent())
             return evaluateConditions(List.of(either.right().get()));
         return false;
     }
 
-    private boolean evaluateConditions(List<ICondition<?>> jsonElements){
-        for(ICondition<?> e : jsonElements){
-            if(!e.test()) return false;
+    private boolean evaluateConditions(List<ICondition<?>> jsonElements) {
+        for (ICondition<?> e : jsonElements) {
+            if (!e.test()) return false;
         }
         return true;
     }

@@ -74,7 +74,7 @@ public class EDConfigTransformer {
         return nestedStructures;
     }
 
-    public static void putStructureName(String structureName, boolean value, Map<String, NestedEDConfig.Entry> entries){
+    public static void putStructureName(String structureName, boolean value, Map<String, NestedEDConfig.Entry> entries) {
         if (structureName.contains("/")) {
             // Handle key-value pair scenario
             String[] parts = structureName.split("/", 2);
@@ -83,11 +83,11 @@ public class EDConfigTransformer {
 
             boolean containsNestedStructure = entries.containsKey(key);
             Map<String, NestedEDConfig.Entry> nestedEntries;
-            if(containsNestedStructure) nestedEntries = entries.get(key).nested().entries();
+            if (containsNestedStructure) nestedEntries = entries.get(key).nested().entries();
             else nestedEntries = new HashMap<>();
 
             putStructureName(restOfStructureName, value, nestedEntries);
-            if(!containsNestedStructure) entries.put(key, NestedEDConfig.Entry.ofNested(new NestedEDConfig(nestedEntries)));
+            if (!containsNestedStructure) entries.put(key, NestedEDConfig.Entry.ofNested(new NestedEDConfig(nestedEntries)));
 
         } else {
             // Handle simple key-value pair where value is always true

@@ -23,9 +23,10 @@ public class JsonHelper {
     public static @Nullable JsonElement getSetElement(String getDataFromModId, Identifier location) {
         return getElement(getDataFromModId, "data/" + location.getNamespace() + "/worldgen/structure_set/" + location.getPath() + ".json");
     }
+
     public static @Nullable JsonElement getElement(String getDataFromModId, String location) {
         InputStream in = CristelLibExpectPlatform.getResourceStream(getDataFromModId, location);
-        if(in == null) {
+        if (in == null) {
             Constants.LOGGER.warn("Couldn't create Input Stream for sub path {} in modId {}", location, getDataFromModId);
             return null;
         }
@@ -40,7 +41,7 @@ public class JsonHelper {
 
     // finding by key
     public static List<JsonElement> findAll(String searchedKey, JsonObject object, String parentKey) {
-        if(searchedKey.isEmpty() && parentKey.isEmpty())
+        if (searchedKey.isEmpty() && parentKey.isEmpty())
             return List.of(object);
 
         List<JsonElement> results = new ArrayList<>();
@@ -83,8 +84,7 @@ public class JsonHelper {
 
         if (value instanceof JsonArray array) {
             findAllInArray(results, searchedKey, array, fullKey);
-        }
-        else if (value instanceof JsonObject nested) {
+        } else if (value instanceof JsonObject nested) {
             results.addAll(findAll(searchedKey, nested, fullKey + "."));
         }
         return false;
@@ -93,22 +93,22 @@ public class JsonHelper {
     private static Match matches(String searchedKey, String fullKey) {
         String[] searched = searchedKey.split("\\.");
         String[] current = fullKey.split("\\.");
-        if(searched.length < current.length)
+        if (searched.length < current.length)
             return Match.BREAK; // to long key, break search
 
-        for(int i = 0; i < current.length; i++) {
+        for (int i = 0; i < current.length; i++) {
             String s = searched[i];
-            if(s.equals(ANY))
+            if (s.equals(ANY))
                 continue;
 
             String c = current[i];
-            if(!s.equals(c))
+            if (!s.equals(c))
                 return Match.BREAK;
         }
-        if(searched.length > current.length)
+        if (searched.length > current.length)
             return Match.NO_MATCH; //right path, but not correct length
 
-        if(searched[searched.length - 1].equals(ANY))
+        if (searched[searched.length - 1].equals(ANY))
             return Match.MATCH;
         else
             return Match.MATCH_AND_BREAK;

@@ -37,7 +37,7 @@ public class CristelLibClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (shouldOpenScreen) {
                 shouldOpenScreen = false;
-                if(pending != null) client.setScreen(pending);
+                if (pending != null) client.setScreen(pending);
                 pending = null;
             }
         });
@@ -74,11 +74,11 @@ public class CristelLibClient implements ClientModInitializer {
     private static int showScreen(CommandContext<FabricClientCommandSource> ctx, String modId) {
         FabricClientCommandSource source = ctx.getSource();
 
-        if(!Util.isClothConfigLoaded()) {
+        if (!Util.isClothConfigLoaded()) {
             source.sendError(Component.literal("Cloth Config is not installed!"));
             return 0;
         }
-        if(!ModLoadingUtil.isModLoaded(modId)) {
+        if (!ModLoadingUtil.isModLoaded(modId)) {
             source.sendError(Component.literal("Mod: " + modId + " is not installed!"));
             return 0;
         }
@@ -90,7 +90,7 @@ public class CristelLibClient implements ClientModInitializer {
             }
         });
 
-        if(!shouldOpenScreen) {
+        if (!shouldOpenScreen) {
             source.sendError(Component.literal("Mod: " + modId + " has no (enabled) screen!"));
             return 0;
         }

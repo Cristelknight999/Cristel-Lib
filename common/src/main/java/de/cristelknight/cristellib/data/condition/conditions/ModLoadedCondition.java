@@ -23,9 +23,9 @@ public record ModLoadedCondition(String modId, Optional<String> optionalVersion)
             return ModLoadingUtil.isModLoaded(modId);
 
         String version = optionalVersion.get();
-        for (ModVersionComparator comparator : ModVersionComparator.values()){
+        for (ModVersionComparator comparator : ModVersionComparator.values()) {
             String sign = comparator.getSerialized();
-            if(!version.startsWith(sign)) continue;
+            if (!version.startsWith(sign)) continue;
 
             return comparator.test(modId, version.replaceFirst(sign, ""));
         }

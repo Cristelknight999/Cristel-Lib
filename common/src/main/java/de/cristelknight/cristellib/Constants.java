@@ -15,7 +15,7 @@ public class Constants {
 
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
-    public static String getWithPrefix(String message){
+    public static String getWithPrefix(String message) {
         return String.format("[%s] %s", MOD_ID, message);
     }
 

@@ -44,7 +44,7 @@ public class CristelLibExpectPlatformImpl {
 
     public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
         IModFile file = getModFile(modId);
-        if(file == null){
+        if (file == null) {
             Constants.LOGGER.error("Couldn't get mod file for modId: {}", modId);
             return;
         }
@@ -56,7 +56,7 @@ public class CristelLibExpectPlatformImpl {
         String path = id.getPath();
 
         IModFile file = getModFile(modId);
-        if(file == null) return null;
+        if (file == null) return null;
 
         PackLocationInfo metadata = new PackLocationInfo(
                 id.toString(),
@@ -70,7 +70,7 @@ public class CristelLibExpectPlatformImpl {
 
     public static InputStream getResourceStream(String modId, String subPath) {
         IModFile file = getModFile(modId);
-        if(file == null) return null;
+        if (file == null) return null;
 
         InputStream inputStream;
         try {
@@ -139,7 +139,7 @@ public class CristelLibExpectPlatformImpl {
         var visitor = new JarResourceVisitor() {
             @Override
             public void visit(String relativePath, JarResource resource) {
-                if(!fileFilter.test(Path.of(relativePath))) return;
+                if (!fileFilter.test(Path.of(relativePath))) return;
                 consumer.accept(relativePath);
             }
         };

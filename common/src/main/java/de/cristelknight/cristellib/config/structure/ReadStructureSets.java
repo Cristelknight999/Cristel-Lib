@@ -25,13 +25,13 @@ public class ReadStructureSets {
             String modId = holder.modId();
 
             JsonElement e = JsonHelper.getSetElement(modId, setLocation);
-            if(checkElement(e, modId, setLocation)) return;
+            if (checkElement(e, modId, setLocation)) return;
 
 
             JsonArray structureArray = GsonHelper.getAsJsonArray(e.getAsJsonObject(), "structures");
             List<Identifier> structureList = new ArrayList<>();
-            for(JsonElement element : structureArray){
-                if(!element.isJsonObject()) continue;
+            for (JsonElement element : structureArray) {
+                if (!element.isJsonObject()) continue;
 
                 structureList.add(Identifier.tryParse(GsonHelper.getAsString(element.getAsJsonObject(), "structure")));
             }
@@ -47,7 +47,7 @@ public class ReadStructureSets {
             String modId = holder.modId();
 
             JsonElement e = JsonHelper.getSetElement(modId, setLocation);
-            if(checkElement(e, modId, setLocation)) return;
+            if (checkElement(e, modId, setLocation)) return;
 
 
             JsonObject placement = GsonHelper.getAsJsonObject(e.getAsJsonObject(), "placement");
@@ -59,7 +59,7 @@ public class ReadStructureSets {
     }
 
     private static boolean checkElement(JsonElement element, String modId, Identifier setLocation) {
-        if(element == null || !element.isJsonObject()){
+        if (element == null || !element.isJsonObject()) {
             Constants.LOGGER.error("Set for {} {} is not a JsonObject", modId, setLocation);
             return true;
         }

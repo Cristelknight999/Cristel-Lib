@@ -8,6 +8,8 @@ import net.minecraft.resources.Identifier;
 import java.util.Map;
 
 @Environment(EnvType.CLIENT)
-public record ClientStructureConfig(StructureConfig structureConfig, Map<Identifier, ClientPlacementConfig> clientPlacementConfigs, Map<Identifier, ClientEDConfig> clientEDConfigs) {
-
-}
+public record ClientStructureConfig(
+        StructureConfig structureConfig,
+        Map<Identifier, ClientPlacementConfig> clientPlacementConfigs,
+        Map<Identifier, ClientEDConfig> clientEDConfigs
+) {}

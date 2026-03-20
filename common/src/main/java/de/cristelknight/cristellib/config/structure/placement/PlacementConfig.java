@@ -12,7 +12,7 @@ public record PlacementConfig(double frequency, int salt, int separation, int sp
         // Ensure spacing is greater than or equal to separation
         if (spacing <= separation)
             throw new IllegalArgumentException(Constants.getWithPrefix("Spacing must be greater than separation!"));
-        if(frequency < 0)
+        if (frequency < 0)
             throw new IllegalArgumentException(Constants.getWithPrefix("Frequency must be greater or equal to zero."));
     }
 

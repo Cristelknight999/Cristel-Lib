@@ -37,15 +37,15 @@ public class ScreenBuilder {
                         "§7" + CristelLibExpectPlatform.getModDisplayName(modId) + " Configuration (via %s§7)", Constants.MOD_COMPONENT
                 ));
 
-        for(Map.Entry<ExtensionRegistry.ExtensionFactory<?>, ExtensionRegistry.LoadPredicate> entry : ExtensionRegistry.getExtensions().entrySet()){
-            if(entry.getValue().test(modId) && !modId.equals(Constants.MC_ID)) {
+        for (Map.Entry<ExtensionRegistry.ExtensionFactory<?>, ExtensionRegistry.LoadPredicate> entry : ExtensionRegistry.getExtensions().entrySet()) {
+            if (entry.getValue().test(modId) && !modId.equals(Constants.MC_ID)) {
                 ConfigScreenExtension extension = entry.getKey().create(modId);
                 extension.addToBuilder(builder, builder.entryBuilder());
                 extensions.add(extension);
             }
         }
 
-        if(extensions.isEmpty())
+        if (extensions.isEmpty())
             return null;
 
         return builder.build();
@@ -60,20 +60,21 @@ public class ScreenBuilder {
     public static Optional<Component[]> tooltip(String name, Map<String, String> comments) {
         String comment = comments.get(name);
         if (comment != null && !comment.isEmpty()) {
-            return Optional.of(new MutableComponent[] { Component.literal(comment) });
+            return Optional.of(new MutableComponent[]{Component.literal(comment)});
         }
         return Optional.empty();
     }
 
-    public static boolean skipScreenCreation(String modId) {
-        if (modId.equals(Constants.MOD_ID) || modId.equals(Constants.MC_ID)) return true;
+    public static boolean shouldCreateScreen(String modId) {
+        if (modId.equals(Constants.MOD_ID) || modId.equals(Constants.MC_ID))
+            return false;
 
-        return ExtensionRegistry.getExtensions().values().stream().noneMatch(loadPredicate -> loadPredicate.test(modId));
+        return ExtensionRegistry.getExtensions().values().stream().anyMatch(loadPredicate -> loadPredicate.test(modId));
     }
 
     public static Set<String> allModsWithScreen() {
         return ModLoadingUtil.getModIds().stream()
-                .filter(ScreenBuilder::skipScreenCreation)
+                .filter(ScreenBuilder::shouldCreateScreen)
                 .collect(Collectors.toSet());
     }
 }

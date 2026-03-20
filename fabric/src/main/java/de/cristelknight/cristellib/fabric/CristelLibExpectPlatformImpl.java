@@ -36,10 +36,9 @@ public class CristelLibExpectPlatformImpl {
     public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
         String modId = id.getNamespace();
         ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
-        if(container != null){
+        if (container != null) {
             return ModNioPackResources.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, PackActivationType.ALWAYS_ENABLED, false);
-        }
-        else {
+        } else {
             Constants.LOGGER.warn("Couldn't get mod container for modId: {}", modId);
             return null;
         }
@@ -88,7 +87,7 @@ public class CristelLibExpectPlatformImpl {
         InputStream inputStream;
         Path pathC = getResourceDirectory(modId, subPath);
 
-        if(pathC == null) return null;
+        if (pathC == null) return null;
         try {
             inputStream = Files.newInputStream(pathC);
         } catch (IOException e) {
@@ -102,9 +101,9 @@ public class CristelLibExpectPlatformImpl {
     // Internal
     private static @Nullable Path getResourceDirectory(String modId, String subPath) {
         ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
-        if(container != null){
+        if (container != null) {
             Path path = container.findPath(subPath).orElse(null);
-            if(path == null) Constants.LOGGER.debug("Path for subPath: {} in modId: {} is null", subPath, modId);
+            if (path == null) Constants.LOGGER.debug("Path for subPath: {} in modId: {} is null", subPath, modId);
             return path;
         }
         Constants.LOGGER.debug("Mod container for modId: {} is null", modId);
@@ -115,7 +114,7 @@ public class CristelLibExpectPlatformImpl {
     public static List<Path> getRootPaths(String modId) {
         ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
         List<Path> paths = new ArrayList<>();
-        if(container != null){
+        if (container != null) {
             paths = container.getRootPaths();
         }
         return paths;

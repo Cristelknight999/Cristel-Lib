@@ -31,11 +31,12 @@ public class BuiltInDataPackLoader {
     }
 
     public static void registerPack(PackResources packResource, Component displayName, Supplier<Boolean> supplier) {
-        if (frozen) throw new RuntimeException(getWithPrefix(String.format("BuiltInDataPack Registry is already frozen. Cannot add Pack with id: %s", packResource.packId())));
+        if (frozen)
+            throw new RuntimeException(getWithPrefix(String.format("BuiltInDataPack Registry is already frozen. Cannot add Pack with id: %s", packResource.packId())));
         PACK_LIST.add(new BuiltInPack(packResource, displayName, supplier));
     }
 
-    public static List<String> getCustomIDs(){
+    public static List<String> getCustomIDs() {
         return PACK_LIST.stream().map(pack -> pack.packResource().packId()).filter(id -> !id.equals(Constants.CRISTEL_LIB_PACK_ID.toString())).toList();
     }
 

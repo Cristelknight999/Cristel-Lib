@@ -9,6 +9,7 @@ import net.fabricmc.api.Environment;
 public abstract class ConfigScreenExtension {
 
     public final String modId;
+
     public ConfigScreenExtension(String modId) {
         this.modId = modId;
     }

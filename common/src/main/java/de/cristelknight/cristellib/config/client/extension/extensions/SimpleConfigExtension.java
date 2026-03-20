@@ -48,7 +48,7 @@ public class SimpleConfigExtension extends ConfigScreenExtension {
         String categoryName = simpleScreen.screenName();
         ConfigCategory category = builder.getOrCreateCategory(Component.literal(categoryName.isEmpty() ? config.getSimpleName() : categoryName));
         String header = settings.getHeader();
-        if(header != null && !header.isEmpty())
+        if (header != null && !header.isEmpty())
             category.addEntry(entryBuilder.startTextDescription(Component.literal(header.trim())).build());
 
         for (RecordComponent component : config.getRecordComponents()) {
@@ -74,15 +74,15 @@ public class SimpleConfigExtension extends ConfigScreenExtension {
         }
 
         var optionalEntry = SimpleScreenTypes.getEntry(type, value);
-        if(optionalEntry.isEmpty()) {
+        if (optionalEntry.isEmpty()) {
             category.addEntry(entryBuilder.startTextDescription(Component.literal("Unsupported type: " + name)).build());
             return;
         }
 
         SimpleScreenTypes.ScreenFieldEntry entry = optionalEntry.get();
 
-        AbstractFieldBuilder<?,?,?> builder1 = entry.fieldFactory().create(entryBuilder, name, value, defaultValue);
-        if(entry.hasConverter())
+        AbstractFieldBuilder<?, ?, ?> builder1 = entry.fieldFactory().create(entryBuilder, name, value, defaultValue);
+        if (entry.hasConverter())
             builder1.setSaveConsumer(val -> updateFieldValue(config, name, entry.toOriginal().get().apply(val)));
         else
             builder1.setSaveConsumer(val -> updateFieldValue(config, name, val));
@@ -99,9 +99,9 @@ public class SimpleConfigExtension extends ConfigScreenExtension {
     @Override
     public void onSave() {
         Map<String, Set<SimpleConfigScreen>> simpleConfigsWithScreen = ClientConfigRegistry.getAllConfigsWithScreen();
-        if(!simpleConfigsWithScreen.containsKey(modId)) return;
+        if (!simpleConfigsWithScreen.containsKey(modId)) return;
 
-        for(SimpleConfigScreen simpleConfig : simpleConfigsWithScreen.get(modId))  {
+        for (SimpleConfigScreen simpleConfig : simpleConfigsWithScreen.get(modId)) {
             saveConfig(simpleConfig.simpleConfig(), modId);
         }
     }

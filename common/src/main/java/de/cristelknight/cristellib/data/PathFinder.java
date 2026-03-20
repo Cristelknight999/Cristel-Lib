@@ -65,7 +65,7 @@ public class PathFinder {
         String normalized = path.replace('\\', '/');
         path = normalized;
 
-        if(!normalized.startsWith("/")) normalized = "/" + normalized;
+        if (!normalized.startsWith("/")) normalized = "/" + normalized;
 
         if (!normalized.startsWith("/data/")) {
             return;

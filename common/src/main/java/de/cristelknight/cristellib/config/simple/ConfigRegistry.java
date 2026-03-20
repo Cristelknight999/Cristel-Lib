@@ -30,7 +30,7 @@ public class ConfigRegistry {
      */
     public static <T> void registerWithScreen(Class<T> clazz, ConfigSettings<T> spec, String modIdForScreen, String screenName, Runnable onScreenSave) {
         register(clazz, spec);
-        if(CristelLibExpectPlatform.isClient() && Util.isClothConfigLoaded())
+        if (CristelLibExpectPlatform.isClient() && Util.isClothConfigLoaded())
             ClientConfigRegistry.registerScreen(modIdForScreen, screenName, onScreenSave, clazz);
     }
 
@@ -58,8 +58,8 @@ public class ConfigRegistry {
 
     @SuppressWarnings("unchecked")
     public static <T> Class<T> getClazzFromCodec(Codec<T> codec) {
-        for(Map.Entry<Class<?>, ConfigHolder<?>> entry : CONFIGS.entrySet()) {
-            if(entry.getValue().getSettings().getCodec().equals(codec))
+        for (Map.Entry<Class<?>, ConfigHolder<?>> entry : CONFIGS.entrySet()) {
+            if (entry.getValue().getSettings().getCodec().equals(codec))
                 return (Class<T>) entry.getKey();
         }
         return null;

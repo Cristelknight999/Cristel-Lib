@@ -29,15 +29,15 @@ public class CristelLib {
     }
 
 
-    public static void preInit(){
+    public static void preInit() {
         DataFixer.registerFixer();
         ConditionRegistry.init();
         CristelLibRegistry.configs = ImmutableMap.copyOf(CristelLibExpectPlatform.getConfigs(REGISTRY));
         BuiltInDataPackLoader.freeze();
         BuiltInPackConfig.updateConfig();
 
-        for(Set<StructureConfig> pack : CristelLibRegistry.getConfigs().values()){
-            for(StructureConfig structureConfig : pack){
+        for (Set<StructureConfig> pack : CristelLibRegistry.getConfigs().values()) {
+            for (StructureConfig structureConfig : pack) {
                 structureConfig.writeConfig(false);
                 structureConfig.addSetsToRuntimePack();
             }

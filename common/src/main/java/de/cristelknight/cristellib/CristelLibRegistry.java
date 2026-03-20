@@ -15,7 +15,7 @@ public class CristelLibRegistry {
     protected static ImmutableMap<String, Set<StructureConfig>> configs = ImmutableMap.of();
 
     public static ImmutableMap<String, Set<StructureConfig>> getConfigs() {
-        if(!configs.isEmpty()) return configs;
+        if (!configs.isEmpty()) return configs;
         else throw new RuntimeException(Constants.getWithPrefix("Tried to access Registry before initialized."));
     }
 

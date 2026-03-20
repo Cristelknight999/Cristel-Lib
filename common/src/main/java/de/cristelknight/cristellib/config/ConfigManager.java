@@ -47,10 +47,11 @@ public class ConfigManager {
 
     public static void createEDConfig(StructureConfig config, boolean override) {
         Map<String, NestedEDConfig> nestedStructureMap;
-        if(config.enableDisableConfig == null) {
+        if (config.enableDisableConfig == null) {
             Map<Identifier, List<Identifier>> sets = config.getDefaultStructures();
             nestedStructureMap = EDConfigTransformer.mapToNestedStructures(sets, config);
-        } else nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(config.enableDisableConfig, config);
+        } else
+            nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(config.enableDisableConfig, config);
 
         writeConfig(config, NestedEDConfig.ED_CODEC, nestedStructureMap, override);
     }
@@ -78,7 +79,7 @@ public class ConfigManager {
 
     // File and Codec Util
     public static String createHeader(String header) {
-        if(header == null || header.isEmpty()) return "";
+        if (header == null || header.isEmpty()) return "";
         if (!header.endsWith("\n")) {
             header += "\n";
         }
@@ -135,13 +136,13 @@ public class ConfigManager {
         }
         boolean gotFixed = load instanceof JsonObject object && DataFixer.appliedFixer(ConfigRegistry.getClazzFromCodec(codec), object);
         T config = readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
-        if(gotFixed) writeAfterFix.accept(config);
+        if (gotFixed) writeAfterFix.accept(config);
         return config;
     }
 
     public static <T> T readFromSubPath(String modId, String subPath, Codec<T> codec, String errorMsg) {
         InputStream stream = CristelLibExpectPlatform.getResourceStream(modId, subPath);
-        if(stream == null) {
+        if (stream == null) {
             throw new IllegalArgumentException(getWithPrefix("Couldn't create ImputStream for subPath: " + subPath + " in ModContainer with id: " + modId));
         }
         com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -159,7 +160,7 @@ public class ConfigManager {
     }
 
     public static JsonObject addCommentsAndAlphabeticallySortRecursively(Map<String, String> comments, JsonObject object, String parentKey, boolean alphabeticallySorted) {
-        if(comments.isEmpty() && !alphabeticallySorted) return object;
+        if (comments.isEmpty() && !alphabeticallySorted) return object;
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             String objectKey = entry.getKey();
             String commentsKey = parentKey + objectKey;

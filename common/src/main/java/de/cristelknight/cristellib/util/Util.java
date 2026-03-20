@@ -16,9 +16,9 @@ import java.util.*;
 public class Util {
 
     public static boolean isClothConfigLoaded() {
-        if(CristelLibExpectPlatform.getPlatform().equals(Platform.FABRIC)) 
+        if (CristelLibExpectPlatform.getPlatform().equals(Platform.FABRIC))
             return ModLoadingUtil.isModLoaded("cloth-config");
-        else 
+        else
             return ModLoadingUtil.isModLoaded("cloth_config");
     }
 
@@ -37,13 +37,13 @@ public class Util {
     );
 
     // TODO: fix this mess, do excludes properly
-    public static void readData(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry){
+    public static void readData(Map<String, Set<StructureConfig>> configs, CristelLibRegistry registry) {
         updateOldFiles();
         Map<String, Set<String>> modIdAndSets = new HashMap<>();
         Map<String, ACInfoData> autoConfigInfoData = new HashMap<>();
 
-        for(String modId : ModLoadingUtil.getModIds()) {
-            if(SKIP_MODS.contains(modId)) continue;
+        for (String modId : ModLoadingUtil.getModIds()) {
+            if (SKIP_MODS.contains(modId)) continue;
             Set<String> structureSets = ReadData.readData(modId, autoConfigInfoData, configs);
             modIdAndSets.put(modId, structureSets);
         }
@@ -51,8 +51,8 @@ public class Util {
         ACInfoData.currentData = autoConfigInfoData;
         ACConfig.updateConfig();
 
-        for(String modId : modIdAndSets.keySet()) {
-            if(ModFinder.shouldSkipModForACAfter(modId, configs.keySet())) continue;
+        for (String modId : modIdAndSets.keySet()) {
+            if (ModFinder.shouldSkipModForACAfter(modId, configs.keySet())) continue;
             ModFinder.addAutoConfigs(modId, modIdAndSets.get(modId), configs, registry);
         }
     }
@@ -78,8 +78,7 @@ public class Util {
         Path oldOldSubPath = oldPath.resolve(subPath + "s");
         if (Files.exists(oldSubPath)) {
             FileUtils.copyDirectory(oldSubPath.toFile(), ConfigManager.CONFIG_LIB.resolve(subPath).toFile());
-        }
-        else if (Files.exists(oldOldSubPath)) {
+        } else if (Files.exists(oldOldSubPath)) {
             FileUtils.copyDirectory(oldOldSubPath.toFile(), ConfigManager.CONFIG_LIB.resolve(subPath).toFile());
         }
     }

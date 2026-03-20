@@ -7,9 +7,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
-public record ClientPlacementConfig(DoubleListEntry frequency, IntegerListEntry salt,  IntegerListEntry separation, IntegerListEntry spacing) {
+public record ClientPlacementConfig(DoubleListEntry frequency, IntegerListEntry salt, IntegerListEntry separation, IntegerListEntry spacing) {
 
-    public PlacementConfig toPlacement(){
+    public PlacementConfig toPlacement() {
         return new PlacementConfig(frequency.getValue(), salt.getValue(), separation.getValue(), spacing.getValue());
     }
 }

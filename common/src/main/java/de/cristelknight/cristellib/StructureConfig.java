@@ -62,7 +62,7 @@ public class StructureConfig {
     }
 
     private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetData> structureSetHolders) { // for CODEC
-        this(FileHelper.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type,  ImmutableList.copyOf(structureSetHolders));
+        this(FileHelper.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type, ImmutableList.copyOf(structureSetHolders));
     }
 
     private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
@@ -72,7 +72,7 @@ public class StructureConfig {
         this.type = type;
         this.structureSetHolders = structureSetHolders;
 
-        if(!this.structureSetHolders.isEmpty()) getDefaultNamespace();
+        if (!this.structureSetHolders.isEmpty()) getDefaultNamespace();
 
         this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
         this.structurePlacement = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSetHolders));
@@ -114,7 +114,7 @@ public class StructureConfig {
         Set<Identifier> setsToCheck = type.equals(ConfigType.ENABLE_DISABLE) ? enableDisableConfig.keySet() : placementConfig.keySet();
 
         boolean error = false;
-        for(StructureSetData data : structureSetHolders) {
+        for (StructureSetData data : structureSetHolders) {
             List<Identifier> newlyReadSets = data.sets();
             boolean hasAll = setsToCheck.containsAll(newlyReadSets);
             if (!hasAll) {
@@ -125,7 +125,7 @@ public class StructureConfig {
                 //break;
             }
         }
-        if(!error) return;
+        if (!error) return;
 
         enableDisableConfig = null;
         placementConfig = null;
@@ -144,10 +144,9 @@ public class StructureConfig {
             JsonElement structure = structureIterator.next();
             String structureName = toDefaultString(Objects.requireNonNull(Identifier.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
             if (setConfig.containsStructure(structureName)) {
-                if(setConfig.isStructureDisabled(structureName)) structureIterator.remove();
+                if (setConfig.isStructureDisabled(structureName)) structureIterator.remove();
 
-            }
-            else
+            } else
                 Constants.LOGGER.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
         }
     }
@@ -191,8 +190,10 @@ public class StructureConfig {
     }
 
     public void readConfig(boolean override) {
-        if (type.equals(ConfigType.ENABLE_DISABLE) && (enableDisableConfig == null || override)) enableDisableConfig = ConfigManager.readEDConfig(this);
-        else if(type.equals(ConfigType.PLACEMENT) && (placementConfig == null || override)) placementConfig = ConfigManager.readPlacementConfig(this);
+        if (type.equals(ConfigType.ENABLE_DISABLE) && (enableDisableConfig == null || override))
+            enableDisableConfig = ConfigManager.readEDConfig(this);
+        else if (type.equals(ConfigType.PLACEMENT) && (placementConfig == null || override))
+            placementConfig = ConfigManager.readPlacementConfig(this);
     }
 
 
@@ -242,8 +243,8 @@ public class StructureConfig {
     }
 
     public Identifier toDefaultRL(String location) {
-        if(location.contains(":")) return Identifier.parse(location);
-        else if(defaultNamespace.equals(Constants.MC_ID)) return Identifier.withDefaultNamespace(location);
+        if (location.contains(":")) return Identifier.parse(location);
+        else if (defaultNamespace.equals(Constants.MC_ID)) return Identifier.withDefaultNamespace(location);
         else return Identifier.fromNamespaceAndPath(defaultNamespace, location);
     }
 

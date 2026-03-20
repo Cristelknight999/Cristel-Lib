@@ -16,7 +16,7 @@ public class ResourceLoaderImplMixin {
 
     @Inject(method = "registerBuiltinResourcePacks", at = @At("TAIL"))
     private static void cristellib$registerBuiltinResourcePacks(PackType resourceType, Consumer<Pack> consumer, CallbackInfo ci) {
-        if(resourceType.equals(PackType.SERVER_DATA)){
+        if (resourceType.equals(PackType.SERVER_DATA)) {
             BuiltInDataPackLoader.getPacks(consumer);
         }
     }

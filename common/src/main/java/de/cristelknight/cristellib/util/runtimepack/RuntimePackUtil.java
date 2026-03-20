@@ -30,14 +30,14 @@ public class RuntimePackUtil {
         RuntimePack.GSON.toJson(object, writer);
         try {
             writer.close();
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(Constants.getWithPrefix("Failed to serialize JsonObject"), e);
         }
         return ubaos.getBytes();
     }
 
 
-    public static Identifier getLocationForStructureSet(Identifier location){
+    public static Identifier getLocationForStructureSet(Identifier location) {
         return createJsonLocation("worldgen/structure_set", location);
     }
 

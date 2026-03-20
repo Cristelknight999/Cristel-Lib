@@ -46,7 +46,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
     }
 
     public static final ExtensionRegistry.LoadPredicate SHOULD_LOAD = modId -> {
-        if(!CristelLibRegistry.getConfigs().containsKey(modId))
+        if (!CristelLibRegistry.getConfigs().containsKey(modId))
             return false;
 
         ACConfig acConfig = ConfigRegistry.get(ACConfig.class);

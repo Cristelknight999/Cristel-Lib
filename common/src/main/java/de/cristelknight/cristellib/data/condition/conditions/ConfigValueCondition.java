@@ -39,15 +39,15 @@ public record ConfigValueCondition(String className, String key, JsonElement exp
             return false;
         }
         JsonElement element = fromClass(clazz);
-        if(!(element instanceof JsonObject object))
+        if (!(element instanceof JsonObject object))
             return false;
-        
+
         List<JsonElement> possibleFinds = JsonHelper.findAll(key, object, "");
-        for(JsonElement actual : possibleFinds) {
-            if(actual.equals(expected)) // TODO: semantic comparison
+        for (JsonElement actual : possibleFinds) {
+            if (actual.equals(expected)) // TODO: semantic comparison
                 return true;
         }
-        
+
         return false;
     }
 

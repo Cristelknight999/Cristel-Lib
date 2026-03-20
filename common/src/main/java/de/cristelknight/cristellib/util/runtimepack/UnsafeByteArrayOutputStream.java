@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-public class UnsafeByteArrayOutputStream extends OutputStream implements AutoCloseable{
+public class UnsafeByteArrayOutputStream extends OutputStream implements AutoCloseable {
     protected byte[] buf;
     protected int index;
 

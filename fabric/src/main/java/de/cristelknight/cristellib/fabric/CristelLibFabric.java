@@ -18,7 +18,7 @@ public class CristelLibFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         CristelLib.init();
-        if(FabricLoader.getInstance().isDevelopmentEnvironment()) register();
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) register();
 
     }
 

@@ -41,12 +41,12 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static Platform getPlatform(){
+    public static Platform getPlatform() {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static boolean isClient(){
+    public static boolean isClient() {
         throw new AssertionError();
     }
 

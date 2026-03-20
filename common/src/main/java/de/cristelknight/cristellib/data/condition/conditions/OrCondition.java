@@ -16,8 +16,8 @@ public record OrCondition(List<ConditionNode> conditionNodes) implements ICondit
 
     @Override
     public boolean test() {
-        for (ConditionNode conditionNode: conditionNodes) {
-            if(conditionNode.test())
+        for (ConditionNode conditionNode : conditionNodes) {
+            if (conditionNode.test())
                 return true;
         }
         return false;

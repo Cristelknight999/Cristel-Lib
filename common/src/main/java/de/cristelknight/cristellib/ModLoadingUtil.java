@@ -13,12 +13,12 @@ public class ModLoadingUtil {
     }
 
     @ExpectPlatform
-    public static boolean isModLoaded(String modId){
+    public static boolean isModLoaded(String modId) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static Optional<Integer> compare(String modId, String version){
+    public static Optional<Integer> compare(String modId, String version) {
         throw new AssertionError();
     }
 }

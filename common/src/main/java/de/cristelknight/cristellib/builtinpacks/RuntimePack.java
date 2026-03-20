@@ -58,12 +58,12 @@ public class RuntimePack implements PackResources {
                 Optional.of(new KnownPack(Constants.MOD_ID, this.id, String.valueOf(version)))
         );
 
-        if(imageStream != null){
+        if (imageStream != null) {
             byte[] image = RuntimePackUtil.extractImageBytes(imageStream);
-            if(image != null) this.addRootResource("pack.png", image);
+            if (image != null) this.addRootResource("pack.png", image);
         }
 
-        if(!hasRootResource("pack.mcmeta")){
+        if (!hasRootResource("pack.mcmeta")) {
             JsonObject object = new JsonObject();
             JsonObject pack = new JsonObject();
             pack.addProperty("pack_format", this.packVersion);
@@ -84,15 +84,17 @@ public class RuntimePack implements PackResources {
     public byte[] addBiome(Identifier identifier, JsonObject biome) {
         return this.addDataForJsonLocation("worldgen/biome", identifier, biome);
     }
+
     public byte[] addStructure(Identifier identifier, JsonObject structure) {
         return this.addDataForJsonLocation("worldgen/structure", identifier, structure);
     }
+
     public byte[] addLootTable(Identifier identifier, JsonObject table) {
         return this.addDataForJsonLocation("loot_tables", identifier, table);
     }
 
     public byte @Nullable [] addDataForJsonLocationFromPath(String prefix, Identifier identifier, String fromSubPath, String fromModID) {
-        if(JsonHelper.getElement(fromModID, fromSubPath) instanceof JsonObject object){
+        if (JsonHelper.getElement(fromModID, fromSubPath) instanceof JsonObject object) {
             return addDataForJsonLocation(prefix, identifier, object);
         }
         return null;
@@ -101,9 +103,11 @@ public class RuntimePack implements PackResources {
     public byte[] addDataForJsonLocation(String prefix, Identifier identifier, JsonObject object) {
         return this.addAndSerializeDataForLocation(prefix, "json", identifier, object);
     }
+
     public byte[] addAndSerializeDataForLocation(String prefix, String end, Identifier identifier, JsonObject object) {
         return this.addData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), RuntimePackUtil.serializeJson(object));
     }
+
     public byte[] addData(Identifier path, byte[] data) {
         this.data.put(path, () -> data);
         return data;
@@ -125,7 +129,7 @@ public class RuntimePack implements PackResources {
     public IoSupplier<InputStream> getRootResource(String @NotNull ... strings) {
         this.lock();
         Supplier<byte[]> supplier = this.root.get(Arrays.asList(strings));
-        if(supplier == null) {
+        if (supplier == null) {
             this.waiting.unlock();
             return null;
         }
@@ -133,7 +137,7 @@ public class RuntimePack implements PackResources {
         return () -> new ByteArrayInputStream(supplier.get());
     }
 
-    public boolean hasRootResource(String @NotNull ... strings){
+    public boolean hasRootResource(String @NotNull ... strings) {
         return this.root.containsKey(Arrays.asList(strings));
     }
 
@@ -143,7 +147,7 @@ public class RuntimePack implements PackResources {
     public IoSupplier<InputStream> getResource(@NotNull PackType packType, @NotNull Identifier id) {
         this.lock();
         Supplier<byte[]> supplier = this.data.get(id);
-        if(supplier == null) {
+        if (supplier == null) {
             this.waiting.unlock();
             return null;
         }
@@ -151,21 +155,21 @@ public class RuntimePack implements PackResources {
         return () -> new ByteArrayInputStream(supplier.get());
     }
 
-    public boolean hasResource(Identifier location){
+    public boolean hasResource(Identifier location) {
         return data.containsKey(location);
     }
 
     @Override
     public void listResources(@NotNull PackType packType, @NotNull String namespace, @NotNull String prefix, @NotNull ResourceOutput resourceOutput) {
         this.lock();
-        for(Identifier identifier : this.data.keySet()) {
+        for (Identifier identifier : this.data.keySet()) {
             Supplier<byte[]> supplier = this.data.get(identifier);
-            if(supplier == null) {
+            if (supplier == null) {
                 this.waiting.unlock();
                 continue;
             }
 
-            if(identifier.getNamespace().equals(namespace) && identifier.getPath().contains(prefix + "/")) {
+            if (identifier.getNamespace().equals(namespace) && identifier.getPath().contains(prefix + "/")) {
                 /*
                 List<String> identifierHere = Arrays.stream(identifier.getPath().split("/")).toList();
                 List<String> identifierThere = Arrays.stream(prefix.split("/")).toList();
@@ -183,7 +187,7 @@ public class RuntimePack implements PackResources {
     public @NotNull Set<String> getNamespaces(@NotNull PackType packType) {
         this.lock();
         Set<String> namespaces = new HashSet<>();
-        for(Identifier identifier : this.data.keySet()) {
+        for (Identifier identifier : this.data.keySet()) {
             namespaces.add(identifier.getNamespace());
         }
         this.waiting.unlock();
@@ -202,7 +206,7 @@ public class RuntimePack implements PackResources {
         } catch (IOException e) {
             throw new RuntimeException(Constants.getWithPrefix("Error reading pack.mcmeta from: " + packId()), e);
         }
-        if(stream == null) {
+        if (stream == null) {
             throw new RuntimeException(Constants.getWithPrefix("Couldn't find pack.mcmeta of Runtime Pack: " + packId()));
         }
         return FilePackResources.getMetadataFromStream(metadataSectionType, stream, metadata);
@@ -220,7 +224,7 @@ public class RuntimePack implements PackResources {
     }
 
     private void lock() {
-        if(!this.waiting.tryLock()) {
+        if (!this.waiting.tryLock()) {
             this.waiting.lock();
         }
     }
@@ -232,12 +236,12 @@ public class RuntimePack implements PackResources {
 
     public void load(Path dir) throws IOException {
         Stream<Path> stream = Files.walk(dir);
-        for(Path file : (Iterable<Path>) () -> stream.filter(Files::isRegularFile).map(dir::relativize).iterator()) {
+        for (Path file : (Iterable<Path>) () -> stream.filter(Files::isRegularFile).map(dir::relativize).iterator()) {
             String s = file.toString();
-            if(s.startsWith("data")) {
+            if (s.startsWith("data")) {
                 String path = s.substring("data".length() + 1);
                 this.load(path, this.data, Files.readAllBytes(file));
-            } else if(!s.startsWith("assets")) {
+            } else if (!s.startsWith("assets")) {
                 byte[] data = Files.readAllBytes(file);
                 this.root.put(Arrays.asList(s.split("/")), () -> data);
             }
@@ -247,12 +251,12 @@ public class RuntimePack implements PackResources {
 
     public void load(ZipInputStream stream) throws IOException {
         ZipEntry entry;
-        while((entry = stream.getNextEntry()) != null) {
+        while ((entry = stream.getNextEntry()) != null) {
             String s = entry.toString();
-            if(s.startsWith("data")) {
+            if (s.startsWith("data")) {
                 String path = s.substring("data".length() + 1);
                 this.load(path, this.data, this.read(entry, stream));
-            } else if(!s.startsWith("assets")){
+            } else if (!s.startsWith("assets")) {
                 byte[] data = this.read(entry, stream);
                 this.root.put(Arrays.asList(s.split("/")), () -> data);
             }
@@ -261,7 +265,7 @@ public class RuntimePack implements PackResources {
 
     protected byte[] read(ZipEntry entry, InputStream stream) throws IOException {
         byte[] data = new byte[Math.toIntExact(entry.getSize())];
-        if(stream.read(data) != data.length) {
+        if (stream.read(data) != data.length) {
             throw new IOException("Zip stream was cut off! (maybe incorrect zip entry length? maybe u didn't flush your stream?)");
         }
         return data;

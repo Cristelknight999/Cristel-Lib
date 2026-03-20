@@ -22,8 +22,8 @@ public class ClientConfigRegistry {
         return CONFIGS_WITH_SCREEN.containsKey(modId);
     }
 
-    public static Set<SimpleConfigScreen> getScreens(String modId){
-        if(hasScreens(modId)) return CONFIGS_WITH_SCREEN.get(modId);
+    public static Set<SimpleConfigScreen> getScreens(String modId) {
+        if (hasScreens(modId)) return CONFIGS_WITH_SCREEN.get(modId);
         return Set.of();
     }
 
@@ -32,8 +32,8 @@ public class ClientConfigRegistry {
     }
 
     public static @Nullable SimpleConfigScreen getScreen(String modId, Class<?> simpleConfig) {
-        for(SimpleConfigScreen screen : getScreens(modId)) {
-            if(screen.simpleConfig() == simpleConfig) return screen;
+        for (SimpleConfigScreen screen : getScreens(modId)) {
+            if (screen.simpleConfig() == simpleConfig) return screen;
         }
         return null;
     }

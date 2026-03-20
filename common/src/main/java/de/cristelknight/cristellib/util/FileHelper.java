@@ -11,11 +11,11 @@ import java.nio.file.Path;
 
 public class FileHelper {
 
-    public static Path janksonPathFromString(String path, String name){
+    public static Path janksonPathFromString(String path, String name) {
         return pathFromString(path).resolve(name + ".json5");
     }
 
-    public static Path pathFromString(String path){
+    public static Path pathFromString(String path) {
         return path.startsWith("<CONFIG_DIR>/") ? ConfigManager.CONFIG_DIR.resolve(path.replace("<CONFIG_DIR>/", "")) : Path.of(path);
     }
 
@@ -46,15 +46,15 @@ public class FileHelper {
      * Normalizes a potential Minecraft resource path fragment to forward slashes.
      * <p>
      * Inputs:
-     *  - path: A platform-dependent path fragment (e.g., produced from java.nio.file.Path)
+     * - path: A platform-dependent path fragment (e.g., produced from java.nio.file.Path)
      * <p>
      * Behavior:
-     *  - Replaces all '\\' with '/'
-     *  - Removes a single leading '/' if present
-     *  - Collapses duplicate '/'
+     * - Replaces all '\\' with '/'
+     * - Removes a single leading '/' if present
+     * - Collapses duplicate '/'
      * <p>
      * Output:
-     *  - A normalized path string safe to pass to Identifier.fromNamespaceAndPath
+     * - A normalized path string safe to pass to Identifier.fromNamespaceAndPath
      */
     public static String normalizeResourcePath(String path) {
         if (path == null) {
@@ -91,7 +91,7 @@ public class FileHelper {
     /**
      * Parses a filename into namespace and path parts using a custom separator.
      *
-     * @param fileName the filename to parse
+     * @param fileName  the filename to parse
      * @param separator the character used to separate namespace and path
      * @return a Pair where left = namespace, right = path
      * @throws IllegalArgumentException if the filename is invalid or separator is missing
@@ -106,5 +106,5 @@ public class FileHelper {
         String path = fileName.substring(sepIndex + 1);     // keep case as-is
         return new Pair<>(namespace, path);
     }
-    
+
 }

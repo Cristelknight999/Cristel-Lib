@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabledPacks, boolean hideAllPacksInScreen)  {
+public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabledPacks, boolean hideAllPacksInScreen) {
 
     public static final Codec<BuiltInPackConfig> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
@@ -30,8 +30,8 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
 
         boolean bl = false;
         // Remove elements not in the default list
-        if(defaultPacks.retainAll(SETTINGS.getDefault().defaultPacks())) bl = true;
-        if(disabledPacks.retainAll(SETTINGS.getDefault().defaultPacks())) bl = true;
+        if (defaultPacks.retainAll(SETTINGS.getDefault().defaultPacks())) bl = true;
+        if (disabledPacks.retainAll(SETTINGS.getDefault().defaultPacks())) bl = true;
 
         // Add missing elements from the default list only if both lists miss them
         for (String item : SETTINGS.getDefault().defaultPacks()) {
@@ -41,7 +41,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
             }
         }
 
-        if(bl) {
+        if (bl) {
             ConfigRegistry.updateAndSave(new BuiltInPackConfig(defaultPacks, disabledPacks, config.hideAllPacksInScreen()));
         }
     }
@@ -65,16 +65,16 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
         @Override
         public String getHeader() {
             return """
-                   This config allows disabling built-in packs supplied by Cristel Lib.
-                   Move entries from 'defaultPacks' to 'disabledPacks' to disable them.
-                   """;
+                    This config allows disabling built-in packs supplied by Cristel Lib.
+                    Move entries from 'defaultPacks' to 'disabledPacks' to disable them.
+                    """;
         }
 
         @Override
         public HashMap<String, String> getComments() {
             return Util.make(new HashMap<>(), map -> {
                 map.put("hideAllPacksInScreen", """
-                    This option hides all packs provided by Cristel Lib in the pack selection screen to reduce clutter.""");
+                        This option hides all packs provided by Cristel Lib in the pack selection screen to reduce clutter.""");
             });
         }
     };
