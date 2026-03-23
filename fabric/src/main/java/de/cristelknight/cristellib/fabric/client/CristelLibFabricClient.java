@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @Environment(EnvType.CLIENT)
-public class CristelLibClient implements ClientModInitializer {
+public class CristelLibFabricClient implements ClientModInitializer {
 
     private static boolean shouldOpenScreen = false;
 

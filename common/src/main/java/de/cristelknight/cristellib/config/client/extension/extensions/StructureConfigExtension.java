@@ -59,7 +59,8 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         for (StructureConfig structureConfig : sorted(CristelLibRegistry.getConfigs().get(modId))) {
             if (structureConfig.getType().equals(ConfigType.PLACEMENT))
                 addPlacementCategory(builder, entryBuilder, structureConfig);
-            else addEDCategory(builder, entryBuilder, structureConfig);
+            else
+                addEDCategory(builder, entryBuilder, structureConfig);
         }
     }
 

@@ -31,15 +31,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class RuntimePack implements PackResources {
     public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private final Lock waiting = new ReentrantLock();
     private final Map<Identifier, Supplier<byte[]>> data = new ConcurrentHashMap<>();
+    private final Map<Identifier, Supplier<byte[]>> assets = new ConcurrentHashMap<>();
     private final Map<List<String>, Supplier<byte[]>> root = new ConcurrentHashMap<>();
     public final int packVersion;
     private final String id;
@@ -48,10 +45,10 @@ public class RuntimePack implements PackResources {
 
 
     public RuntimePack(Identifier id, int version, String description, @Nullable InputStream imageStream) {
-        this.packVersion = version;
+        packVersion = version;
         this.id = id.toString();
 
-        this.metadata = new PackLocationInfo(
+        metadata = new PackLocationInfo(
                 this.id,
                 Component.literal(description),
                 new BuiltinResourcePackSource(),
@@ -60,37 +57,41 @@ public class RuntimePack implements PackResources {
 
         if (imageStream != null) {
             byte[] image = RuntimePackUtil.extractImageBytes(imageStream);
-            if (image != null) this.addRootResource("pack.png", image);
+            if (image != null) addRootResource("pack.png", image);
         }
 
         if (!hasRootResource("pack.mcmeta")) {
             JsonObject object = new JsonObject();
             JsonObject pack = new JsonObject();
-            pack.addProperty("pack_format", this.packVersion);
-            pack.addProperty("min_format", this.packVersion);
-            pack.addProperty("max_format", this.packVersion);
+            pack.addProperty("pack_format", packVersion);
+            pack.addProperty("min_format", packVersion);
+            pack.addProperty("max_format", packVersion);
             pack.addProperty("description", description);
             object.add("pack", pack);
-            this.addRootResource("pack.mcmeta", RuntimePackUtil.serializeJson(object));
+            addRootResource("pack.mcmeta", RuntimePackUtil.serializeJson(object));
         }
+    }
+
+    protected Map<Identifier, Supplier<byte[]>> getSys(PackType side) {
+        return side == PackType.CLIENT_RESOURCES ? assets : data;
     }
 
 
     public byte[] addStructureSet(Identifier identifier, JsonObject set) {
-        return this.addDataForJsonLocation("worldgen/structure_set", identifier, set);
+        return addDataForJsonLocation("worldgen/structure_set", identifier, set);
     }
 
 
     public byte[] addBiome(Identifier identifier, JsonObject biome) {
-        return this.addDataForJsonLocation("worldgen/biome", identifier, biome);
+        return addDataForJsonLocation("worldgen/biome", identifier, biome);
     }
 
     public byte[] addStructure(Identifier identifier, JsonObject structure) {
-        return this.addDataForJsonLocation("worldgen/structure", identifier, structure);
+        return addDataForJsonLocation("worldgen/structure", identifier, structure);
     }
 
     public byte[] addLootTable(Identifier identifier, JsonObject table) {
-        return this.addDataForJsonLocation("loot_tables", identifier, table);
+        return addDataForJsonLocation("loot_tables", identifier, table);
     }
 
     public byte @Nullable [] addDataForJsonLocationFromPath(String prefix, Identifier identifier, String fromSubPath, String fromModID) {
@@ -101,11 +102,11 @@ public class RuntimePack implements PackResources {
     }
 
     public byte[] addDataForJsonLocation(String prefix, Identifier identifier, JsonObject object) {
-        return this.addAndSerializeDataForLocation(prefix, "json", identifier, object);
+        return addAndSerializeDataForLocation(prefix, "json", identifier, object);
     }
 
     public byte[] addAndSerializeDataForLocation(String prefix, String end, Identifier identifier, JsonObject object) {
-        return this.addData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), RuntimePackUtil.serializeJson(object));
+        return addData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), RuntimePackUtil.serializeJson(object));
     }
 
     public byte[] addData(Identifier path, byte[] data) {
@@ -113,13 +114,22 @@ public class RuntimePack implements PackResources {
         return data;
     }
 
+    public byte[] addAsset(Identifier path, byte[] asset) {
+        assets.put(path, () -> asset);
+        return asset;
+    }
+
     public void removeData(Identifier path) {
-        this.data.remove(path);
+        data.remove(path);
+    }
+
+    public void removeAsset(Identifier path) {
+        assets.remove(path);
     }
 
 
     public byte[] addRootResource(String path, byte[] data) {
-        this.root.put(Arrays.asList(path.split("/")), () -> data);
+        root.put(Arrays.asList(path.split("/")), () -> data);
         return data;
     }
 
@@ -127,45 +137,61 @@ public class RuntimePack implements PackResources {
     @Nullable
     @Override
     public IoSupplier<InputStream> getRootResource(String @NotNull ... strings) {
-        this.lock();
-        Supplier<byte[]> supplier = this.root.get(Arrays.asList(strings));
+        lock();
+        Supplier<byte[]> supplier = root.get(Arrays.asList(strings));
         if (supplier == null) {
-            this.waiting.unlock();
+            waiting.unlock();
             return null;
         }
-        this.waiting.unlock();
+        waiting.unlock();
         return () -> new ByteArrayInputStream(supplier.get());
     }
 
     public boolean hasRootResource(String @NotNull ... strings) {
-        return this.root.containsKey(Arrays.asList(strings));
+        return root.containsKey(Arrays.asList(strings));
     }
 
 
     @Nullable
     @Override
     public IoSupplier<InputStream> getResource(@NotNull PackType packType, @NotNull Identifier id) {
-        this.lock();
-        Supplier<byte[]> supplier = this.data.get(id);
+        lock();
+        Supplier<byte[]> supplier = getSys(packType).get(id);
         if (supplier == null) {
-            this.waiting.unlock();
+            waiting.unlock();
             return null;
         }
-        this.waiting.unlock();
+        waiting.unlock();
         return () -> new ByteArrayInputStream(supplier.get());
     }
 
-    public boolean hasResource(Identifier location) {
+    public @Nullable JsonObject getResourceAsJson(PackType packType, Identifier location) {
+        IoSupplier<InputStream> stream = getResource(packType, location);
+        JsonObject jsonObject;
+        try {
+            jsonObject = GsonHelper.parse(new InputStreamReader(stream.get(), StandardCharsets.UTF_8));
+        } catch (IOException | NullPointerException ex) {
+            Constants.LOGGER.error("Couldn't get JsonObject from location: {}", location, ex);
+            return null;
+        }
+        return jsonObject;
+    }
+
+    public boolean hasData(Identifier location) {
         return data.containsKey(location);
+    }
+
+    public boolean hasAsset(Identifier location) {
+        return assets.containsKey(location);
     }
 
     @Override
     public void listResources(@NotNull PackType packType, @NotNull String namespace, @NotNull String prefix, @NotNull ResourceOutput resourceOutput) {
-        this.lock();
-        for (Identifier identifier : this.data.keySet()) {
-            Supplier<byte[]> supplier = this.data.get(identifier);
+        lock();
+        for (Identifier identifier : getSys(packType).keySet()) {
+            Supplier<byte[]> supplier = getSys(packType).get(identifier);
             if (supplier == null) {
-                this.waiting.unlock();
+                waiting.unlock();
                 continue;
             }
 
@@ -180,17 +206,17 @@ public class RuntimePack implements PackResources {
 
             }
         }
-        this.waiting.unlock();
+        waiting.unlock();
     }
 
     @Override
     public @NotNull Set<String> getNamespaces(@NotNull PackType packType) {
-        this.lock();
+        lock();
         Set<String> namespaces = new HashSet<>();
-        for (Identifier identifier : this.data.keySet()) {
+        for (Identifier identifier : getSys(packType).keySet()) {
             namespaces.add(identifier.getNamespace());
         }
-        this.waiting.unlock();
+        waiting.unlock();
         return namespaces;
     }
 
@@ -199,7 +225,7 @@ public class RuntimePack implements PackResources {
     public <T> T getMetadataSection(@NonNull MetadataSectionType<T> metadataSectionType) {
         InputStream stream = null;
         try {
-            IoSupplier<InputStream> supplier = this.getRootResource("pack.mcmeta");
+            IoSupplier<InputStream> supplier = getRootResource("pack.mcmeta");
             if (supplier != null) {
                 stream = supplier.get();
             }
@@ -220,82 +246,25 @@ public class RuntimePack implements PackResources {
 
     @Override
     public @NotNull String packId() {
-        return this.id;
+        return id;
     }
 
     private void lock() {
-        if (!this.waiting.tryLock()) {
-            this.waiting.lock();
+        if (!waiting.tryLock()) {
+            waiting.lock();
         }
     }
 
     @Override
     public void close() {
-        Constants.LOGGER.debug("Closing Runtime Data Pack: {}", this.id);
-    }
-
-    public void load(Path dir) throws IOException {
-        Stream<Path> stream = Files.walk(dir);
-        for (Path file : (Iterable<Path>) () -> stream.filter(Files::isRegularFile).map(dir::relativize).iterator()) {
-            String s = file.toString();
-            if (s.startsWith("data")) {
-                String path = s.substring("data".length() + 1);
-                this.load(path, this.data, Files.readAllBytes(file));
-            } else if (!s.startsWith("assets")) {
-                byte[] data = Files.readAllBytes(file);
-                this.root.put(Arrays.asList(s.split("/")), () -> data);
-            }
-        }
-    }
-
-
-    public void load(ZipInputStream stream) throws IOException {
-        ZipEntry entry;
-        while ((entry = stream.getNextEntry()) != null) {
-            String s = entry.toString();
-            if (s.startsWith("data")) {
-                String path = s.substring("data".length() + 1);
-                this.load(path, this.data, this.read(entry, stream));
-            } else if (!s.startsWith("assets")) {
-                byte[] data = this.read(entry, stream);
-                this.root.put(Arrays.asList(s.split("/")), () -> data);
-            }
-        }
-    }
-
-    protected byte[] read(ZipEntry entry, InputStream stream) throws IOException {
-        byte[] data = new byte[Math.toIntExact(entry.getSize())];
-        if (stream.read(data) != data.length) {
-            throw new IOException("Zip stream was cut off! (maybe incorrect zip entry length? maybe u didn't flush your stream?)");
-        }
-        return data;
-    }
-
-    protected void load(String fullPath, Map<Identifier, Supplier<byte[]>> map, byte[] data) {
-        int sep = fullPath.indexOf('/');
-        String namespace = fullPath.substring(0, sep);
-        String path = fullPath.substring(sep + 1);
-        map.put(Identifier.fromNamespaceAndPath(namespace, path), () -> data);
-    }
-
-
-    public @Nullable JsonObject getResource(Identifier location) {
-        IoSupplier<InputStream> stream = this.getResource(PackType.SERVER_DATA, location);
-        JsonObject jsonObject;
-        try {
-            jsonObject = GsonHelper.parse(new BufferedReader(new InputStreamReader(stream.get(), StandardCharsets.UTF_8)));
-        } catch (IOException | NullPointerException ex) {
-            Constants.LOGGER.error("Couldn't get JsonObject from location: {}", location, ex);
-            return null;
-        }
-        return jsonObject;
+        Constants.LOGGER.debug("Closing Runtime Data Pack: {}", id);
     }
 
     public void dumpToFolder(Path output) throws IOException {
-        this.lock();
+        lock();
         try {
             // Dump root resources (e.g. pack.mcmeta, pack.png)
-            for (Map.Entry<List<String>, Supplier<byte[]>> entry : this.root.entrySet()) {
+            for (Map.Entry<List<String>, Supplier<byte[]>> entry : root.entrySet()) {
                 List<String> pathParts = entry.getKey();
                 Path filePath = output.resolve(Paths.get("", pathParts.toArray(new String[0])));
                 Files.createDirectories(filePath.getParent());
@@ -303,14 +272,21 @@ public class RuntimePack implements PackResources {
             }
 
             // Dump namespaced data (e.g. data/<namespace>/<resource>.json)
-            for (Map.Entry<Identifier, Supplier<byte[]>> entry : this.data.entrySet()) {
+            for (Map.Entry<Identifier, Supplier<byte[]>> entry : data.entrySet()) {
                 Identifier rl = entry.getKey();
                 Path filePath = output.resolve(Paths.get("data", rl.getNamespace(), rl.getPath()));
                 Files.createDirectories(filePath.getParent());
                 Files.write(filePath, entry.getValue().get(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             }
+
+            for (Map.Entry<Identifier, Supplier<byte[]>> entry : assets.entrySet()) {
+                Identifier rl = entry.getKey();
+                Path filePath = output.resolve(Paths.get("assets", rl.getNamespace(), rl.getPath()));
+                Files.createDirectories(filePath.getParent());
+                Files.write(filePath, entry.getValue().get(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            }
         } finally {
-            this.waiting.unlock();
+            waiting.unlock();
         }
     }
 }

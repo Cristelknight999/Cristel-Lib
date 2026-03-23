@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
@@ -57,7 +58,7 @@ public class CristelLibExpectPlatformImpl {
         return inputStream;
     }
 
-    public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
+    public static Pair<PackResources, PackResources> registerBuiltinResourcePack(Identifier id, Component displayName) {
         String modId = id.getNamespace();
         String path = id.getPath();
 
@@ -71,15 +72,18 @@ public class CristelLibExpectPlatformImpl {
                 Optional.of(new KnownPack(Constants.MOD_ID, id.toString(), ModList.get().getModFileById(modId).versionString()))
         );
 
-        return new JarContentsPackResources(metadata, file.getContents(), path);
+        PackResources server = new JarContentsPackResources(metadata, file.getContents(), path);
+        PackResources client = new JarContentsPackResources(metadata, file.getContents(), path);
+
+        return new Pair<>(
+                server.getNamespaces(PackType.SERVER_DATA).isEmpty() ? null : server,
+                client.getNamespaces(PackType.CLIENT_RESOURCES).isEmpty() ? null : client
+        );
     }
 
     public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
         IModFile file = getModFile(modId);
-        if (file == null) {
-            Constants.LOGGER.error("Couldn't get mod file for modId: {}", modId);
-            return;
-        }
+        if (file == null) return;
         walk(file.getContents(), startingFolder, fileFilter, consumer);
     }
 

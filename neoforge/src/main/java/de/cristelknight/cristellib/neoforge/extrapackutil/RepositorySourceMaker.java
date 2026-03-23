@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.neoforge.extrapackutil;
 
-import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
+import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.RepositorySource;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +13,6 @@ public class RepositorySourceMaker implements RepositorySource {
 
     @Override
     public void loadPacks(@NotNull Consumer<Pack> consumer) {
-        BuiltInDataPackLoader.getPacks(consumer);
+        BuiltInPackLoader.getPacks(consumer);
     }
 }

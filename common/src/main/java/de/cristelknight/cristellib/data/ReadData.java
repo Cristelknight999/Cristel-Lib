@@ -5,7 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
-import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
+import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.data.codec.BuiltInPackData;
 import de.cristelknight.cristellib.data.codec.BuiltInPackDataWrapper;
@@ -101,7 +101,7 @@ public class ReadData {
 
     private static void loadPack(BuiltInPackData pack) {
         Supplier<Boolean> bl = () -> ConditionNode.testConditionNode(pack.conditionNode());
-        BuiltInDataPackLoader.registerPack(pack.location(), Component.nullToEmpty(pack.displayName()), bl);
+        BuiltInPackLoader.registerPack(pack.location(), Component.nullToEmpty(pack.displayName()), bl);
     }
 
 }

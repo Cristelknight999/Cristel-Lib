@@ -19,7 +19,7 @@
       "de.cristelknight.cristellib.fabric.CristelLibFabric"
     ],
     "client": [
-      "de.cristelknight.cristellib.fabric.client.CristelLibClient"
+      "de.cristelknight.cristellib.fabric.client.CristelLibFabricClient"
     ],
     "cristellib": [
       "de.cristelknight.cristellib.api.BuiltInAPI"

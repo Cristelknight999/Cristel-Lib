@@ -59,7 +59,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
 
         @Override
         public BuiltInPackConfig getDefault() {
-            return new BuiltInPackConfig(BuiltInDataPackLoader.getCustomIDs(), List.of(), false);
+            return new BuiltInPackConfig(BuiltInPackLoader.getCustomIDs(), List.of(), false);
         }
 
         @Override

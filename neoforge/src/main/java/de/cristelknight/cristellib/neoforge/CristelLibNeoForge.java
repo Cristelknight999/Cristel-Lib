@@ -2,7 +2,7 @@ package de.cristelknight.cristellib.neoforge;
 
 import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.neoforge.client.NeoForgeClient;
+import de.cristelknight.cristellib.neoforge.client.CristelLibNeoForgeClient;
 import de.cristelknight.cristellib.neoforge.extrapackutil.RepositorySourceMaker;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.server.packs.PackType;
@@ -12,15 +12,15 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 
 @Mod(Constants.MOD_ID)
-public class CristelLibForge {
+public class CristelLibNeoForge {
 
-    public CristelLibForge(IEventBus bus) {
+    public CristelLibNeoForge(IEventBus bus) {
         CristelLib.preInit();
         CristelLib.init();
         bus.addListener(this::injectPackRepositories);
 
         if (FMLEnvironment.getDist().isClient() && Util.isClothConfigLoaded()) {
-            NeoForgeClient.registerMainConfigScreen();
+            CristelLibNeoForgeClient.registerMainConfigScreen();
         }
 
     }

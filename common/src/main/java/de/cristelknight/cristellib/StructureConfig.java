@@ -19,6 +19,7 @@ import de.cristelknight.cristellib.util.FileHelper;
 import de.cristelknight.cristellib.util.JsonHelper;
 import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -168,8 +169,8 @@ public class StructureConfig {
 
     private JsonElement getStructureSet(Identifier location, String modId) {
         Identifier structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
-        if (CristelLib.RUNTIME_PACK.hasResource(structureLocation)) {
-            return CristelLib.RUNTIME_PACK.getResource(structureLocation);
+        if (CristelLib.RUNTIME_PACK.hasData(structureLocation)) {
+            return CristelLib.RUNTIME_PACK.getResourceAsJson(PackType.SERVER_DATA, structureLocation);
         }
         return JsonHelper.getSetElement(modId, location);
     }

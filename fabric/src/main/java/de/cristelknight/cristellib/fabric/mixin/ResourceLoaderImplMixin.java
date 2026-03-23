@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.fabric.mixin;
 
-import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
+import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import net.fabricmc.fabric.impl.resource.ResourceLoaderImpl;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
@@ -17,7 +17,7 @@ public class ResourceLoaderImplMixin {
     @Inject(method = "registerBuiltinResourcePacks", at = @At("TAIL"))
     private static void cristellib$registerBuiltinResourcePacks(PackType resourceType, Consumer<Pack> consumer, CallbackInfo ci) {
         if (resourceType.equals(PackType.SERVER_DATA)) {
-            BuiltInDataPackLoader.getPacks(consumer);
+            BuiltInPackLoader.getPacks(consumer);
         }
     }
 

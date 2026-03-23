@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib;
 
+import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.util.Platform;
 import dev.architectury.injectables.annotations.ExpectPlatform;
@@ -26,7 +27,7 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
+    public static Pair<PackResources, PackResources> registerBuiltinResourcePack(Identifier id, Component displayName) {
         throw new AssertionError();
     }
 

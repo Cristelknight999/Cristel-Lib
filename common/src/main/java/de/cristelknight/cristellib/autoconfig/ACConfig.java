@@ -87,7 +87,7 @@ public record ACConfig(
                     Constants.MOD_ID + "/",
                     ACInfoData.getBlackListedMods(),
                     ACInfoData.getClientBlackListedMods(),
-                    java.util.List.of()
+                    List.of()
             );
         }
 

@@ -18,17 +18,17 @@ public class CristelLibFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         CristelLib.init();
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) register();
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) registerCommands();
 
     }
 
-    public static void register() {
+    public static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            registerDumpPack(dispatcher);
+            registerDumpPackCmd(dispatcher);
         });
     }
 
-    private static void registerDumpPack(CommandDispatcher<CommandSourceStack> dispatcher) {
+    private static void registerDumpPackCmd(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("dump_runtime_pack")
                 .then(Commands.argument("outputPath", StringArgumentType.string())
                         .executes(ctx -> dumpPack(ctx, StringArgumentType.getString(ctx, "outputPath"))))

@@ -2,7 +2,7 @@ package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.api.CristelLibAPI;
-import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
+import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
@@ -35,7 +35,7 @@ public class CristelLib {
         DataFixer.registerFixer();
         ConditionRegistry.init();
         CristelLibRegistry.configs = ImmutableMap.copyOf(getConfigs());
-        BuiltInDataPackLoader.freeze();
+        BuiltInPackLoader.freeze();
         BuiltInPackConfig.updateConfig();
 
         for (Set<StructureConfig> pack : CristelLibRegistry.getConfigs().values()) {

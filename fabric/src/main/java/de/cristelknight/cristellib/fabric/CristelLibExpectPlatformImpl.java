@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.fabric;
 
+import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.data.PathFinder;
@@ -47,11 +48,13 @@ public class CristelLibExpectPlatformImpl {
         return inputStream;
     }
 
-    public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
+    public static Pair<PackResources, PackResources> registerBuiltinResourcePack(Identifier id, Component displayName) {
         String modId = id.getNamespace();
         ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
         if (container != null) {
-            return ModNioPackResources.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, PackActivationType.ALWAYS_ENABLED, false);
+            ModNioPackResources server = ModNioPackResources.create(id.toString(), container, id.getPath(), PackType.SERVER_DATA, PackActivationType.ALWAYS_ENABLED, false);
+            ModNioPackResources client = ModNioPackResources.create(id.toString(), container, id.getPath(), PackType.CLIENT_RESOURCES, PackActivationType.ALWAYS_ENABLED, false);
+            return new Pair<>(server, client);
         } else {
             Constants.LOGGER.warn("Couldn't get mod container for modId: {}", modId);
             return null;
