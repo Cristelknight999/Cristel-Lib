@@ -44,8 +44,7 @@ public class Util {
 
         for (String modId : ModLoadingUtil.getModIds()) {
             if (SKIP_MODS.contains(modId)) continue;
-            Set<String> structureSets = ReadData.readData(modId, autoConfigInfoData, configs);
-            modIdAndSets.put(modId, structureSets);
+            ReadData.readData(modId, autoConfigInfoData, configs, modIdAndSets);
         }
 
         ACInfoData.currentData = autoConfigInfoData;

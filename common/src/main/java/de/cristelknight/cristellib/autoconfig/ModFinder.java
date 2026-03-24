@@ -19,7 +19,7 @@ import java.util.Set;
 
 public class ModFinder {
 
-    public static final Set<String> supportedPlacements = Set.of("minecraft:random_spread",
+    public static final Set<String> SUPPORTED_PLACEMENTS = Set.of("minecraft:random_spread",
             "moogs_structures:advanced_random_spread", "mes:advanced_random_spread", "mns:advanced_random_spread", "mss:advanced_random_spread", "mvs:advanced_random_spread",
             "repurposed_structures:advanced_random_spread"
     );
@@ -40,9 +40,10 @@ public class ModFinder {
                 JsonObject object = GsonHelper.convertToJsonObject(e, "Set at: " + path + " modId: " + modId).getAsJsonObject("placement");
                 Identifier location = getLocation(Path.of(path));
 
-                if (supportedPlacements.contains(GsonHelper.getAsString(object, "type"))) {
+                if (SUPPORTED_PLACEMENTS.contains(GsonHelper.getAsString(object, "type")))
                     registry.registerSetToConfig(modId, location, edConfig, placementConfig);
-                } else registry.registerSetToConfig(modId, location, edConfig);
+                else
+                    registry.registerSetToConfig(modId, location, edConfig);
 
             }
         });

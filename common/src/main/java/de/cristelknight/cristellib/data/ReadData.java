@@ -20,7 +20,12 @@ import java.util.function.Supplier;
 
 public class ReadData {
 
-    public static Set<String> readData(String modId, Map<String, ACInfoData> autoConfigInfoData, Map<String, Set<StructureConfig>> structureConfigData) {
+    public static void readData(
+            String modId,
+            Map<String, ACInfoData> autoConfigInfoData,
+            Map<String, Set<StructureConfig>> structureConfigData,
+            Map<String, Set<String>> modIdAndSets
+    ) {
         PathFinder.PathFinderData finder = PathFinder.getSubPathsInMod(modId, structureConfigData.keySet());
 
         // order matters
@@ -28,7 +33,8 @@ public class ReadData {
         getStructureConfigs(modId, finder.structureConfig(), structureConfigData);
         getBuiltInPacks(modId, finder.dataPack());
 
-        return finder.structureSets(); // return for later processing
+        //
+        modIdAndSets.put(modId, finder.structureSets()); // add found structure sets for auto config creation
     }
 
     private static void getAutoConfigSettings(String modId, Set<String> subPaths, Map<String, ACInfoData> data) {
@@ -45,15 +51,26 @@ public class ReadData {
     private static void getStructureConfigs(String modId, Set<String> subPaths, Map<String, Set<StructureConfig>> modIdAndConfigs) {
         for (String subPath : subPaths) {
             // Read the structure config from disk
-            StructureConfig config = ConfigManager.readFromSubPath(modId, subPath, StructureConfig.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
+            StructureConfig config;
 
             // Special-case for replacement configs:
             // We use 'minecraft' as a placeholder modId to indicate that this config
-            // should replace an existing config from another mod.
+            // could replace an existing config from another mod.
             // checkForReplace ensures that we only replace the correct config in the
             // original mod's set. If a replacement was applied, we skip adding it as a new config.
-            if (modId.equals(Constants.MC_ID) && checkForReplace(modIdAndConfigs, Path.of(subPath), config))
-                continue;
+            if (modId.equals(Constants.MC_ID)) {
+                Path fullPath = Path.of(subPath);
+                config = ConfigManager.readFromJanksonPath(fullPath, StructureConfig.CODEC);
+                 if(checkForReplace(modIdAndConfigs, fullPath, config))
+                     continue;
+            }
+            else
+                config = ConfigManager.readFromSubPath(
+                        modId,
+                        subPath,
+                        StructureConfig.CODEC,
+                        String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath)
+                );
 
             modIdAndConfigs.computeIfAbsent(modId, k -> new HashSet<>()).add(config);
         }
@@ -65,20 +82,22 @@ public class ReadData {
             // e.g., t_and_t@t_and_t_ED.json → t_and_t:t_and_t_ED
 
             Pair<String, String> pair = FileHelper.parseNamespaceAndPath(FileHelper.fileName(path), '@');
-            String namespace = pair.getFirst();
+            String modId = pair.getFirst();
 
-            Set<StructureConfig> configs = modIdAndConfigs.computeIfAbsent(namespace, k -> new HashSet<>());
+            Set<StructureConfig> configs = modIdAndConfigs.computeIfAbsent(modId, k -> new HashSet<>());
 
-            for (Iterator<StructureConfig> it = configs.iterator(); it.hasNext(); ) {
+            Iterator<StructureConfig> it = configs.iterator();
+            while (it.hasNext()) {
                 StructureConfig old = it.next();
-                if (!FileHelper.fileName(old.getPath()).equals(pair.getSecond())) continue;
+                if (!FileHelper.fileName(old.getPath()).equals(pair.getSecond()))
+                    continue;
 
                 it.remove();
                 configs.add(config);
                 return true; // replaced successfully
             }
 
-            configs.add(config); // namespace exists but no match; just add
+            configs.add(config); // modId exists but no match; just add
             return true;
         } catch (IdentifierException ignored) {
             return false; // fallback: can't parse namespace, add to "minecraft"
@@ -88,7 +107,16 @@ public class ReadData {
     private static void getBuiltInPacks(String modId, Set<String> subPaths) {
         for (String subPath : subPaths) {
 
-            Either<BuiltInPackData, BuiltInPackDataWrapper> either = ConfigManager.readFromSubPath(modId, subPath, BuiltInPackData.PACKS_CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
+            Either<BuiltInPackData, BuiltInPackDataWrapper> either;
+            if (modId.equals(Constants.MC_ID))
+                either = ConfigManager.readFromJanksonPath(Path.of(subPath), BuiltInPackData.PACKS_CODEC);
+            else
+                either = ConfigManager.readFromSubPath(
+                        modId,
+                        subPath,
+                        BuiltInPackData.PACKS_CODEC,
+                        String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath)
+                );
 
             either.ifLeft(ReadData::loadPack);
             either.ifRight(wrapper -> {

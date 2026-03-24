@@ -21,12 +21,12 @@ public class FileHelper {
 
     public static String fileName(Path path) {
         if (path == null) {
-            throw new IllegalArgumentException("Path cannot be null");
+            throw new IllegalArgumentException(Constants.getWithPrefix("Path to get filename from is null!"));
         }
 
         Path file = path.getFileName();
         if (file == null) {
-            throw new IllegalArgumentException("Path cannot have zero elements");
+            throw new IllegalArgumentException(Constants.getWithPrefix("Path cannot have zero elements!"));
         }
 
         return cutFileType(file);
@@ -34,7 +34,7 @@ public class FileHelper {
 
     public static String cutFileType(Path path) {
         if (path == null) {
-            throw new IllegalArgumentException("Path cannot be null");
+            throw new IllegalArgumentException(Constants.getWithPrefix("Path to cut filename from is null!"));
         }
 
         String fileName = path.toString();
@@ -58,7 +58,7 @@ public class FileHelper {
      */
     public static String normalizeResourcePath(String path) {
         if (path == null) {
-            throw new IllegalArgumentException("Path cannot be null");
+            throw new IllegalArgumentException(Constants.getWithPrefix("Path to normalize is null!"));
         }
 
         String normalized = path.replace('\\', '/');
@@ -102,8 +102,8 @@ public class FileHelper {
             throw new IdentifierException("Invalid file name: " + fileName + ", missing or misplaced separator '" + separator + "'");
         }
 
-        String namespace = fileName.substring(0, sepIndex); // keep case as-is
-        String path = fileName.substring(sepIndex + 1);     // keep case as-is
+        String namespace = fileName.substring(0, sepIndex);
+        String path = fileName.substring(sepIndex + 1);
         return new Pair<>(namespace, path);
     }
 

@@ -4,6 +4,7 @@ import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.util.FileHelper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,9 +13,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class PathFinder {
 
+    // TODO: improve this for Fabric
     public static PathFinder.PathFinderData getSubPathsInMod(String modId, Set<String> modsWithConfig) {
         //long startTime = System.nanoTime(); // start profiling
 
@@ -25,13 +28,14 @@ public class PathFinder {
 
         try {
             if (modId.equals(Constants.MC_ID)) {
-                // Keep this logic unchanged: walks real config folder
-                walk(ConfigManager.CONFIG_LIB,
-                        path -> Files.isRegularFile(path) && path.toString().endsWith(".json"),
-                        p -> categorizePath(p, autoConfig, structureConfig, dataPack, null));
+                Predicate<Path> filter = path -> Files.isRegularFile(path) && path.toString().endsWith(".json");
+                walk(ConfigManager.CONFIG_LIB.resolve("structure_config"),
+                        filter,
+                        structureConfig::add);
+                walk(ConfigManager.CONFIG_LIB.resolve("data_pack"),
+                        filter,
+                        dataPack::add);
             } else {
-                // Walk all files under data/ once
-
                 CristelLibExpectPlatform.findInModFiles(
                         modId,
                         "data",
@@ -55,6 +59,8 @@ public class PathFinder {
         );
     }
 
+    private static final Pattern STRUCTURE_SET = Pattern.compile("data/[^/]+/worldgen/structure_set/.*");
+
     private static void categorizePath(String path,
                                        Set<String> autoConfig,
                                        Set<String> structureConfig,
@@ -62,29 +68,26 @@ public class PathFinder {
                                        Set<String> structureSets) {
 
         // Normalize slashes for consistency across OSes
-        String normalized = path.replace('\\', '/');
-        path = normalized;
+        path = FileHelper.normalizeResourcePath(path);
 
-        if (!normalized.startsWith("/")) normalized = "/" + normalized;
-
-        if (!normalized.startsWith("/data/")) {
+        if (!path.startsWith("data/")) {
             return;
         }
 
-        if (structureSets != null && normalized.matches("^/data/[^/]+/worldgen/structure_set/.*")) {
-            structureSets.add(normalized);
+        if (structureSets != null && STRUCTURE_SET.matcher(path).matches()) {
+            structureSets.add(path);
             return;
         }
 
-        if (!normalized.startsWith("/data/cristellib/")) {
+        if (!path.startsWith("data/cristellib/")) {
             return;
         }
 
-        if (normalized.startsWith("/data/cristellib/structure_config/")) {
+        if (path.startsWith("data/cristellib/structure_config/")) {
             structureConfig.add(path);
-        } else if (normalized.startsWith("/data/cristellib/data_pack/")) {
+        } else if (path.startsWith("data/cristellib/data_pack/")) {
             dataPack.add(path);
-        } else if (normalized.startsWith("/data/cristellib/auto_config/")) {
+        } else if (path.startsWith("data/cristellib/auto_config/")) {
             autoConfig.add(path);
         }
     }

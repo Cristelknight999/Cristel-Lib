@@ -46,7 +46,7 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="t_and_t"
 type="incompatible"
-versionRange="(,1.13.3]"
+versionRange="(,1.13.8]"
 ordering="NONE"
 side="BOTH"
 
