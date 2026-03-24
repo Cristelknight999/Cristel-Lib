@@ -28,6 +28,7 @@ public class CristelLib {
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
 
     public static void init() {
+        Constants.LOG.debug("Loading Cristel Lib (Stage 2)");
     }
 
 

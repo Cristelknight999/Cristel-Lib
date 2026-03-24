@@ -54,9 +54,9 @@ subprojects {
     tasks.withType(ProcessResources).configureEach {
         var replaceProperties = [
                 minecraft_version   : minecraft_version,
-                neo_version         : neoforge_version,
 
                 version: mod_version,
+                maven_group: maven_group,
 
                 neo_loader_version_range: neo_loader_version_range,
                 neo_version_range: neo_version_range,
@@ -64,7 +64,10 @@ subprojects {
                 fabric_loader_min_version: fabric_loader_min_version,
                 fabric_api_version: fabric_api_version,
 
-                mod_id              : archives_name, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version, mod_description: mod_description, homepage: homepage, sources: sources
+                quilt_loader_version: quilt_loader_version,
+
+                mod_id: archives_name, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+                mod_description: mod_description, homepage: homepage, sources: sources, issues: issues
         ]
         inputs.properties replaceProperties
 
@@ -72,6 +75,9 @@ subprojects {
             expand replaceProperties + [project: project]
         }
         filesMatching(['fabric.mod.json']) {
+            expand replaceProperties + [project: project]
+        }
+        filesMatching(['quilt.mod.json']) {
             expand replaceProperties + [project: project]
         }
     }

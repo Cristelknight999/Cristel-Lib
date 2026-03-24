@@ -17,4 +17,8 @@ public abstract class ConfigScreenExtension {
     abstract public void addToBuilder(ConfigBuilder builder, ConfigEntryBuilder entryBuilder);
 
     public void onSave() {}
+
+    public int priority() {
+        return 0;
+    }
 }

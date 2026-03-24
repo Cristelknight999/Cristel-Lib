@@ -139,4 +139,9 @@ public class SimpleConfigExtension extends ConfigScreenExtension {
                         Arrays.stream(components).map(RecordComponent::getType).toArray(Class[]::new))
                 .newInstance(args);
     }
+
+    @Override
+    public int priority() {
+        return Integer.MAX_VALUE - 1;
+    }
 }

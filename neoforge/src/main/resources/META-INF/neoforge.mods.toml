@@ -1,7 +1,7 @@
 modLoader="javafml" #mandatory
 loaderVersion="${neo_loader_version_range}" #mandatory
 license="${mod_license}"
-#issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/" #optional
+issueTrackerURL="${issues}"
 
 [[mods]] #mandatory
 modId="${mod_id}" #mandatory

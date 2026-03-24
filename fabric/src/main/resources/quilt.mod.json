@@ -1,0 +1,55 @@
+{
+	"schema_version": 1,
+	"quilt_loader": {
+		"group": "${maven_group}",
+		"id": "${mod_id}",
+		"version": "${version}",
+		"metadata": {
+			"name": "${mod_name}",
+			"description": "${mod_description}",
+			"contributors": {
+				"Cristelknight": "Owner"
+			},
+			"contact": {
+				"homepage": "${homepage}",
+				"issues": "${issues}",
+				"sources": "${sources}"
+			},
+			"icon": "pack.png"
+		},
+		"intermediate_mappings": "net.fabricmc:intermediary",
+		"entrypoints": {
+			"main": "de.cristelknight.cristellib.fabric.CristelLibFabric",
+			"client": "de.cristelknight.cristellib.fabric.client.CristelLibFabricClient",
+			"cristellib": "de.cristelknight.cristellib.api.BuiltInAPI",
+			"modmenu": "de.cristelknight.cristellib.fabric.client.ModMenuIntegration"
+		},
+		"depends": [
+			{
+				"id": "quilt_loader",
+				"versions": ">=${quilt_loader_version}"
+			},
+			{
+				"id": "fabric-api",
+				"versions": ">=${fabric_api_version}"
+			},
+			{
+				"id": "minecraft",
+				"versions": ">=${minecraft_version}"
+			}
+		],
+		"breaks": [
+			{
+				"id": "t_and_t",
+				"versions": "<=1.13.8"
+			}
+		],
+		"jars": [
+			"META-INF/jars/jankson-1.2.3.jar"
+		]
+	},
+	"mixin": [
+		"cristellib.mixins.json",
+		"cristellib-common.mixins.json"
+	]
+}

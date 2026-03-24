@@ -291,4 +291,8 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         return sortedList;
     }
 
+    @Override
+    public int priority() {
+        return Integer.MAX_VALUE;
+    }
 }

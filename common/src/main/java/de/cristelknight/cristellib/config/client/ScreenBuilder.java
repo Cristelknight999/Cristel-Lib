@@ -20,7 +20,7 @@ public class ScreenBuilder {
 
     private final String modId;
 
-    private final Set<ConfigScreenExtension> extensions = new HashSet<>();
+    private final List<ConfigScreenExtension> extensions = new ArrayList<>();
 
     public ScreenBuilder(String modId) {
         this.modId = modId;
@@ -46,10 +46,11 @@ public class ScreenBuilder {
         for (Map.Entry<ExtensionRegistry.ExtensionFactory<?>, ExtensionRegistry.LoadPredicate> entry : ExtensionRegistry.getExtensions().entrySet()) {
             if (entry.getValue().test(modId) && !modId.equals(Constants.MC_ID)) {
                 ConfigScreenExtension extension = entry.getKey().create(modId);
-                extension.addToBuilder(builder, builder.entryBuilder());
                 extensions.add(extension);
             }
         }
+        extensions.sort(Comparator.comparingInt(ConfigScreenExtension::priority).reversed());
+        extensions.forEach(e -> e.addToBuilder(builder, builder.entryBuilder()));
     }
 
     // Saving
