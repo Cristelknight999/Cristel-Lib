@@ -1,7 +1,7 @@
-package de.cristelknight.cristellib.util;
+package de.cristelknight.cristellib.util.runtimepack;
 
 import com.google.gson.JsonObject;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -19,11 +19,10 @@ public class RuntimePackUtil {
             imageStream.close();
             return bytes;
         } catch (IOException e) {
-            CristelLib.LOGGER.warn("Couldn't get image for a RuntimePack");
+            Constants.LOG.warn("Couldn't get image for a RuntimePack");
             return null;
         }
     }
-
 
     public static byte[] serializeJson(JsonObject object) {
         UnsafeByteArrayOutputStream ubaos = new UnsafeByteArrayOutputStream();
@@ -31,14 +30,14 @@ public class RuntimePackUtil {
         RuntimePack.GSON.toJson(object, writer);
         try {
             writer.close();
-        } catch(IOException e) {
-            throw new RuntimeException(CristelLib.getWithPrefix("Failed to serialize JsonObject"), e);
+        } catch (IOException e) {
+            throw new RuntimeException(Constants.getWithPrefix("Failed to serialize JsonObject"), e);
         }
         return ubaos.getBytes();
     }
 
 
-    public static Identifier getLocationForStructureSet(Identifier location){
+    public static Identifier getLocationForStructureSet(Identifier location) {
         return createJsonLocation("worldgen/structure_set", location);
     }
 

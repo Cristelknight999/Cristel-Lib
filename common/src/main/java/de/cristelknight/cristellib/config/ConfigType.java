@@ -13,7 +13,7 @@ public enum ConfigType implements StringRepresentable {
     private final String name;
     public static final Codec<ConfigType> CODEC = StringRepresentable.fromEnum(ConfigType::values);
 
-    ConfigType(String name){
+    ConfigType(String name) {
         this.name = name;
     }
 

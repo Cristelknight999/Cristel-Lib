@@ -17,15 +17,17 @@ import java.util.List;
 @Mixin(PackSelectionModel.class)
 public class PackSelectionScreenMixin {
 
-    @Shadow @Final
+    @Shadow
+    @Final
     List<Pack> selected;
 
-    @Shadow @Final
+    @Shadow
+    @Final
     List<Pack> unselected;
 
     @Inject(method = "findNewPacks", at = @At(value = "TAIL"))
     private void cristellib$findNewPacks(CallbackInfo ci) {
-        if(!ConfigRegistry.get(BuiltInPackConfig.class).hideAllPacksInScreen()) return;
+        if (!ConfigRegistry.get(BuiltInPackConfig.class).hideAllPacksInScreen()) return;
         selected.removeIf(pack -> pack.location().source() instanceof BuiltinResourcePackSource);
         unselected.removeIf(pack -> pack.location().source() instanceof BuiltinResourcePackSource);
     }

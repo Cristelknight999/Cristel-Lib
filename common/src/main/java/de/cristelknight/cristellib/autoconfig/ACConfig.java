@@ -2,7 +2,7 @@ package de.cristelknight.cristellib.autoconfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import de.cristelknight.cristellib.CristelLib;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.ConfigSettings;
 import net.minecraft.util.Util;
@@ -45,7 +45,7 @@ public record ACConfig(
         List<String> clientExcludedMods = new ArrayList<>(config.clientExcludedMods());
 
         // return if no default values (and no whitelisted mods)
-        if(defaultBlacklistedMods.isEmpty() && defaultClientExcludedMods.isEmpty() && modOverrideWhitelist.isEmpty()) return;
+        if (defaultBlacklistedMods.isEmpty() && defaultClientExcludedMods.isEmpty() && modOverrideWhitelist.isEmpty()) return;
 
         // remove all defaults temporarily
         blacklistedMods.removeAll(defaultBlacklistedMods);
@@ -71,7 +71,7 @@ public record ACConfig(
     public static final ConfigSettings<ACConfig> SETTINGS = new ConfigSettings<>() {
         @Override
         public String getSubPath() {
-            return CristelLib.MOD_ID + "/auto_config_settings";
+            return Constants.MOD_ID + "/auto_config_settings";
         }
 
         @Override
@@ -84,45 +84,45 @@ public record ACConfig(
             return new ACConfig(
                     false,
                     false,
-                    CristelLib.MOD_ID + "/",
+                    Constants.MOD_ID + "/",
                     ACInfoData.getBlackListedMods(),
                     ACInfoData.getClientBlackListedMods(),
-                    java.util.List.of()
+                    List.of()
             );
         }
 
         @Override
         public String getHeader() {
             return """
-                   Auto-Config Settings
-                   The Config for Cristel Lib's automated structure config generation.
-                   """;
+                    Auto-Config Settings
+                    The Config for Cristel Lib's automated structure config generation.
+                    """;
         }
 
         @Override
         public HashMap<String, String> getComments() {
             return Util.make(new HashMap<>(), map -> {
                 map.put("disableAutoConfig", """
-                    Disable automatic structure config generation.""");
+                        Disable automatic structure config generation.""");
                 map.put("disableAutoConfigScreens", """
-                    Disable automatic screen generation for structure configs.""");
+                        Disable automatic screen generation for structure configs.""");
                 map.put("autoConfigSubPath", """
                         Set the default sub path of all automatically generated configs. Requires a RESTART to apply!""");
                 map.put("blacklistedMods", """
-                    Mods where automatic structure config generation is disabled.""");
+                        Mods where automatic structure config generation is disabled.""");
                 map.put("clientExcludedMods", """
-                    Mods where automatic screen generation for structure configs is disabled.""");
+                        Mods where automatic screen generation for structure configs is disabled.""");
                 map.put("modOverrideWhitelist", """        
-                    This list lets you override the default settings provided by mod authors.
-                    If you add a mod that is blacklisted by default (in the two other lists)
-                    you can now remove it without it getting added back automatically.
-                    Proceed at your own risk.""");
+                        This list lets you override the default settings provided by mod authors.
+                        If you add a mod that is blacklisted by default (in the two other lists)
+                        you can now remove it without it getting added back automatically.
+                        Proceed at your own risk.""");
             });
         }
     };
 
     static {
         ConfigRegistry.registerWithScreen(ACConfig.class, SETTINGS,
-                CristelLib.MOD_ID, "Auto-config", ACConfig::updateConfig);
+                Constants.MOD_ID, "Auto-config", ACConfig::updateConfig);
     }
 }

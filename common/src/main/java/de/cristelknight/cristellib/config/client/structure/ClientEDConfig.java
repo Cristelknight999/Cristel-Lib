@@ -1,6 +1,6 @@
-package de.cristelknight.cristellib.config.client;
+package de.cristelknight.cristellib.config.client.structure;
 
-import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
+import de.cristelknight.cristellib.config.structure.ed.EDConfig;
 import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

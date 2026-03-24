@@ -1,4 +1,4 @@
-package de.cristelknight.cristellib.config.serialize.ed;
+package de.cristelknight.cristellib.config.structure.ed;
 
 import java.util.Map;
 

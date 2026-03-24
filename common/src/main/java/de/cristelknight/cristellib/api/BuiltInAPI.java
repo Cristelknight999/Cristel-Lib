@@ -1,12 +1,14 @@
 package de.cristelknight.cristellib.api;
 
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.CristelLibRegistry;
 import de.cristelknight.cristellib.StructureConfig;
-import de.cristelknight.cristellib.builtinpacks.BuiltInDataPackLoader;
+import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import de.cristelknight.cristellib.config.ConfigType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 
 import java.util.List;
 import java.util.Set;
@@ -42,7 +44,7 @@ public class BuiltInAPI implements CristelLibAPI {
 
     @Override
     public void registerStructureSets(CristelLibRegistry registry) {
-        registry.registerSetToConfig(CristelLib.MC_ID, null, List.of(
+        registry.registerSetToConfig(Constants.MC_ID, null, List.of(
                         "ancient_cities", "buried_treasures", "desert_pyramids", "end_cities", "igloos", "jungle_temples", "nether_complexes", "nether_fossils",
                         "ocean_monuments", "ocean_ruins", "pillager_outposts", "ruined_portals", "shipwrecks", "swamp_huts", "villages", "woodland_mansions"
                 ),
@@ -50,12 +52,12 @@ public class BuiltInAPI implements CristelLibAPI {
 
 
         // No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
-        registry.registerSetToConfig(CristelLib.MC_ID, Identifier.withDefaultNamespace("strongholds"), MINECRAFT_ED);
+        registry.registerSetToConfig(Constants.MC_ID, Identifier.withDefaultNamespace("strongholds"), MINECRAFT_ED);
     }
 
     @Override
     public void registerBuiltInPacks() {
-        BuiltInDataPackLoader.registerPack(CristelLib.RUNTIME_PACK, Component.literal("Cristel Lib Config Pack"), () -> true);
+        BuiltInPackLoader.registerPack(CristelLib.CONFIG_PACK, Component.literal("Cristel Lib Config Pack"), () -> true, PackType.SERVER_DATA);
     }
 
 }

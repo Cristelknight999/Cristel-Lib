@@ -7,16 +7,16 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
-import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
-import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
-import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.config.structure.ed.EDConfig;
+import de.cristelknight.cristellib.config.structure.ed.EDConfigTransformer;
+import de.cristelknight.cristellib.config.structure.ed.NestedEDConfig;
+import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
-import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.util.jankson.CommentArray;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.Identifier;
 
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static de.cristelknight.cristellib.CristelLib.getWithPrefix;
+import static de.cristelknight.cristellib.Constants.getWithPrefix;
 
 public class ConfigManager {
 
@@ -47,10 +47,11 @@ public class ConfigManager {
 
     public static void createEDConfig(StructureConfig config, boolean override) {
         Map<String, NestedEDConfig> nestedStructureMap;
-        if(config.enableDisableConfig == null) {
+        if (config.enableDisableConfig == null) {
             Map<Identifier, List<Identifier>> sets = config.getDefaultStructures();
             nestedStructureMap = EDConfigTransformer.mapToNestedStructures(sets, config);
-        } else nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(config.enableDisableConfig, config);
+        } else
+            nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(config.enableDisableConfig, config);
 
         writeConfig(config, NestedEDConfig.ED_CODEC, nestedStructureMap, override);
     }
@@ -78,7 +79,7 @@ public class ConfigManager {
 
     // File and Codec Util
     public static String createHeader(String header) {
-        if(header == null || header.isEmpty()) return "";
+        if (header == null || header.isEmpty()) return "";
         if (!header.endsWith("\n")) {
             header += "\n";
         }
@@ -90,26 +91,26 @@ public class ConfigManager {
         writeFile(config.getPath(), codec, config.getComments(), from, ConfigManager.createHeader(config.getHeader()), true);
     }
 
-    public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, T from, String header, boolean isSorted) {
-        JsonElement jsonElement = createElement(path, codec, JanksonOps.INSTANCE, from);
+    public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, T from, String rawHeader, boolean isSorted) {
+        JsonElement jsonElement = createElement(String.format("Jankson file creation for \"%s\" failed due to the following error(s):", path.toString()), codec, JanksonOps.INSTANCE, from);
 
         if (jsonElement instanceof JsonObject jsonObject) {
-            jsonElement = JanksonUtil.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
+            jsonElement = addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
         }
         try {
             Files.createDirectories(path.getParent());
-            String output = header + jsonElement.toJson(JSON_GRAMMAR);
+            String output = rawHeader + jsonElement.toJson(JSON_GRAMMAR);
             Files.write(path, output.getBytes());
         } catch (IOException e) {
-            CristelLib.LOGGER.error(e.toString());
+            Constants.LOG.error("Failed to write file to \"%s\" due to the following error(s):", e);
         }
     }
 
-    public static <T, K> K createElement(Path path, Codec<T> codec, DynamicOps<K> ops, T from) {
+    public static <T, K> K createElement(String errorMsg, Codec<T> codec, DynamicOps<K> ops, T from) {
         DataResult<K> dataResult = codec.encodeStart(ops, from);
         Optional<DataResult.Error<K>> error = dataResult.error();
         if (error.isPresent()) {
-            throw new IllegalArgumentException(getWithPrefix(String.format("Jankson file creation for \"%s\" failed due to the following error(s):\n%s", path.toString(), error.get().message())));
+            throw new IllegalArgumentException(getWithPrefix(errorMsg + "\n" + error.get().message()));
         }
 
         return dataResult.result().orElseThrow();
@@ -135,27 +136,16 @@ public class ConfigManager {
         }
         boolean gotFixed = load instanceof JsonObject object && DataFixer.appliedFixer(ConfigRegistry.getClazzFromCodec(codec), object);
         T config = readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
-        if(gotFixed) writeAfterFix.accept(config);
+        if (gotFixed) writeAfterFix.accept(config);
         return config;
     }
 
-    public static <T> T readFromSubPath(String modID, String subPath, Codec<T> codec, String errorMsg) {
-        InputStream stream = CristelLibExpectPlatform.getResourceStream(modID, subPath);
-        if(stream == null) {
-            throw new IllegalArgumentException(getWithPrefix(errorMsg)); //TODO: improve
+    public static <T> T readFromSubPath(String modId, String subPath, Codec<T> codec, String errorMsg) {
+        InputStream stream = CristelLibExpectPlatform.getResourceStream(modId, subPath);
+        if (stream == null) {
+            throw new IllegalArgumentException(getWithPrefix("Couldn't create ImputStream for subPath: " + subPath + " in ModContainer with id: " + modId));
         }
         com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-        return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
-    }
-
-    public static <T> T readFromJsonPath(String errorMsg, Path path, Codec<T> codec) {
-        InputStream stream;
-        try {
-            stream = Files.newInputStream(path);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
-        }
-        com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream));
         return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
     }
 
@@ -164,8 +154,57 @@ public class ConfigManager {
         Optional<DataResult.Error<Pair<T, K>>> error = decode.error();
 
         if (error.isPresent()) {
-            throw new IllegalArgumentException(getWithPrefix(errorMsg) + " " + error.get().message());
+            throw new IllegalArgumentException(getWithPrefix(errorMsg) + "\n" + error.get().message());
         }
         return decode.result().orElseThrow().getFirst();
+    }
+
+    public static JsonObject addCommentsAndAlphabeticallySortRecursively(Map<String, String> comments, JsonObject object, String parentKey, boolean alphabeticallySorted) {
+        if (comments.isEmpty() && !alphabeticallySorted) return object;
+        for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+            String objectKey = entry.getKey();
+            String commentsKey = parentKey + objectKey;
+
+            String comment = object.getComment(entry.getKey());
+            if (comments.containsKey(commentsKey) && comment == null) {
+                String commentToAdd = comments.get(commentsKey);
+                object.setComment(objectKey, commentToAdd);
+                comment = commentToAdd;
+            }
+
+            JsonElement value = entry.getValue();
+            if (value instanceof JsonArray array) {
+                JsonArray sortedJsonElements = new JsonArray();
+                for (JsonElement element : array) {
+                    if (element instanceof JsonObject nestedObject) {
+                        sortedJsonElements.add(addCommentsAndAlphabeticallySortRecursively(comments, nestedObject, entry.getKey() + ".", alphabeticallySorted));
+                    } else if (element instanceof JsonArray array1) {
+                        CommentArray commentArray = new CommentArray();
+                        commentArray.addAll(array1);
+                        sortedJsonElements.add(commentArray);
+                    }
+                }
+                if (!sortedJsonElements.isEmpty()) {
+                    object.put(objectKey, sortedJsonElements, comment);
+                }
+            }
+
+            if (value instanceof JsonObject nestedObject) {
+                object.put(objectKey, addCommentsAndAlphabeticallySortRecursively(comments, nestedObject, entry.getKey() + ".", alphabeticallySorted), comment);
+            }
+        }
+
+        if (alphabeticallySorted) {
+            JsonObject alphabeticallySortedJsonObject = new JsonObject();
+            TreeMap<String, JsonElement> map = new TreeMap<>(String::compareTo);
+            map.putAll(object);
+            alphabeticallySortedJsonObject.putAll(map);
+            alphabeticallySortedJsonObject.forEach((key, entry) -> {
+                alphabeticallySortedJsonObject.setComment(key, object.getComment(key));
+            });
+
+            return alphabeticallySortedJsonObject;
+        }
+        return object;
     }
 }

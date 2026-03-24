@@ -11,14 +11,15 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.ConfigType;
-import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
-import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.structure.ReadStructureSets;
+import de.cristelknight.cristellib.config.structure.ed.EDConfig;
+import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
-import de.cristelknight.cristellib.config.serialize.ReadStructureSets;
-import de.cristelknight.cristellib.util.JanksonUtil;
-import de.cristelknight.cristellib.util.RuntimePackUtil;
-import de.cristelknight.cristellib.util.Util;
+import de.cristelknight.cristellib.util.FileHelper;
+import de.cristelknight.cristellib.util.JsonHelper;
+import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -27,7 +28,7 @@ public class StructureConfig {
 
     public static final Codec<StructureConfig> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
-                    Codec.STRING.fieldOf("name").forGetter(config -> Util.fileName(config.getPath())),
+                    Codec.STRING.fieldOf("name").forGetter(config -> FileHelper.fileName(config.getPath())),
                     Codec.STRING.fieldOf("path").forGetter(config -> String.valueOf(config.path.getParent())),
                     Codec.STRING.optionalFieldOf("header", "").forGetter(config -> config.header),
                     ConfigType.CODEC.fieldOf("config_type").forGetter(config -> config.type),
@@ -62,7 +63,7 @@ public class StructureConfig {
     }
 
     private StructureConfig(String name, String path, String header, ConfigType type, Map<String, String> comments, List<StructureSetData> structureSetHolders) { // for CODEC
-        this(Util.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type,  ImmutableList.copyOf(structureSetHolders));
+        this(FileHelper.janksonPathFromString(path, name), header, ImmutableMap.copyOf(comments), type, ImmutableList.copyOf(structureSetHolders));
     }
 
     private StructureConfig(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
@@ -72,7 +73,7 @@ public class StructureConfig {
         this.type = type;
         this.structureSetHolders = structureSetHolders;
 
-        if(!this.structureSetHolders.isEmpty()) getDefaultNamespace();
+        if (!this.structureSetHolders.isEmpty()) getDefaultNamespace();
 
         this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
         this.structurePlacement = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSetHolders));
@@ -87,11 +88,11 @@ public class StructureConfig {
         checkForError();
 
         structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
-            String modID = holder.modID();
+            String modId = holder.modId();
 
-            JsonElement structureSetElement = getStructureSet(setLocation, modID);
+            JsonElement structureSetElement = getStructureSet(setLocation, modId);
             if (!(structureSetElement instanceof JsonObject structureSet)) {
-                CristelLib.LOGGER.warn("Set for {} {} is not a JsonObject, skipping...", modID, setLocation);
+                Constants.LOG.warn("Set for {} {} is not a JsonObject, skipping...", modId, setLocation);
                 return;
             }
 
@@ -104,7 +105,7 @@ public class StructureConfig {
             }
 
             if (!structureSet.equals(originalSet)) {
-                CristelLib.RUNTIME_PACK.addStructureSet(setLocation, structureSet);
+                CristelLib.CONFIG_PACK.addStructureSet(setLocation, structureSet);
             }
         }));
     }
@@ -114,23 +115,23 @@ public class StructureConfig {
         Set<Identifier> setsToCheck = type.equals(ConfigType.ENABLE_DISABLE) ? enableDisableConfig.keySet() : placementConfig.keySet();
 
         boolean error = false;
-        for(StructureSetData data : structureSetHolders) {
+        for (StructureSetData data : structureSetHolders) {
             List<Identifier> newlyReadSets = data.sets();
             boolean hasAll = setsToCheck.containsAll(newlyReadSets);
             if (!hasAll) {
                 error = true;
                 var newlyReadSetsCopy = new ArrayList<>(newlyReadSets);
                 newlyReadSetsCopy.removeAll(setsToCheck);
-                CristelLib.LOGGER.error("Structure sets are missing from config: {}", newlyReadSetsCopy);
+                Constants.LOG.error("Structure sets are missing from config: {}", newlyReadSetsCopy);
                 //break;
             }
         }
-        if(!error) return;
+        if (!error) return;
 
         enableDisableConfig = null;
         placementConfig = null;
-        String name = Util.fileName(path);
-        Util.renameFile(path, name + "-had-error");
+        String name = FileHelper.fileName(path);
+        FileHelper.renameFile(path, name + "-had-error");
         writeConfig(true);
         readConfig(true);
     }
@@ -144,11 +145,10 @@ public class StructureConfig {
             JsonElement structure = structureIterator.next();
             String structureName = toDefaultString(Objects.requireNonNull(Identifier.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
             if (setConfig.containsStructure(structureName)) {
-                if(setConfig.isStructureDisabled(structureName)) structureIterator.remove();
+                if (setConfig.isStructureDisabled(structureName)) structureIterator.remove();
 
-            }
-            else
-                CristelLib.LOGGER.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
+            } else
+                Constants.LOG.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
         }
     }
 
@@ -167,12 +167,12 @@ public class StructureConfig {
         o.addProperty("frequency", newF);
     }
 
-    private JsonElement getStructureSet(Identifier location, String modID) {
+    private JsonElement getStructureSet(Identifier location, String modId) {
         Identifier structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
-        if (CristelLib.RUNTIME_PACK.hasResource(structureLocation)) {
-            return CristelLib.RUNTIME_PACK.getResource(structureLocation);
+        if (CristelLib.CONFIG_PACK.hasData(structureLocation)) {
+            return CristelLib.CONFIG_PACK.getResourceAsJson(PackType.SERVER_DATA, structureLocation);
         }
-        return JanksonUtil.getSetElement(modID, location);
+        return JsonHelper.getSetElement(modId, location);
     }
 
 
@@ -191,8 +191,10 @@ public class StructureConfig {
     }
 
     public void readConfig(boolean override) {
-        if (type.equals(ConfigType.ENABLE_DISABLE) && (enableDisableConfig == null || override)) enableDisableConfig = ConfigManager.readEDConfig(this);
-        else if(type.equals(ConfigType.PLACEMENT) && (placementConfig == null || override)) placementConfig = ConfigManager.readPlacementConfig(this);
+        if (type.equals(ConfigType.ENABLE_DISABLE) && (enableDisableConfig == null || override))
+            enableDisableConfig = ConfigManager.readEDConfig(this);
+        else if (type.equals(ConfigType.PLACEMENT) && (placementConfig == null || override))
+            placementConfig = ConfigManager.readPlacementConfig(this);
     }
 
 
@@ -242,8 +244,8 @@ public class StructureConfig {
     }
 
     public Identifier toDefaultRL(String location) {
-        if(location.contains(":")) return Identifier.parse(location);
-        else if(defaultNamespace.equals(CristelLib.MC_ID)) return Identifier.withDefaultNamespace(location);
+        if (location.contains(":")) return Identifier.parse(location);
+        else if (defaultNamespace.equals(Constants.MC_ID)) return Identifier.withDefaultNamespace(location);
         else return Identifier.fromNamespaceAndPath(defaultNamespace, location);
     }
 

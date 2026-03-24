@@ -1,5 +1,7 @@
 package de.cristelknight.cristellib;
 
+import com.mojang.datafixers.util.Pair;
+import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.util.Platform;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.chat.Component;
@@ -8,9 +10,7 @@ import net.minecraft.server.packs.PackResources;
 
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -27,37 +27,37 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
-    public static PackResources registerBuiltinResourcePack(Identifier id, Component displayName) {
+    public static Pair<PackResources, PackResources> registerBuiltinResourcePack(Identifier id, Component displayName) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static Map<String, Set<StructureConfig>> getConfigs(CristelLibRegistry registry) {
+    public static PackResources createOverlay(PackResources pack, String overlay) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static String getModDisplayName(String modID) {
+    public static String getModDisplayName(String modId) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static Platform getPlatform(){
+    public static Platform getPlatform() {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static boolean isClient(){
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
-    public static List<String> getModIds() {
+    public static boolean isClient() {
         throw new AssertionError();
     }
 
     @ExpectPlatform
     public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static Map<String, CristelLibAPI> getApis() {
         throw new AssertionError();
     }
 }
