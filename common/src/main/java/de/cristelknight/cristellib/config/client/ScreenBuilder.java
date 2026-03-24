@@ -12,10 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
@@ -37,6 +34,15 @@ public class ScreenBuilder {
                         "§7" + CristelLibExpectPlatform.getModDisplayName(modId) + " Configuration (via %s§7)", Constants.MOD_COMPONENT
                 ));
 
+        addToBuilder(builder);
+
+        if (extensions.isEmpty())
+            return null;
+
+        return builder.build();
+    }
+
+    public void addToBuilder(ConfigBuilder builder) {
         for (Map.Entry<ExtensionRegistry.ExtensionFactory<?>, ExtensionRegistry.LoadPredicate> entry : ExtensionRegistry.getExtensions().entrySet()) {
             if (entry.getValue().test(modId) && !modId.equals(Constants.MC_ID)) {
                 ConfigScreenExtension extension = entry.getKey().create(modId);
@@ -44,11 +50,6 @@ public class ScreenBuilder {
                 extensions.add(extension);
             }
         }
-
-        if (extensions.isEmpty())
-            return null;
-
-        return builder.build();
     }
 
     // Saving
