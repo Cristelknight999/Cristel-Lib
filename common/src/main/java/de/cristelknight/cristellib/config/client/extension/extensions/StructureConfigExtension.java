@@ -201,7 +201,8 @@ public class StructureConfigExtension extends ConfigScreenExtension {
             StructureConfig structureConfig = clientStructureConfig.structureConfig();
             if (structureConfig.getType().equals(ConfigType.PLACEMENT))
                 updatePlacements(clientStructureConfig.structureConfig(), clientStructureConfig.clientPlacementConfigs());
-            else updateEDs(clientStructureConfig.structureConfig(), clientStructureConfig.clientEDConfigs());
+            else
+                updateEDs(clientStructureConfig.structureConfig(), clientStructureConfig.clientEDConfigs());
 
             structureConfig.writeConfig(true);
             structureConfig.addSetsToRuntimePack();

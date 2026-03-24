@@ -17,9 +17,7 @@ import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
 import de.cristelknight.cristellib.util.FileHelper;
 import de.cristelknight.cristellib.util.JsonHelper;
-import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackType;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -90,6 +88,8 @@ public class StructureConfig {
         structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modId = holder.modId();
 
+            Constants.LOG.error("id: {} set: {}", modId, setLocation);
+
             JsonElement structureSetElement = getStructureSet(setLocation, modId);
             if (!(structureSetElement instanceof JsonObject structureSet)) {
                 Constants.LOG.warn("Set for {} {} is not a JsonObject, skipping...", modId, setLocation);
@@ -104,9 +104,10 @@ public class StructureConfig {
                 updatePlacementsInSet(structureSet, setLocation);
             }
 
-            if (!structureSet.equals(originalSet)) {
+            if (!structureSet.equals(originalSet))
                 CristelLib.CONFIG_PACK.addStructureSet(setLocation, structureSet);
-            }
+            else
+                CristelLib.CONFIG_PACK.removeStructureSet(setLocation);
         }));
     }
 
@@ -168,10 +169,6 @@ public class StructureConfig {
     }
 
     private JsonElement getStructureSet(Identifier location, String modId) {
-        Identifier structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
-        if (CristelLib.CONFIG_PACK.hasData(structureLocation)) {
-            return CristelLib.CONFIG_PACK.getResourceAsJson(PackType.SERVER_DATA, structureLocation);
-        }
         return JsonHelper.getSetElement(modId, location);
     }
 

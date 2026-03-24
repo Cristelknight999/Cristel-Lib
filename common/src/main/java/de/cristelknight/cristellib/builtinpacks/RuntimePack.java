@@ -78,11 +78,13 @@ public class RuntimePack implements PackResources {
         return side == PackType.CLIENT_RESOURCES ? assets : data;
     }
 
-
     public byte[] addStructureSet(Identifier identifier, JsonObject set) {
         return addDataForJsonLocation("worldgen/structure_set", identifier, set);
     }
 
+    public void removeStructureSet(Identifier identifier) {
+        removeDataForJsonLocation("worldgen/structure_set", identifier);
+    }
 
     public byte[] addBiome(Identifier identifier, JsonObject biome) {
         return addDataForJsonLocation("worldgen/biome", identifier, biome);
@@ -107,13 +109,26 @@ public class RuntimePack implements PackResources {
         return addAndSerializeDataForLocation(prefix, "json", identifier, object);
     }
 
+    public void removeDataForJsonLocation(String prefix, Identifier identifier) {
+        removeDataForLocation(prefix, "json", identifier);
+    }
+
     public byte[] addAndSerializeDataForLocation(String prefix, String end, Identifier identifier, JsonObject object) {
         return addData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), RuntimePackUtil.serializeJson(object));
     }
+    public void removeDataForLocation(String prefix, String end, Identifier identifier) {
+        removeData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end));
+    }
+
 
     public byte[] addData(Identifier path, byte[] data) {
-        this.data.put(path, () -> data);
-        return data;
+        lock();
+        try {
+            this.data.put(path, () -> data);
+            return data;
+        } finally {
+            waiting.unlock();
+        }
     }
 
     public byte[] addImageAsset(Identifier path, String modId, String subPath) {
@@ -125,22 +140,42 @@ public class RuntimePack implements PackResources {
     }
 
     public byte[] addAsset(Identifier path, byte[] asset) {
-        assets.put(path, () -> asset);
-        return asset;
+        lock();
+        try {
+            assets.put(path, () -> asset);
+            return asset;
+        } finally {
+            waiting.unlock();
+        }
     }
 
     public void removeData(Identifier path) {
-        data.remove(path);
+        lock();
+        try {
+            data.remove(path);
+        } finally {
+            waiting.unlock();
+        }
     }
 
     public void removeAsset(Identifier path) {
-        assets.remove(path);
+        lock();
+        try {
+            assets.remove(path);
+        } finally {
+            waiting.unlock();
+        }
     }
 
 
     public byte[] addRootResource(String path, byte[] data) {
-        root.put(Arrays.asList(path.split("/")), () -> data);
-        return data;
+        lock();
+        try {
+            root.put(Arrays.asList(path.split("/")), () -> data);
+            return data;
+        } finally {
+            waiting.unlock();
+        }
     }
 
 
@@ -148,17 +183,24 @@ public class RuntimePack implements PackResources {
     @Override
     public IoSupplier<InputStream> getRootResource(String @NotNull ... strings) {
         lock();
-        Supplier<byte[]> supplier = root.get(Arrays.asList(strings));
-        if (supplier == null) {
+        try {
+            Supplier<byte[]> supplier = root.get(Arrays.asList(strings));
+            if (supplier == null) {
+                return null;
+            }
+            return () -> new ByteArrayInputStream(supplier.get());
+        } finally {
             waiting.unlock();
-            return null;
         }
-        waiting.unlock();
-        return () -> new ByteArrayInputStream(supplier.get());
     }
 
     public boolean hasRootResource(String @NotNull ... strings) {
-        return root.containsKey(Arrays.asList(strings));
+        lock();
+        try {
+            return root.containsKey(Arrays.asList(strings));
+        } finally {
+            waiting.unlock();
+        }
     }
 
 
@@ -166,13 +208,15 @@ public class RuntimePack implements PackResources {
     @Override
     public IoSupplier<InputStream> getResource(@NotNull PackType packType, @NotNull Identifier id) {
         lock();
-        Supplier<byte[]> supplier = getSys(packType).get(id);
-        if (supplier == null) {
+        try {
+            Supplier<byte[]> supplier = getSys(packType).get(id);
+            if (supplier == null) {
+                return null;
+            }
+            return () -> new ByteArrayInputStream(supplier.get());
+        } finally {
             waiting.unlock();
-            return null;
         }
-        waiting.unlock();
-        return () -> new ByteArrayInputStream(supplier.get());
     }
 
     public @Nullable JsonObject getResourceAsJson(PackType packType, Identifier location) {
@@ -188,46 +232,61 @@ public class RuntimePack implements PackResources {
     }
 
     public boolean hasData(Identifier location) {
-        return data.containsKey(location);
+        lock();
+        try {
+            return data.containsKey(location);
+        } finally {
+            waiting.unlock();
+        }
     }
 
     public boolean hasAsset(Identifier location) {
-        return assets.containsKey(location);
+        lock();
+        try {
+            return assets.containsKey(location);
+        } finally {
+            waiting.unlock();
+        }
     }
 
     @Override
     public void listResources(@NotNull PackType packType, @NotNull String namespace, @NotNull String prefix, @NotNull ResourceOutput resourceOutput) {
         lock();
-        for (Identifier identifier : getSys(packType).keySet()) {
-            Supplier<byte[]> supplier = getSys(packType).get(identifier);
-            if (supplier == null) {
-                waiting.unlock();
-                continue;
-            }
+        try {
+            for (Identifier identifier : getSys(packType).keySet()) {
+                Supplier<byte[]> supplier = getSys(packType).get(identifier);
+                if (supplier == null) {
+                    continue;
+                }
 
-            if (identifier.getNamespace().equals(namespace) && identifier.getPath().contains(prefix + "/")) {
-                /*
-                List<String> identifierHere = Arrays.stream(identifier.getPath().split("/")).toList();
-                List<String> identifierThere = Arrays.stream(prefix.split("/")).toList();
-                if(new HashSet<>(identifierHere).containsAll(identifierThere)) {
-                 */
-                IoSupplier<InputStream> inputSupplier = () -> new ByteArrayInputStream(supplier.get());
-                resourceOutput.accept(identifier, inputSupplier);
+                if (identifier.getNamespace().equals(namespace) && identifier.getPath().contains(prefix + "/")) {
+                    /*
+                    List<String> identifierHere = Arrays.stream(identifier.getPath().split("/")).toList();
+                    List<String> identifierThere = Arrays.stream(prefix.split("/")).toList();
+                    if(new HashSet<>(identifierHere).containsAll(identifierThere)) {
+                     */
+                    IoSupplier<InputStream> inputSupplier = () -> new ByteArrayInputStream(supplier.get());
+                    resourceOutput.accept(identifier, inputSupplier);
 
+                }
             }
+        } finally {
+            waiting.unlock();
         }
-        waiting.unlock();
     }
 
     @Override
     public @NotNull Set<String> getNamespaces(@NotNull PackType packType) {
         lock();
-        Set<String> namespaces = new HashSet<>();
-        for (Identifier identifier : getSys(packType).keySet()) {
-            namespaces.add(identifier.getNamespace());
+        try {
+            Set<String> namespaces = new HashSet<>();
+            for (Identifier identifier : getSys(packType).keySet()) {
+                namespaces.add(identifier.getNamespace());
+            }
+            return namespaces;
+        } finally {
+            waiting.unlock();
         }
-        waiting.unlock();
-        return namespaces;
     }
 
     @Nullable
@@ -260,8 +319,15 @@ public class RuntimePack implements PackResources {
     }
 
     private void lock() {
-        if (!waiting.tryLock()) {
-            waiting.lock();
+        waiting.lock();
+    }
+
+    public void clear(PackType packType) {
+        lock();
+        try {
+            getSys(packType).clear();
+        } finally {
+            waiting.unlock();
         }
     }
 
