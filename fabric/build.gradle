@@ -62,14 +62,12 @@ publisher {
     // Setup the required API keys. You only need to define the keys for
     // the platforms you plan on uploading to
     apiKeys {
-        // Modrinth Token
-        modrinth System.getenv("MODRINTH_TOKEN")
-        // Curseforge Token
-        curseforge System.getenv("CURSE_TOKEN")
+        modrinth (providers.gradleProperty("modrinthToken").orElse(System.getenv("MODRINTH_TOKEN")).get())
+        curseforge (providers.gradleProperty("curseToken").orElse(System.getenv("CURSE_TOKEN")).get())
     }
 
     // Enable Debug mode. When enabled, no files will actually be uploaded
-    setDebug(true)
+    setDebug(false)
 
     // Curseforge Project ID
     setCurseID("856996")
@@ -114,7 +112,14 @@ publisher {
     // Disable the built in Fractureizer scanner
     setDisableMalwareScanner(true)
 
+    curseDepends {
+        required "fabric-api", "cloth-config"
+    }
+    modrinthDepends {
+        required "fabric-api", "cloth-config"
+    }
+
     // Add supported java versions. Currently only used by CurseForge
     // Supports anything that can be parsed using JavaVersion.toVersion()
-    setJavaVersions(JavaVersion.VERSION_21)
+    setJavaVersions([JavaVersion.VERSION_21])
 }
