@@ -102,7 +102,7 @@ public class ConfigManager {
             String output = rawHeader + jsonElement.toJson(JSON_GRAMMAR);
             Files.write(path, output.getBytes());
         } catch (IOException e) {
-            Constants.LOGGER.error(e.toString());
+            Constants.LOG.error("Failed to write file to \"%s\" due to the following error(s):", e);
         }
     }
 

@@ -181,7 +181,7 @@ public class RuntimePack implements PackResources {
         try {
             jsonObject = GsonHelper.parse(new InputStreamReader(stream.get(), StandardCharsets.UTF_8));
         } catch (IOException | NullPointerException ex) {
-            Constants.LOGGER.error("Couldn't get JsonObject from location: {}", location, ex);
+            Constants.LOG.error("Couldn't get JsonObject from location: {}", location, ex);
             return null;
         }
         return jsonObject;
@@ -267,7 +267,7 @@ public class RuntimePack implements PackResources {
 
     @Override
     public void close() {
-        Constants.LOGGER.debug("Closing Runtime Pack: {}", id);
+        Constants.LOG.debug("Closing Runtime Pack: {}", id);
     }
 
     public void dumpToFolder(Path output) throws IOException {

@@ -237,7 +237,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
 
     // Warn helpers
     private static void getWarn(StructureConfig structureConfig, Identifier structureSetName) {
-        Constants.LOGGER.warn("Structure Set: {} has no default config, skipping!\nThis probably indicates that this config file is outdated and should be deleted to re-create it. (Path: {})", structureSetName.toString(), structureConfig.getPath());
+        Constants.LOG.warn("Structure Set: {} has no default config, skipping!\nThis probably indicates that this config file is outdated and should be deleted to re-create it. (Path: {})", structureSetName.toString(), structureConfig.getPath());
     }
 
     private boolean getEDSubWarn(StructureConfig structureConfig, String fullPath, String structureSetName) {
@@ -248,7 +248,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
             return true;
         }
         if (!structures.contains(structureConfig.toDefaultRL(fullPath))) {
-            Constants.LOGGER.warn("Structure: {} has no default config, skipping!\nThis probably indicates that this config file is outdated and should be deleted to re-create it. (Path: {})", fullPath, structureConfig.getPath());
+            Constants.LOG.warn("Structure: {} has no default config, skipping!\nThis probably indicates that this config file is outdated and should be deleted to re-create it. (Path: {})", fullPath, structureConfig.getPath());
             return true;
         }
         return false;

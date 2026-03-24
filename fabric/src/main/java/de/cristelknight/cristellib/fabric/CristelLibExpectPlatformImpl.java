@@ -42,7 +42,7 @@ public class CristelLibExpectPlatformImpl {
         try {
             inputStream = Files.newInputStream(pathC);
         } catch (IOException e) {
-            Constants.LOGGER.warn("Couldn't create Input Stream for Path {}", pathC, e);
+            Constants.LOG.warn("Couldn't create Input Stream for Path {}", pathC, e);
             return null;
         }
         return inputStream;
@@ -56,14 +56,14 @@ public class CristelLibExpectPlatformImpl {
             ModNioPackResources client = ModNioPackResources.create(id.toString(), container, id.getPath(), PackType.CLIENT_RESOURCES, PackActivationType.ALWAYS_ENABLED, false);
             return new Pair<>(server, client);
         } else {
-            Constants.LOGGER.warn("Couldn't get mod container for modId: {}", modId);
+            Constants.LOG.warn("Couldn't get mod container for modId: {}", modId);
             return null;
         }
     }
 
     public static PackResources createOverlay(PackResources pack, String overlay) {
         if(!(pack instanceof ModNioPackResources modNioPack)) {
-            Constants.LOGGER.warn("Couldn't create overlay for Pack: {}, because it does not support overlays", pack.packId());
+            Constants.LOG.warn("Couldn't create overlay for Pack: {}, because it does not support overlays", pack.packId());
             return null;
         }
         return modNioPack.createOverlay(overlay);
@@ -109,10 +109,10 @@ public class CristelLibExpectPlatformImpl {
         ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
         if (container != null) {
             Path path = container.findPath(subPath).orElse(null);
-            if (path == null) Constants.LOGGER.debug("Path for subPath: {} in modId: {} is null", subPath, modId);
+            if (path == null) Constants.LOG.debug("Path for subPath: {} in modId: {} is null", subPath, modId);
             return path;
         }
-        Constants.LOGGER.debug("Mod container for modId: {} is null", modId);
+        Constants.LOG.debug("Mod container for modId: {} is null", modId);
         return null;
     }
 

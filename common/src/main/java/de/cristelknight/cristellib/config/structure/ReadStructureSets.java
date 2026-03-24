@@ -60,7 +60,7 @@ public class ReadStructureSets {
 
     private static boolean checkElement(JsonElement element, String modId, Identifier setLocation) {
         if (element == null || !element.isJsonObject()) {
-            Constants.LOGGER.error("Set for {} {} is not a JsonObject", modId, setLocation);
+            Constants.LOG.error("Set for {} {} is not a JsonObject", modId, setLocation);
             return true;
         }
         return false;

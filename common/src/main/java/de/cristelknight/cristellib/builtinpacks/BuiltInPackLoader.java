@@ -108,7 +108,7 @@ public class BuiltInPackLoader {
             }, type, selectionConfig);
 
             if (profile == null) {
-                Constants.LOGGER.error("Pack Profile with display name: {} is null", displayName);
+                Constants.LOG.error("Pack Profile with display name: {} is null", displayName);
                 continue;
             }
             consumer.accept(profile);

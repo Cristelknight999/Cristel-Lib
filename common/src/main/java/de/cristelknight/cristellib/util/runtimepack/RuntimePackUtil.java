@@ -19,7 +19,7 @@ public class RuntimePackUtil {
             imageStream.close();
             return bytes;
         } catch (IOException e) {
-            Constants.LOGGER.warn("Couldn't get image for a RuntimePack");
+            Constants.LOG.warn("Couldn't get image for a RuntimePack");
             return null;
         }
     }

@@ -27,14 +27,14 @@ public class JsonHelper {
     public static @Nullable JsonElement getElement(String getDataFromModId, String location) {
         InputStream in = CristelLibExpectPlatform.getResourceStream(getDataFromModId, location);
         if (in == null) {
-            Constants.LOGGER.warn("Couldn't create Input Stream for sub path {} in modId {}", location, getDataFromModId);
+            Constants.LOG.warn("Couldn't create Input Stream for sub path {} in modId {}", location, getDataFromModId);
             return null;
         }
 
         try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
             return JsonParser.parseReader(reader);
         } catch (IOException e) {
-            Constants.LOGGER.warn("Couldn't read {} from mod: {}", location, getDataFromModId, e);
+            Constants.LOG.warn("Couldn't read {} from mod: {}", location, getDataFromModId, e);
             return null;
         }
     }

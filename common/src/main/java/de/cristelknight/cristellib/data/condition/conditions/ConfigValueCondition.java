@@ -35,7 +35,7 @@ public record ConfigValueCondition(String className, String key, JsonElement exp
         try {
             clazz = Class.forName(className); // TODO: should initialize or not?
         } catch (ClassNotFoundException e) {
-            Constants.LOGGER.warn("Couldn't parse class_name: {} for ConfigValueCondition", className);
+            Constants.LOG.warn("Couldn't parse class_name: {} for ConfigValueCondition", className);
             return false;
         }
         JsonElement element = fromClass(clazz);

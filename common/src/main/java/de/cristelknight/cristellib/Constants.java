@@ -13,12 +13,16 @@ public class Constants {
     public static final String MOD_NAME = "Cristel Lib";
     public static final Component MOD_COMPONENT = Component.literal(MOD_NAME).withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.UNDERLINE);
 
-    public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
+    public static final Logger LOG = LogManager.getLogger(MOD_NAME);
 
     public static String getWithPrefix(String message) {
         return String.format("[%s] %s", MOD_ID, message);
     }
 
-    public static final Identifier CRISTEL_LIB_PACK_ID = Identifier.fromNamespaceAndPath(MOD_ID, "runtime_pack");
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
+    }
+
+    public static final Identifier CRISTEL_LIB_PACK_ID = id("runtime_pack");
 
 }

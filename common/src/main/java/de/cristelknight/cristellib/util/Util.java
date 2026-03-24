@@ -69,7 +69,7 @@ public class Util {
                 Files.move(oldPath, ConfigManager.CONFIG_LIB.resolve("~OUTDATED DIRECTORY~ data"));
             }
         } catch (IOException e) {
-            Constants.LOGGER.error("Failed to update custom configs in <instance>/config/cristellib/data/", e);
+            Constants.LOG.error("Failed to update custom configs in <instance>/config/cristellib/data/", e);
         }
     }
 

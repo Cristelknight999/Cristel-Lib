@@ -68,7 +68,7 @@ public class CristelLib {
             api.registerStructureSets(REGISTRY);
             set.forEach(StructureConfig::getDefaultNamespace);
         } catch (Throwable e) {
-            Constants.LOGGER.error("Mod: {} provides a broken implementation of CristelLibAPI", modId, e);
+            Constants.LOG.error("Mod: {} provides a broken implementation of CristelLibAPI", modId, e);
         }
     }
 }

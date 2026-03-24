@@ -26,7 +26,7 @@ public class ModLoadingUtilImpl {
             try {
                 min = Version.parse(version);
             } catch (VersionParsingException e) {
-                Constants.LOGGER.error("Couldn't parse version: {}", version);
+                Constants.LOG.error("Couldn't parse version: {}", version);
                 return Optional.empty();
             }
             return Optional.of(modVersion.compareTo(min));

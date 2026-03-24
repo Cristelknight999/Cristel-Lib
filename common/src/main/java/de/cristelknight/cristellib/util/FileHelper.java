@@ -83,7 +83,7 @@ public class FileHelper {
         try {
             Files.move(path, newPath);
         } catch (IOException e) {
-            Constants.LOGGER.error("Failed to rename file at path: {}, to: {}", path, newBaseName, e);
+            Constants.LOG.error("Failed to rename file at path: {}, to: {}", path, newBaseName, e);
         }
     }
 

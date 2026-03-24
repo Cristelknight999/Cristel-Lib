@@ -33,18 +33,18 @@ public class APIFinder {
                 try {
                     Class<?> clazz2 = Class.forName(ad.memberName());
                     if(!returnClazz.isAssignableFrom(clazz2)) {
-                        Constants.LOGGER.error("Failed to load api class {} for @{} annotation", ad.clazz().getClassName(), annotationClazz.getSimpleName());
+                        Constants.LOG.error("Failed to load api class {} for @{} annotation", ad.clazz().getClassName(), annotationClazz.getSimpleName());
                         continue;
                     }
                     clazz = (Class<T>) clazz2;
                 } catch (ClassNotFoundException e) {
-                    Constants.LOGGER.error("Failed to load api class {} for @{} annotation", ad.clazz().getClassName(), annotationClazz.getSimpleName(), e);
+                    Constants.LOG.error("Failed to load api class {} for @{} annotation", ad.clazz().getClassName(), annotationClazz.getSimpleName(), e);
                     continue;
                 }
                 try {
                     instances.add(new Pair<>(modIds, clazz.getDeclaredConstructor().newInstance()));
                 } catch (Throwable throwable) {
-                    Constants.LOGGER.error("Failed to load api: {}", ad.memberName(), throwable);
+                    Constants.LOG.error("Failed to load api: {}", ad.memberName(), throwable);
                 }
             }
         }

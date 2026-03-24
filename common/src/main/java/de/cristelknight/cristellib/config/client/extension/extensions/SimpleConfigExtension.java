@@ -69,7 +69,7 @@ public class SimpleConfigExtension extends ConfigScreenExtension {
             value = component.getAccessor().invoke(configInstance);
             defaultValue = component.getAccessor().invoke(settings.getDefault());
         } catch (Exception e) {
-            Constants.LOGGER.error("Couldn't read config value for config: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());
+            Constants.LOG.error("Couldn't read config value for config: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());
             return;
         }
 
@@ -117,7 +117,7 @@ public class SimpleConfigExtension extends ConfigScreenExtension {
             Objects.requireNonNull(ClientConfigRegistry.getScreen(modId, config)).onScreenSave().run();
             holder.save();
         } catch (Exception e) {
-            Constants.LOGGER.error("Couldn't save config screen: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());
+            Constants.LOG.error("Couldn't save config screen: {}; ErrorMsg: {}", config.getSimpleName(), e.fillInStackTrace());
         }
     }
 

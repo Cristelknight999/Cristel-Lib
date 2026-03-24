@@ -36,7 +36,7 @@ public class ReadData {
             ACInfoData acInfoData = ConfigManager.readFromSubPath(modId, subPath, ACInfoData.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
 
             if (data.containsKey(modId)) {
-                Constants.LOGGER.warn("Overriding Auto Config data for modId: {} from path: {}", modId, subPath);
+                Constants.LOG.warn("Overriding Auto Config data for modId: {} from path: {}", modId, subPath);
             }
             data.put(modId, acInfoData);
         }

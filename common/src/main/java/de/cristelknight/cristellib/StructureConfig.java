@@ -92,7 +92,7 @@ public class StructureConfig {
 
             JsonElement structureSetElement = getStructureSet(setLocation, modId);
             if (!(structureSetElement instanceof JsonObject structureSet)) {
-                Constants.LOGGER.warn("Set for {} {} is not a JsonObject, skipping...", modId, setLocation);
+                Constants.LOG.warn("Set for {} {} is not a JsonObject, skipping...", modId, setLocation);
                 return;
             }
 
@@ -122,7 +122,7 @@ public class StructureConfig {
                 error = true;
                 var newlyReadSetsCopy = new ArrayList<>(newlyReadSets);
                 newlyReadSetsCopy.removeAll(setsToCheck);
-                Constants.LOGGER.error("Structure sets are missing from config: {}", newlyReadSetsCopy);
+                Constants.LOG.error("Structure sets are missing from config: {}", newlyReadSetsCopy);
                 //break;
             }
         }
@@ -148,7 +148,7 @@ public class StructureConfig {
                 if (setConfig.isStructureDisabled(structureName)) structureIterator.remove();
 
             } else
-                Constants.LOGGER.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
+                Constants.LOG.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
         }
     }
 

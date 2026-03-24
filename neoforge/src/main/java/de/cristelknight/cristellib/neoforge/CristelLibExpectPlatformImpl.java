@@ -52,7 +52,7 @@ public class CristelLibExpectPlatformImpl {
         try {
             inputStream = file.getContents().openFile(subPath);
         } catch (IOException e) {
-            Constants.LOGGER.warn("Couldn't create Input Stream for sub path: {} in mod: {}", subPath, modId, e);
+            Constants.LOG.warn("Couldn't create Input Stream for sub path: {} in mod: {}", subPath, modId, e);
             return null;
         }
 
@@ -84,7 +84,7 @@ public class CristelLibExpectPlatformImpl {
 
     public static PackResources createOverlay(PackResources pack, String overlay) {
         if(!(pack instanceof JarContentsPackResourcesAccessor accessor)) {
-            Constants.LOGGER.warn("Couldn't create overlay for Pack: {}, because it does not support overlays", pack.packId());
+            Constants.LOG.warn("Couldn't create overlay for Pack: {}, because it does not support overlays", pack.packId());
             return null;
         }
         return new JarContentsPackResources(
@@ -135,14 +135,14 @@ public class CristelLibExpectPlatformImpl {
         if (modList == null) {
             ModInfo info = getPreLoadedModInfo(modId);
             if (info == null) {
-                Constants.LOGGER.warn("Mod info for modId: {} is null", modId);
+                Constants.LOG.warn("Mod info for modId: {} is null", modId);
                 return null;
             }
             file = info.getOwningFile().getFile();
         } else {
             ModContainer container = modList.getModContainerById(modId).orElse(null);
             if (container == null) {
-                Constants.LOGGER.warn("Mod container for modId: {} is null", modId);
+                Constants.LOG.warn("Mod container for modId: {} is null", modId);
                 return null;
             }
             file = container.getModInfo().getOwningFile().getFile();

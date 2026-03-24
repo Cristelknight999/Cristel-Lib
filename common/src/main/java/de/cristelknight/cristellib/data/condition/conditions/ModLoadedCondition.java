@@ -29,7 +29,7 @@ public record ModLoadedCondition(String modId, Optional<String> optionalVersion)
 
             return comparator.test(modId, version.replaceFirst(sign, ""));
         }
-        Constants.LOGGER.warn("Couldn't compare \"version\": \"{}\" of \"mod\": \"{}\"", version, modId);
+        Constants.LOG.warn("Couldn't compare \"version\": \"{}\" of \"mod\": \"{}\"", version, modId);
         return false;
     }
 
