@@ -140,7 +140,7 @@ subprojects {
 
     plugins.withId("com.hypherionmc.modutils.modpublisher") {
         publisher {
-            setChangelog(changelogOutput.get().asFile.path)
+            setChangelog(changelogOutput.get().asFile)
         }
     }
 
