@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import de.cristelknight.cristellib.Constants;
+import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.util.JsonHelper;
 import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
 import net.minecraft.network.chat.Component;
@@ -32,6 +33,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class RuntimePack implements PackResources {
     public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private final Lock waiting = new ReentrantLock();
@@ -112,6 +114,14 @@ public class RuntimePack implements PackResources {
     public byte[] addData(Identifier path, byte[] data) {
         this.data.put(path, () -> data);
         return data;
+    }
+
+    public byte[] addImageAsset(Identifier path, String modId, String subPath) {
+        InputStream stream = CristelLibExpectPlatform.getResourceStream(modId, subPath);
+        if(stream == null)
+            return null;
+        byte[] asset = RuntimePackUtil.extractImageBytes(stream);
+        return addAsset(path, asset);
     }
 
     public byte[] addAsset(Identifier path, byte[] asset) {
@@ -257,7 +267,7 @@ public class RuntimePack implements PackResources {
 
     @Override
     public void close() {
-        Constants.LOGGER.debug("Closing Runtime Data Pack: {}", id);
+        Constants.LOGGER.debug("Closing Runtime Pack: {}", id);
     }
 
     public void dumpToFolder(Path output) throws IOException {

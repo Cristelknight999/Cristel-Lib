@@ -15,10 +15,8 @@ import java.util.function.Consumer;
 public class ResourceLoaderImplMixin {
 
     @Inject(method = "registerBuiltinResourcePacks", at = @At("TAIL"))
-    private static void cristellib$registerBuiltinResourcePacks(PackType resourceType, Consumer<Pack> consumer, CallbackInfo ci) {
-        if (resourceType.equals(PackType.SERVER_DATA)) {
-            BuiltInPackLoader.getPacks(consumer);
-        }
+    private static void cristellib$registerBuiltinResourcePacks(PackType type, Consumer<Pack> consumer, CallbackInfo ci) {
+        BuiltInPackLoader.getPacks(consumer, type);
     }
 
 }

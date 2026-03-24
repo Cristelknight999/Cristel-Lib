@@ -8,6 +8,7 @@ import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import de.cristelknight.cristellib.config.ConfigType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 
 import java.util.List;
 import java.util.Set;
@@ -56,7 +57,7 @@ public class BuiltInAPI implements CristelLibAPI {
 
     @Override
     public void registerBuiltInPacks() {
-        BuiltInPackLoader.registerPack(CristelLib.RUNTIME_PACK, Component.literal("Cristel Lib Config Pack"), () -> true);
+        BuiltInPackLoader.registerPack(CristelLib.CONFIG_PACK, Component.literal("Cristel Lib Config Pack"), () -> true, PackType.SERVER_DATA);
     }
 
 }

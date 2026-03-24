@@ -6,10 +6,7 @@ import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackLocationInfo;
-import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PackSelectionConfig;
-import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.*;
 import net.minecraft.server.packs.repository.Pack;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -37,15 +34,15 @@ public class BuiltInPackLoader {
 
         // TODO: maybe not allow both
         if(server != null)
-            registerPack(server, displayName, supplier);
+            registerPack(server, displayName, supplier, PackType.SERVER_DATA);
         if(client != null)
-            registerPack(client, displayName, supplier);
+            registerPack(client, displayName, supplier, PackType.CLIENT_RESOURCES);
     }
 
-    public static void registerPack(PackResources packResource, Component displayName, Supplier<Boolean> supplier) {
+    public static void registerPack(PackResources packResource, Component displayName, Supplier<Boolean> supplier, PackType type) {
         if (frozen)
             throw new RuntimeException(getWithPrefix(String.format("BuiltInPack Registry is already frozen. Cannot add Pack with id: %s", packResource.packId())));
-        PACK_LIST.add(new BuiltInPack(packResource, displayName, supplier));
+        PACK_LIST.add(new BuiltInPack(packResource, displayName, supplier, type));
     }
 
     public static List<String> getCustomIDs() {
@@ -54,7 +51,7 @@ public class BuiltInPackLoader {
 
     private static final List<BuiltInPack> PACK_LIST = new ArrayList<>();
 
-    public static void getPacks(Consumer<Pack> consumer) {
+    public static void getPacks(Consumer<Pack> consumer, PackType type) {
         if (!frozen) throw new RuntimeException(getWithPrefix("Tried to load Packs before the Registry phase is over!"));
         if (PACK_LIST.isEmpty()) return;
         BuiltInPackConfig config = ConfigRegistry.get(BuiltInPackConfig.class);
@@ -63,9 +60,12 @@ public class BuiltInPackLoader {
             PackResources pack = entry.packResource();
 
             // Check conditions
+            if(!entry.type().equals(type)
+                    || pack.getNamespaces(type).isEmpty())
+                continue;
+
             if (!entry.supplier().get() ||
-                    config.disabledPacks().contains(pack.packId()) ||
-                    (pack.getNamespaces(PackType.SERVER_DATA).isEmpty() && pack.getNamespaces(PackType.CLIENT_RESOURCES).isEmpty()))
+                    config.disabledPacks().contains(pack.packId()))
                 continue;
 
             Component displayName = entry.displayName();
@@ -75,7 +75,7 @@ public class BuiltInPackLoader {
                     new BuiltinResourcePackSource(),
                     pack.knownPackInfo()
             );
-            PackSelectionConfig info2 = new PackSelectionConfig(
+            PackSelectionConfig selectionConfig = new PackSelectionConfig(
                     true,
                     Pack.Position.TOP,
                     false
@@ -89,10 +89,23 @@ public class BuiltInPackLoader {
 
                 @Override
                 public @NotNull PackResources openFull(@NonNull PackLocationInfo var1, Pack.@NonNull Metadata metadata) {
-                    // Don't support overlays in builtin packs.
-                    return pack;
+                    if (metadata.overlays().isEmpty()) {
+                        return pack;
+                    }
+
+                    List<PackResources> overlays = new ArrayList<>(metadata.overlays().size());
+
+                    for (String overlay : metadata.overlays()) {
+                        PackResources overlayPack = pack instanceof OverlayPack packWithOverlays ?
+                                packWithOverlays.createOverlay(overlay)
+                                : CristelLibExpectPlatform.createOverlay(pack, overlay);
+                        if (overlayPack != null)
+                            overlays.add(overlayPack);
+                    }
+
+                    return new CompositePackResources(pack, overlays);
                 }
-            }, PackType.SERVER_DATA, info2);
+            }, type, selectionConfig);
 
             if (profile == null) {
                 Constants.LOGGER.error("Pack Profile with display name: {} is null", displayName);

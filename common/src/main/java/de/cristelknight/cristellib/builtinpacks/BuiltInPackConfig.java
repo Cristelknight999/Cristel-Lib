@@ -28,22 +28,21 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
         List<String> defaultPacks = new ArrayList<>(config.defaultPacks());
         List<String> disabledPacks = new ArrayList<>(config.disabledPacks());
 
-        boolean bl = false;
+        boolean changed = false;
         // Remove elements not in the default list
-        if (defaultPacks.retainAll(SETTINGS.getDefault().defaultPacks())) bl = true;
-        if (disabledPacks.retainAll(SETTINGS.getDefault().defaultPacks())) bl = true;
+        if (defaultPacks.retainAll(SETTINGS.getDefault().defaultPacks())) changed = true;
+        if (disabledPacks.retainAll(SETTINGS.getDefault().defaultPacks())) changed = true;
 
         // Add missing elements from the default list only if both lists miss them
         for (String item : SETTINGS.getDefault().defaultPacks()) {
             if (!defaultPacks.contains(item) && !disabledPacks.contains(item)) {
                 defaultPacks.add(item);
-                bl = true;
+                changed = true;
             }
         }
 
-        if (bl) {
+        if (changed)
             ConfigRegistry.updateAndSave(new BuiltInPackConfig(defaultPacks, disabledPacks, config.hideAllPacksInScreen()));
-        }
     }
 
     public static final ConfigSettings<BuiltInPackConfig> SETTINGS = new ConfigSettings<>() {

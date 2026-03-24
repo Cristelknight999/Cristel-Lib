@@ -5,7 +5,6 @@ import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.neoforge.client.CristelLibNeoForgeClient;
 import de.cristelknight.cristellib.neoforge.extrapackutil.RepositorySourceMaker;
 import de.cristelknight.cristellib.util.Util;
-import net.minecraft.server.packs.PackType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -26,9 +25,7 @@ public class CristelLibNeoForge {
     }
 
     private void injectPackRepositories(AddPackFindersEvent event) {
-        if (event.getPackType() == PackType.SERVER_DATA) {
-            event.addRepositorySource(new RepositorySourceMaker());
-        }
+        event.addRepositorySource(new RepositorySourceMaker(event.getPackType()));
     }
 
 }

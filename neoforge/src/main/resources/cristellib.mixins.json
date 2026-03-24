@@ -6,6 +6,7 @@
   "client": [
   ],
   "mixins": [
+    "JarContentsPackResourcesAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -32,6 +32,11 @@ public class CristelLibExpectPlatform {
     }
 
     @ExpectPlatform
+    public static PackResources createOverlay(PackResources pack, String overlay) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static String getModDisplayName(String modId) {
         throw new AssertionError();
     }

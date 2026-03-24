@@ -105,7 +105,7 @@ public class StructureConfig {
             }
 
             if (!structureSet.equals(originalSet)) {
-                CristelLib.RUNTIME_PACK.addStructureSet(setLocation, structureSet);
+                CristelLib.CONFIG_PACK.addStructureSet(setLocation, structureSet);
             }
         }));
     }
@@ -169,8 +169,8 @@ public class StructureConfig {
 
     private JsonElement getStructureSet(Identifier location, String modId) {
         Identifier structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
-        if (CristelLib.RUNTIME_PACK.hasData(structureLocation)) {
-            return CristelLib.RUNTIME_PACK.getResourceAsJson(PackType.SERVER_DATA, structureLocation);
+        if (CristelLib.CONFIG_PACK.hasData(structureLocation)) {
+            return CristelLib.CONFIG_PACK.getResourceAsJson(PackType.SERVER_DATA, structureLocation);
         }
         return JsonHelper.getSetElement(modId, location);
     }

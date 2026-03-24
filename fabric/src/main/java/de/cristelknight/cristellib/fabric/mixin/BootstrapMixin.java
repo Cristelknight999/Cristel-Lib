@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Bootstrap.class)
 public class BootstrapMixin {
-    @Inject(method = "bootStrap", at = @At("RETURN"))
+    @Inject(method = "bootStrap", at = @At("TAIL"))
     private static void cristellib$bootStrap(CallbackInfo ci) {
         CristelLib.preInit();
     }

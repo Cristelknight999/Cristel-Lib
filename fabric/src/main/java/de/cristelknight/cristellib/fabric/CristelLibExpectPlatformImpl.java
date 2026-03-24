@@ -61,6 +61,14 @@ public class CristelLibExpectPlatformImpl {
         }
     }
 
+    public static PackResources createOverlay(PackResources pack, String overlay) {
+        if(!(pack instanceof ModNioPackResources modNioPack)) {
+            Constants.LOGGER.warn("Couldn't create overlay for Pack: {}, because it does not support overlays", pack.packId());
+            return null;
+        }
+        return modNioPack.createOverlay(overlay);
+    }
+
     public static void findInModFiles(String modId, String startingFolder, Predicate<Path> fileFilter, Consumer<String> consumer) {
         for (var root : getRootPaths(modId)) {
             try {

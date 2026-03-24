@@ -39,7 +39,7 @@ public class CristelLibFabric implements ModInitializer {
         CommandSourceStack source = ctx.getSource();
         try {
             Path path = Paths.get(outputPathStr);
-            CristelLib.RUNTIME_PACK.dumpToFolder(path);
+            CristelLib.CONFIG_PACK.dumpToFolder(path);
             source.sendSuccess(() -> Component.literal("RuntimePack dumped to: " + path.toAbsolutePath()), false);
             return 1;
         } catch (Exception e) {

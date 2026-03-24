@@ -2,8 +2,8 @@ package de.cristelknight.cristellib;
 
 import com.google.common.collect.ImmutableMap;
 import de.cristelknight.cristellib.api.CristelLibAPI;
-import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
+import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import de.cristelknight.cristellib.data.condition.ConditionRegistry;
@@ -18,7 +18,7 @@ import java.util.Set;
 
 public class CristelLib {
 
-    public static final RuntimePack RUNTIME_PACK = new RuntimePack(
+    public static final RuntimePack CONFIG_PACK = new RuntimePack(
             Constants.CRISTEL_LIB_PACK_ID,
             SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major(),
             "Runtime Pack for built-in features",

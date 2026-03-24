@@ -6,6 +6,7 @@ import de.cristelknight.cristellib.api.CristelLibAPI;
 import de.cristelknight.cristellib.api.CristelPlugin;
 import de.cristelknight.cristellib.builtinpacks.BuiltinResourcePackSource;
 import de.cristelknight.cristellib.neoforge.extraapiutil.APIFinder;
+import de.cristelknight.cristellib.neoforge.mixin.JarContentsPackResourcesAccessor;
 import de.cristelknight.cristellib.util.Platform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -78,6 +79,18 @@ public class CristelLibExpectPlatformImpl {
         return new Pair<>(
                 server.getNamespaces(PackType.SERVER_DATA).isEmpty() ? null : server,
                 client.getNamespaces(PackType.CLIENT_RESOURCES).isEmpty() ? null : client
+        );
+    }
+
+    public static PackResources createOverlay(PackResources pack, String overlay) {
+        if(!(pack instanceof JarContentsPackResourcesAccessor accessor)) {
+            Constants.LOGGER.warn("Couldn't create overlay for Pack: {}, because it does not support overlays", pack.packId());
+            return null;
+        }
+        return new JarContentsPackResources(
+                pack.location(),
+                accessor.cristellib$getJarContents(),
+                accessor.cristellib$getPrefix() + "/" + overlay
         );
     }
 
