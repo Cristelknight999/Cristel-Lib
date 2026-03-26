@@ -20,7 +20,7 @@ import java.util.Map;
 public class JsonHelper {
 
     // Loading
-    public static @Nullable JsonElement getSetElement(String getDataFromModId, Identifier location) {
+    public static @Nullable JsonElement getSetElement(Identifier location, String getDataFromModId) {
         return getElement(getDataFromModId, "data/" + location.getNamespace() + "/worldgen/structure_set/" + location.getPath() + ".json");
     }
 

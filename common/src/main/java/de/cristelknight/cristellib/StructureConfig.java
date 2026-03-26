@@ -17,7 +17,9 @@ import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
 import de.cristelknight.cristellib.util.FileHelper;
 import de.cristelknight.cristellib.util.JsonHelper;
+import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -81,14 +83,15 @@ public class StructureConfig {
         structureSetHolders.add(set);
     }
 
+    // changed system doesn't work, because we have 2 structure config files. in one, it gets changed in the other not
+    // -> removes it
     public void addSetsToRuntimePack() {
+        Constants.LOG.error("Calling addSetsToRuntimePack()");
         readConfig(false);
         checkForError();
 
         structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modId = holder.modId();
-
-            Constants.LOG.error("id: {} set: {}", modId, setLocation);
 
             JsonElement structureSetElement = getStructureSet(setLocation, modId);
             if (!(structureSetElement instanceof JsonObject structureSet)) {
@@ -96,19 +99,26 @@ public class StructureConfig {
                 return;
             }
 
-            JsonObject originalSet = structureSet.deepCopy();
-
+            boolean changed = false;
             if (type.equals(ConfigType.ENABLE_DISABLE)) {
-                removeStructureInSets(structureSet, setLocation);
+                if(removeStructureInSets(structureSet, setLocation)) changed = true;
             } else if (type.equals(ConfigType.PLACEMENT)) {
-                updatePlacementsInSet(structureSet, setLocation);
+                if(updatePlacementsInSet(structureSet, setLocation)) changed = true;
             }
 
-            if (!structureSet.equals(originalSet))
+            if (changed) {
+                Constants.LOG.warn("Adding to RP: {}", setLocation);
                 CristelLib.CONFIG_PACK.addStructureSet(setLocation, structureSet);
-            else
-                CristelLib.CONFIG_PACK.removeStructureSet(setLocation);
+            } else {
+                // Config matches the original — remove any previous override
+                var bl = CristelLib.CONFIG_PACK.removeStructureSet(setLocation);
+                if(bl)
+                    Constants.LOG.error("Removed: {}", setLocation);
+                else
+                    Constants.LOG.info("Tried to remove: {}", setLocation);
+            }
         }));
+        Constants.LOG.info("Finished one call!\n");
     }
 
     //TODO:
@@ -137,39 +147,53 @@ public class StructureConfig {
         readConfig(true);
     }
 
-    private void removeStructureInSets(JsonObject structureSet, Identifier setLocation) {
+    private boolean removeStructureInSets(JsonObject structureSet, Identifier setLocation) {
         EDConfig setConfig = enableDisableConfig.get(setLocation);
+        boolean changed = false;
 
         JsonArray array = structureSet.get("structures").getAsJsonArray();
         Iterator<JsonElement> structureIterator = array.iterator();
         while (structureIterator.hasNext()) {
             JsonElement structure = structureIterator.next();
             String structureName = toDefaultString(Objects.requireNonNull(Identifier.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
-            if (setConfig.containsStructure(structureName)) {
-                if (setConfig.isStructureDisabled(structureName)) structureIterator.remove();
 
-            } else
+            if (!setConfig.containsStructure(structureName)) {
                 Constants.LOG.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
+                continue;
+            }
+
+            if (setConfig.isStructureDisabled(structureName)) {
+                structureIterator.remove();
+                changed = true;
+            }
         }
+
+        return changed;
     }
 
-    private void updatePlacementsInSet(JsonObject structureSet, Identifier setLocation) {
+    private boolean updatePlacementsInSet(JsonObject structureSet, Identifier setLocation) {
         PlacementConfig p = placementConfig.get(setLocation);
         JsonObject o = structureSet.get("placement").getAsJsonObject();
+        JsonObject copy = o.deepCopy();
+
         o.addProperty("salt", p.salt());
         o.addProperty("spacing", p.spacing());
         o.addProperty("separation", p.separation());
 
         double newF = p.frequency();
 
-        if ((!o.has("frequency") && newF == 1.0) ||
-                (o.has("frequency") && newF == (double) o.get("frequency").getAsFloat())) return;
+        if ((o.has("frequency") || newF != 1.0) && (!o.has("frequency") || newF != o.get("frequency").getAsDouble()))
+            o.addProperty("frequency", newF);
 
-        o.addProperty("frequency", newF);
+        return !o.equals(copy);
     }
 
     private JsonElement getStructureSet(Identifier location, String modId) {
-        return JsonHelper.getSetElement(modId, location);
+        Identifier structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
+        if (CristelLib.CONFIG_PACK.hasData(structureLocation)) {
+            return CristelLib.CONFIG_PACK.getResourceAsJson(PackType.SERVER_DATA, structureLocation);
+        }
+        return JsonHelper.getSetElement(location, modId);
     }
 
 

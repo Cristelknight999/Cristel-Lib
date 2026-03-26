@@ -24,7 +24,7 @@ public class ReadStructureSets {
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modId = holder.modId();
 
-            JsonElement e = JsonHelper.getSetElement(modId, setLocation);
+            JsonElement e = JsonHelper.getSetElement(setLocation, modId);
             if (checkElement(e, modId, setLocation)) return;
 
 
@@ -46,7 +46,7 @@ public class ReadStructureSets {
         structureSetHolder.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modId = holder.modId();
 
-            JsonElement e = JsonHelper.getSetElement(modId, setLocation);
+            JsonElement e = JsonHelper.getSetElement(setLocation, modId);
             if (checkElement(e, modId, setLocation)) return;
 
 

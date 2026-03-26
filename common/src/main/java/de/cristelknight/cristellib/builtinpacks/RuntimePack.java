@@ -82,8 +82,8 @@ public class RuntimePack implements PackResources {
         return addDataForJsonLocation("worldgen/structure_set", identifier, set);
     }
 
-    public void removeStructureSet(Identifier identifier) {
-        removeDataForJsonLocation("worldgen/structure_set", identifier);
+    public boolean removeStructureSet(Identifier identifier) {
+        return removeDataForJsonLocation("worldgen/structure_set", identifier);
     }
 
     public byte[] addBiome(Identifier identifier, JsonObject biome) {
@@ -109,15 +109,15 @@ public class RuntimePack implements PackResources {
         return addAndSerializeDataForLocation(prefix, "json", identifier, object);
     }
 
-    public void removeDataForJsonLocation(String prefix, Identifier identifier) {
-        removeDataForLocation(prefix, "json", identifier);
+    public boolean removeDataForJsonLocation(String prefix, Identifier identifier) {
+        return removeDataForLocation(prefix, "json", identifier);
     }
 
     public byte[] addAndSerializeDataForLocation(String prefix, String end, Identifier identifier, JsonObject object) {
         return addData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end), RuntimePackUtil.serializeJson(object));
     }
-    public void removeDataForLocation(String prefix, String end, Identifier identifier) {
-        removeData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end));
+    public boolean removeDataForLocation(String prefix, String end, Identifier identifier) {
+        return removeData(Identifier.fromNamespaceAndPath(identifier.getNamespace(), prefix + '/' + identifier.getPath() + '.' + end));
     }
 
 
@@ -149,10 +149,10 @@ public class RuntimePack implements PackResources {
         }
     }
 
-    public void removeData(Identifier path) {
+    public boolean removeData(Identifier path) {
         lock();
         try {
-            data.remove(path);
+            return data.remove(path) != null;
         } finally {
             waiting.unlock();
         }
