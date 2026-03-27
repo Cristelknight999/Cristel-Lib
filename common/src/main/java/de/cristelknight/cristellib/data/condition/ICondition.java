@@ -13,6 +13,12 @@ import java.util.Map;
 
 public interface ICondition<T extends ICondition<T>> {
 
+    /*
+    Could replace this by using a Registry, but then I need to deal with NeoForge nonsense:
+    Codec<ICondition<?>> CODEC = ConditionRegistry.REGISTRY.byNameCodec()
+            .dispatch("type", ICondition::getCodec, codec -> codec);
+     */
+
     Codec<ICondition<?>> FULL_CODEC = Codec.PASSTHROUGH.xmap(
             dynamic -> decode(dynamic.convert(JsonOps.INSTANCE).getValue()),
             condition -> new Dynamic<>(JsonOps.INSTANCE, encode(condition))

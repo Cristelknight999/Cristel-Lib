@@ -12,6 +12,12 @@ import java.util.Map;
 
 public class ConditionRegistry {
 
+    /*
+    Could replace this with a Registry, but then I need to deal with NeoForge nonsense:
+    public static final Registry<MapCodec<? extends ICondition<?>>> REGISTRY = new MappedRegistry<>(
+            ResourceKey.createRegistryKey(Constants.id("condition_types")), Lifecycle.stable());
+     */
+
     private static final Map<String, Codec<? extends ICondition<?>>> CONDITIONS = new HashMap<>();
 
     protected static Codec<? extends ICondition<?>> getCodec(String type) {

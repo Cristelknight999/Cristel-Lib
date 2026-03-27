@@ -23,8 +23,8 @@ public class ExtensionRegistry {
         registerConfigScreenExtension(extension, (modId) -> true);
     }
 
-    public static void registerConfigScreenExtension(ExtensionFactory<?> extension, LoadPredicate predicate) {
-        EXTENSIONS.put(extension, predicate);
+    public static void registerConfigScreenExtension(ExtensionFactory<?> extensionFactory, LoadPredicate predicate) {
+        EXTENSIONS.put(extensionFactory, predicate);
     }
 
     static {
