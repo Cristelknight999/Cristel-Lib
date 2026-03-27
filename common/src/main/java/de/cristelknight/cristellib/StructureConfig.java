@@ -88,7 +88,6 @@ public class StructureConfig {
     // changed system doesn't work, because we have 2 structure config files. in one, it gets changed in the other not
     // -> removes it
     public void addSetsToRuntimePack() {
-        Constants.LOG.error("Calling addSetsToRuntimePack()");
         readConfig(false);
         checkForError();
 
@@ -109,21 +108,12 @@ public class StructureConfig {
             }
 
             if (changed) {
-                Constants.LOG.warn("Added: {}", setLocation);
                 CristelLib.CONFIG_PACK.addStructureSet(setLocation, structureSet);
                 modifiedSets.add(setLocation);
             } else if(!modifiedSets.contains(setLocation)) {
-                // Config matches the original — remove any previous override
-                var bl = CristelLib.CONFIG_PACK.removeStructureSet(setLocation);
-                if(bl)
-                    Constants.LOG.error("Removed: {}", setLocation);
-                else
-                    Constants.LOG.info("Tried to remove: {}", setLocation);
+                CristelLib.CONFIG_PACK.removeStructureSet(setLocation);
             }
-            else
-                Constants.LOG.warn("Didn't remove: {}", setLocation);
         }));
-        Constants.LOG.info("Finished one call!\n\n");
     }
 
     //TODO:
@@ -170,9 +160,7 @@ public class StructureConfig {
                 structureIterator.remove();
         }
 
-        boolean bl = setConfig.hasDisabledStructure();
-        Constants.LOG.error("{} toggle was changed: {}", setLocation, bl);
-        return bl;
+        return setConfig.hasDisabledStructure();
     }
 
     private boolean updatePlacementsInSet(JsonObject structureSet, Identifier setLocation, String modId) {
@@ -193,9 +181,7 @@ public class StructureConfig {
                     "Couldn't get copy of structure set for %s from modId %s, can't check if placement was changed", setLocation, modId
             )));
 
-        boolean bl = !p.equals(copy.get("placement").getAsJsonObject());
-        Constants.LOG.error("{} placement was changed: {}", setLocation, bl);
-        return bl;
+        return !p.equals(copy.get("placement").getAsJsonObject());
     }
 
     private JsonElement getStructureSet(Identifier location, String modId) {
