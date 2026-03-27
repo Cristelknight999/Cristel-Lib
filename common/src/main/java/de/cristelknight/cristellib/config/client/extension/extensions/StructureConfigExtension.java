@@ -197,6 +197,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
     // Saving
     @Override
     public void onSave() {
+        StructureConfig.clearModifiedSets();
         for (ClientStructureConfig clientStructureConfig : clientStructureConfigs) {
             StructureConfig structureConfig = clientStructureConfig.structureConfig();
             if (structureConfig.getType().equals(ConfigType.PLACEMENT))

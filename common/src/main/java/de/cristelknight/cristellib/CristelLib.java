@@ -39,6 +39,7 @@ public class CristelLib {
         BuiltInPackLoader.freeze();
         BuiltInPackConfig.updateConfig();
 
+        StructureConfig.clearModifiedSets();
         for (Set<StructureConfig> pack : CristelLibRegistry.getConfigs().values()) {
             for (StructureConfig structureConfig : pack) {
                 structureConfig.writeConfig(false);

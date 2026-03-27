@@ -12,4 +12,8 @@ public record EDConfig(Map<String, Boolean> setStructureInfo) {
         return !setStructureInfo.get(structureName);
     }
 
+    public boolean hasDisabledStructure() {
+        return setStructureInfo.containsValue(false);
+    }
+
 }
