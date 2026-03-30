@@ -61,7 +61,7 @@ public class ConfigManager {
 
         Map<Identifier, EDConfig> map = new HashMap<>();
         for (String structureSet : configMap.keySet()) {
-            map.put(config.toDefaultRL(structureSet), new EDConfig(EDConfigTransformer.stringBooleanMap(configMap.get(structureSet), "")));
+            map.put(config.toDefaultId(structureSet), new EDConfig(EDConfigTransformer.stringBooleanMap(configMap.get(structureSet), "")));
         }
         return map;
     }
@@ -74,7 +74,7 @@ public class ConfigManager {
 
     public static Map<Identifier, PlacementConfig> readPlacementConfig(StructureConfig config) {
         Map<String, PlacementConfig> sets = readFromJanksonPath(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
-        return sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultRL(entry.getKey()), Map.Entry::getValue));
+        return sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultId(entry.getKey()), Map.Entry::getValue));
     }
 
     // File and Codec Util
