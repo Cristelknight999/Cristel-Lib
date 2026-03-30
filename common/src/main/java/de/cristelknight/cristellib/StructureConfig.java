@@ -10,7 +10,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.structure.ReadStructureSets;
-import de.cristelknight.cristellib.config.structure.ed.EDConfig;
+import de.cristelknight.cristellib.config.structure.ed.ToggleConfig;
 import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
 import de.cristelknight.cristellib.util.FileHelper;
@@ -21,6 +21,7 @@ import net.minecraft.server.packs.PackType;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.Collection;
 
 public class StructureConfig {
 
@@ -59,8 +60,8 @@ public class StructureConfig {
     private final Supplier<Map<Identifier, PlacementConfig>> structurePlacement;
 
     // current values (structure_set + Config)
-    public Map<Identifier, EDConfig> enableDisableConfig = null;
-    public Map<Identifier, PlacementConfig> placementConfig = null;
+    private Map<Identifier, ToggleConfig> enableDisableConfig = null;
+    private Map<Identifier, PlacementConfig> placementConfig = null;
 
 
     private StructureConfig(Path path, ConfigType type) {
@@ -80,7 +81,6 @@ public class StructureConfig {
 
         if (!this.structureSetHolders.isEmpty())
             setDefaultNamespace();
-
         this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
         this.structurePlacement = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSetHolders));
     }
@@ -90,12 +90,19 @@ public class StructureConfig {
     }
 
 
-    public void addSetsToRuntimePack() {
+    public static void addSetsToRuntimePack(Collection<StructureConfig> configs) {
+        modifiedSets.clear();
+        configs.forEach(StructureConfig::applyToRuntimePack);
+    }
+
+    private void applyToRuntimePack() {
         readConfig(false);
         checkForError();
 
         structureSetHolders.forEach(holder -> holder.sets().forEach(setLocation -> {
             String modId = holder.modId();
+
+            ToggleConfig setConfig = enableDisableConfig.get(setLocation);
 
             JsonElement structureSetElement = getStructureSet(setLocation, modId);
             if (!(structureSetElement instanceof JsonObject structureSet)) {
@@ -105,48 +112,24 @@ public class StructureConfig {
 
             boolean changed = false;
             if (type.equals(ConfigType.ENABLE_DISABLE)) {
-                if(removeStructureInSets(structureSet, setLocation)) changed = true;
+                if (removeStructureInSets(structureSet, setLocation)) changed = true;
             } else if (type.equals(ConfigType.PLACEMENT)) {
-                if(updatePlacementsInSet(structureSet, setLocation, modId)) changed = true;
+                if (updatePlacementsInSet(structureSet, setLocation)) changed = true;
             }
 
             if (changed) {
                 CristelLib.CONFIG_PACK.addStructureSet(setLocation, structureSet);
                 modifiedSets.add(setLocation);
-            } else if(!modifiedSets.contains(setLocation)) {
+            } else if (!modifiedSets.contains(setLocation)) {
                 CristelLib.CONFIG_PACK.removeStructureSet(setLocation);
             }
         }));
     }
 
-    //TODO:
-    private void checkForError() {
-        Set<Identifier> setsToCheck = type.equals(ConfigType.ENABLE_DISABLE) ? enableDisableConfig.keySet() : placementConfig.keySet();
-
-        boolean error = false;
-        for (StructureSetData data : structureSetHolders) {
-            List<Identifier> newlyReadSets = data.sets();
-            boolean hasAll = setsToCheck.containsAll(newlyReadSets);
-            if (!hasAll) {
-                error = true;
-                var newlyReadSetsCopy = new ArrayList<>(newlyReadSets);
-                newlyReadSetsCopy.removeAll(setsToCheck);
-                Constants.LOG.error("Structure sets are missing from config: {}", newlyReadSetsCopy);
-                //break;
-            }
-        }
-        if (!error) return;
-
-        enableDisableConfig = null;
-        placementConfig = null;
-        String name = FileHelper.fileName(path);
-        FileHelper.renameFile(path, name + "-had-error");
-        writeConfig(true);
-        readConfig(true);
-    }
-
     private boolean removeStructureInSets(JsonObject structureSet, Identifier setLocation) {
-        EDConfig setConfig = enableDisableConfig.get(setLocation);
+        ToggleConfig setConfig = enableDisableConfig.get(setLocation);
+        if (!setConfig.hasDisabledStructure())
+            return false;
 
         JsonArray array = structureSet.get("structures").getAsJsonArray();
         Iterator<JsonElement> structureIterator = array.iterator();
@@ -155,7 +138,7 @@ public class StructureConfig {
             String structureName = toDefaultString(Objects.requireNonNull(Identifier.tryParse(structure.getAsJsonObject().get("structure").getAsString())));
 
             if (!setConfig.containsStructure(structureName)) {
-                Constants.LOG.error("{} is not included in: {} for mod with path: {}", structureName, setLocation, path);
+                Constants.LOG.error("{} is not included in: {} for config with path: {}", structureName, setLocation, path);
                 continue;
             }
 
@@ -163,11 +146,14 @@ public class StructureConfig {
                 structureIterator.remove();
         }
 
-        return setConfig.hasDisabledStructure();
+        return true;
     }
 
-    private boolean updatePlacementsInSet(JsonObject structureSet, Identifier setLocation, String modId) {
+    private boolean updatePlacementsInSet(JsonObject structureSet, Identifier setLocation) {
         PlacementConfig placementConfig = this.placementConfig.get(setLocation);
+        if(getDefaultStructurePlacement().get(setLocation).equals(placementConfig))
+            return false;
+
         JsonObject p = structureSet.get("placement").getAsJsonObject();
 
         p.addProperty("salt", placementConfig.salt());
@@ -179,12 +165,7 @@ public class StructureConfig {
         if ((p.has("frequency") || newF != 1.0) && (!p.has("frequency") || newF != p.get("frequency").getAsDouble()))
             p.addProperty("frequency", newF);
 
-        if (!(JsonHelper.getSetElement(setLocation, modId) instanceof JsonObject copy))
-            throw new RuntimeException(Constants.getWithPrefix(String.format(
-                    "Couldn't get copy of structure set for %s from modId %s, can't check if placement was changed", setLocation, modId
-            )));
-
-        return !p.equals(copy.get("placement").getAsJsonObject());
+        return true;
     }
 
     private JsonElement getStructureSet(Identifier location, String modId) {
@@ -204,15 +185,15 @@ public class StructureConfig {
         if (!override && getPath().toFile().exists()) return;
 
         if (type.equals(ConfigType.ENABLE_DISABLE)) {
-            ConfigManager.createEDConfig(this, override);
+            ConfigManager.createToggleConfig(this);
         } else if (type.equals(ConfigType.PLACEMENT)) {
-            ConfigManager.createPlacementConfig(this, override);
+            ConfigManager.createPlacementConfig(this);
         }
     }
 
     public void readConfig(boolean override) {
         if (type.equals(ConfigType.ENABLE_DISABLE) && (enableDisableConfig == null || override))
-            enableDisableConfig = ConfigManager.readEDConfig(this);
+            enableDisableConfig = ConfigManager.readToggleConfig(this);
         else if (type.equals(ConfigType.PLACEMENT) && (placementConfig == null || override))
             placementConfig = ConfigManager.readPlacementConfig(this);
     }
@@ -298,8 +279,23 @@ public class StructureConfig {
         return structureSetHolders.isEmpty();
     }
 
+    public Map<Identifier, ToggleConfig> getEnableDisableConfig() {
+        return enableDisableConfig;
+    }
 
-    public static void clearModifiedSets() {
+    public Map<Identifier, PlacementConfig> getPlacementConfig() {
+        return placementConfig;
+    }
+
+    public void updateEDConfig(Identifier key, ToggleConfig config) {
+        this.enableDisableConfig.put(key, config);
+    }
+
+    public void updatePlacement(Identifier key, PlacementConfig config) {
+        this.placementConfig.put(key, config);
+    }
+
+    private static void clearModifiedSets() {
         modifiedSets.clear();
     }
 
@@ -309,5 +305,28 @@ public class StructureConfig {
 
     public void setAutoGenerated() {
         isAutoGenerated = true;
+    }
+
+    private void checkForError() {
+        Set<Identifier> setsToCheck = type.equals(ConfigType.ENABLE_DISABLE) ? enableDisableConfig.keySet() : placementConfig.keySet();
+
+        boolean error = false;
+        for (StructureSetData data : structureSetHolders) {
+            List<Identifier> newlyReadSets = data.sets();
+            if (!setsToCheck.containsAll(newlyReadSets)) {
+                error = true;
+                var missing = new ArrayList<>(newlyReadSets);
+                missing.removeAll(setsToCheck);
+                Constants.LOG.error("Structure sets are missing from config: {}", missing);
+            }
+        }
+        if (!error) return;
+
+        enableDisableConfig = null;
+        placementConfig = null;
+        String name = FileHelper.fileName(path);
+        FileHelper.renameFile(path, name + "-had-error");
+        writeConfig(true);
+        readConfig(true);
     }
 }

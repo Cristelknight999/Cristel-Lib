@@ -32,7 +32,7 @@ public record ACConfig(
             ).apply(builder, ACConfig::new)
     );
 
-    public static void updateConfig() {
+    public static void update() {
         ACConfig config = ConfigRegistry.get(ACConfig.class);
 
         // default values
@@ -123,6 +123,6 @@ public record ACConfig(
 
     static {
         ConfigRegistry.registerWithScreen(ACConfig.class, SETTINGS,
-                Constants.MOD_ID, "Auto-config", ACConfig::updateConfig);
+                Constants.MOD_ID, "Auto-config", ACConfig::update);
     }
 }

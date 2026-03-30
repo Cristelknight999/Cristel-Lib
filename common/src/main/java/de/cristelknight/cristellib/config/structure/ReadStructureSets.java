@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.config.FileWriter;
 import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
 import de.cristelknight.cristellib.util.JsonHelper;
@@ -51,7 +51,7 @@ public class ReadStructureSets {
 
 
             JsonObject placement = GsonHelper.getAsJsonObject(e.getAsJsonObject(), "placement");
-            PlacementConfig config = ConfigManager.readElement(String.format("Couldn't read %s in %s, crashing instead. Maybe try to delete the config files!", setLocation, modId), PlacementConfig.CODEC, JsonOps.INSTANCE, placement);
+            PlacementConfig config = FileWriter.loadFromElement(String.format("Couldn't read %s in %s, crashing instead. Maybe try to delete the config files!", setLocation, modId), PlacementConfig.CODEC, JsonOps.INSTANCE, placement);
             structurePlacement.put(setLocation, config);
 
         }));

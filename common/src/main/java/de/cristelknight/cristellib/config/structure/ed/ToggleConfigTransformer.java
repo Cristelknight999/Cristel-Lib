@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EDConfigTransformer {
+public class ToggleConfigTransformer {
 
     public static Map<String, Boolean> stringBooleanMap(NestedEDConfig edConfig, String parent) {
         Map<String, Boolean> map = new HashMap<>();
@@ -25,10 +25,11 @@ public class EDConfigTransformer {
         return map;
     }
 
-    public static Map<String, NestedEDConfig> mapToNestedStructures(Map<Identifier, List<Identifier>> sets, StructureConfig structureConfig) {
-        Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
+    public static Map<String, NestedEDConfig> mapToNestedStructures(StructureConfig structureConfig) {
+        Map<Identifier, List<Identifier>> defaultStructures = structureConfig.getDefaultStructures();
 
-        for (Map.Entry<Identifier, List<Identifier>> mapEntry : sets.entrySet()) {
+        Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
+        for (Map.Entry<Identifier, List<Identifier>> mapEntry : defaultStructures.entrySet()) {
             Identifier location = mapEntry.getKey();
             List<Identifier> stringList = mapEntry.getValue();
 
@@ -49,12 +50,13 @@ public class EDConfigTransformer {
         return nestedStructures;
     }
 
-    public static Map<String, NestedEDConfig> mapToNestedStructuresWithValues(Map<Identifier, EDConfig> sets, StructureConfig structureConfig) {
-        Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
+    public static Map<String, NestedEDConfig> mapToNestedStructuresWithValues(StructureConfig structureConfig) {
+        Map<Identifier, ToggleConfig> sets = structureConfig.getEnableDisableConfig();
 
-        for (Map.Entry<Identifier, EDConfig> mapEntry : sets.entrySet()) {
+        Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
+        for (Map.Entry<Identifier, ToggleConfig> mapEntry : sets.entrySet()) {
             Identifier location = mapEntry.getKey();
-            EDConfig stringList = mapEntry.getValue();
+            ToggleConfig stringList = mapEntry.getValue();
 
             // Prepare the map for the NestedStructure
             Map<String, NestedEDConfig.Entry> entries = new HashMap<>();

@@ -6,16 +6,15 @@ import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.config.ConfigType;
+import de.cristelknight.cristellib.config.client.extension.ConfigScreenExtension;
+import de.cristelknight.cristellib.config.client.extension.ExtensionRegistry;
 import de.cristelknight.cristellib.config.client.structure.ClientEDConfig;
 import de.cristelknight.cristellib.config.client.structure.ClientPlacementConfig;
 import de.cristelknight.cristellib.config.client.structure.ClientStructureConfig;
-import de.cristelknight.cristellib.config.client.extension.ConfigScreenExtension;
-import de.cristelknight.cristellib.config.client.extension.ExtensionRegistry;
-import de.cristelknight.cristellib.config.structure.ed.EDConfig;
-import de.cristelknight.cristellib.config.structure.ed.EDConfigTransformer;
+import de.cristelknight.cristellib.config.simple.ConfigRegistry;
+import de.cristelknight.cristellib.config.structure.ed.ToggleConfigTransformer;
 import de.cristelknight.cristellib.config.structure.ed.NestedEDConfig;
 import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
-import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.util.Util;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -46,7 +45,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
     }
 
     public static final ExtensionRegistry.LoadPredicate SHOULD_LOAD = modId -> {
-        if (!CristelLibRegistry.getConfigs().containsKey(modId))
+        if (!CristelLibRegistry.getConfigMap().containsKey(modId))
             return false;
 
         ACConfig acConfig = ConfigRegistry.get(ACConfig.class);
@@ -56,7 +55,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
 
     @Override
     public void addToBuilder(ConfigBuilder builder, ConfigEntryBuilder entryBuilder) {
-        for (StructureConfig structureConfig : sorted(CristelLibRegistry.getConfigs().get(modId))) {
+        for (StructureConfig structureConfig : sortStructureSets(CristelLibRegistry.getConfigMap().get(modId))) {
             if (structureConfig.getType().equals(ConfigType.PLACEMENT))
                 addPlacementCategory(builder, entryBuilder, structureConfig);
             else
@@ -68,7 +67,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         ConfigCategory placementCategory = builder.getOrCreateCategory(Component.translatable("cristellib.placementCategoryTitle"));
         addHeader(structureConfig, placementCategory, entryBuilder);
 
-        Map<Identifier, PlacementConfig> placementConfigs = structureConfig.placementConfig;
+        Map<Identifier, PlacementConfig> placementConfigs = structureConfig.getPlacementConfig();
         Map<Identifier, PlacementConfig> defaultPlacementConfigs = structureConfig.getDefaultStructurePlacement();
 
         Map<Identifier, ClientPlacementConfig> clientPlacementConfigs = new HashMap<>();
@@ -101,7 +100,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         ConfigCategory edCategory = builder.getOrCreateCategory(Component.translatable("cristellib.toggleCategoryTitle"));
         addHeader(structureConfig, edCategory, entryBuilder);
 
-        Map<String, NestedEDConfig> nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(structureConfig.enableDisableConfig, structureConfig);
+        Map<String, NestedEDConfig> nestedStructureMap = ToggleConfigTransformer.mapToNestedStructuresWithValues(structureConfig);
         Map<Identifier, ClientEDConfig> clientEDConfigs = new HashMap<>();
         for (String structureSetName : Util.sortedKeyList(nestedStructureMap)) {
             Map<String, BooleanListEntry> structures = new HashMap<>();
@@ -197,30 +196,29 @@ public class StructureConfigExtension extends ConfigScreenExtension {
     // Saving
     @Override
     public void onSave() {
-        StructureConfig.clearModifiedSets();
+        List<StructureConfig> configs = new ArrayList<>();
         for (ClientStructureConfig clientStructureConfig : clientStructureConfigs) {
             StructureConfig structureConfig = clientStructureConfig.structureConfig();
             if (structureConfig.getType().equals(ConfigType.PLACEMENT))
-                updatePlacements(clientStructureConfig.structureConfig(), clientStructureConfig.clientPlacementConfigs());
+                updatePlacements(structureConfig, clientStructureConfig.clientPlacementConfigs());
             else
-                updateEDs(clientStructureConfig.structureConfig(), clientStructureConfig.clientEDConfigs());
+                updateEDs(structureConfig, clientStructureConfig.clientEDConfigs());
 
             structureConfig.writeConfig(true);
-            structureConfig.addSetsToRuntimePack();
+            configs.add(structureConfig);
         }
+        StructureConfig.addSetsToRuntimePack(configs);
     }
 
     private void updatePlacements(StructureConfig structureConfig, Map<Identifier, ClientPlacementConfig> clientPlacementConfigs) {
-        Map<Identifier, PlacementConfig> placementConfigs = structureConfig.placementConfig;
-        for (Identifier structureName : clientPlacementConfigs.keySet()) {
-            placementConfigs.put(structureName, clientPlacementConfigs.get(structureName).toPlacement());
+        for (Map.Entry<Identifier, ClientPlacementConfig> entry : clientPlacementConfigs.entrySet()) {
+            structureConfig.updatePlacement(entry.getKey(), entry.getValue().toPlacement());
         }
     }
 
     private void updateEDs(StructureConfig structureConfig, Map<Identifier, ClientEDConfig> clientEDConfigs) {
-        Map<Identifier, EDConfig> placementConfigs = structureConfig.enableDisableConfig;
-        for (Identifier structureName : clientEDConfigs.keySet()) {
-            placementConfigs.put(structureName, clientEDConfigs.get(structureName).toED());
+        for (Map.Entry<Identifier, ClientEDConfig> entry : clientEDConfigs.entrySet()) {
+            structureConfig.updateEDConfig(entry.getKey(), entry.getValue().toED());
         }
     }
 
@@ -257,7 +255,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
     }
 
     // Header helpers
-    public void addHeader(StructureConfig structureConfig, ConfigCategory configCategory, ConfigEntryBuilder entryBuilder) {
+    private void addHeader(StructureConfig structureConfig, ConfigCategory configCategory, ConfigEntryBuilder entryBuilder) {
         if (structureConfig.isAutoGenerated() && !ACInfoData.currentData.containsKey(modId))
             configCategory.addEntry(entryBuilder.startTextDescription(
                     Component.translatable("cristellib.autoCategoryInfo", Constants.MOD_COMPONENT).withStyle(s -> s.withClickEvent(new ClickEvent.OpenUrl(URI.create("https://github.com/Cristelknight999/Cristel-Lib/wiki/5.-Controlling-Structure-Auto-Config-(for-Mod-Authors)"))))
@@ -267,7 +265,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
     }
 
     // idk anymore :( what is this
-    public String getHeader(String header) {
+    private String getHeader(String header) {
         String separator = "=====";
         if (header.contains(separator)) {
             int start = header.lastIndexOf(separator);
@@ -283,7 +281,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         return header.replace("\t", "    ").trim();
     }
 
-    public List<StructureConfig> sorted(Set<StructureConfig> structureConfigs) {
+    private List<StructureConfig> sortStructureSets(Set<StructureConfig> structureConfigs) {
         List<StructureConfig> sortedList = new ArrayList<>();
         structureConfigs.forEach(structureConfig -> {
             if (structureConfig.getType().equals(ConfigType.ENABLE_DISABLE)) {

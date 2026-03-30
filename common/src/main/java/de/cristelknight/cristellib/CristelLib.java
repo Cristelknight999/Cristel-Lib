@@ -11,10 +11,7 @@ import de.cristelknight.cristellib.util.Util;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.packs.PackType;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CristelLib {
 
@@ -37,16 +34,11 @@ public class CristelLib {
         ConditionRegistry.init();
         CristelLibRegistry.configs = ImmutableMap.copyOf(getConfigs());
         BuiltInPackLoader.freeze();
-        BuiltInPackConfig.updateConfig();
+        BuiltInPackConfig.update();
 
-        StructureConfig.clearModifiedSets();
-        for (Set<StructureConfig> pack : CristelLibRegistry.getConfigs().values()) {
-            for (StructureConfig structureConfig : pack) {
-                structureConfig.writeConfig(false);
-                structureConfig.addSetsToRuntimePack();
-            }
-        }
-
+        Set<StructureConfig> allConfigs = CristelLibRegistry.getConfigs();
+        allConfigs.forEach(c -> c.writeConfig(false));
+        StructureConfig.addSetsToRuntimePack(allConfigs);
     }
 
     private static Map<String, Set<StructureConfig>> getConfigs() {

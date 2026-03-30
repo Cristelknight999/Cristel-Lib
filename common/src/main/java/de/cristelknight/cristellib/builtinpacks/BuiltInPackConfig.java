@@ -22,7 +22,7 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
     );
 
     @SuppressWarnings("RedundantIfStatement")
-    public static void updateConfig() {
+    public static void update() {
         BuiltInPackConfig config = ConfigRegistry.get(BuiltInPackConfig.class);
 
         List<String> defaultPacks = new ArrayList<>(config.defaultPacks());
@@ -80,6 +80,6 @@ public record BuiltInPackConfig(List<String> defaultPacks, List<String> disabled
 
     static {
         ConfigRegistry.registerWithScreen(BuiltInPackConfig.class, SETTINGS,
-                Constants.MOD_ID, "Built-in Packs", BuiltInPackConfig::updateConfig);
+                Constants.MOD_ID, "Built-in Packs", BuiltInPackConfig::update);
     }
 }

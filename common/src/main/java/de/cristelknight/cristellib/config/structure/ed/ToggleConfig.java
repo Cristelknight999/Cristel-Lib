@@ -2,7 +2,11 @@ package de.cristelknight.cristellib.config.structure.ed;
 
 import java.util.Map;
 
-public record EDConfig(Map<String, Boolean> setStructureInfo) {
+public record ToggleConfig(Map<String, Boolean> setStructureInfo) {
+
+    public ToggleConfig(NestedEDConfig nestedEDConfig) {
+        this(ToggleConfigTransformer.stringBooleanMap(nestedEDConfig, ""));
+    }
 
     public boolean containsStructure(String structureName) {
         return setStructureInfo.containsKey(structureName);

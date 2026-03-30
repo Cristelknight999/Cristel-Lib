@@ -2,6 +2,7 @@ package de.cristelknight.cristellib.config.simple;
 
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.config.FileWriter;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,7 +50,7 @@ public class ConfigHolder<T> {
     }
 
     private void write(T data) {
-        ConfigManager.writeFile(getPath(), spec.getCodec(), getSafeComments(spec.getComments()), data, ConfigManager.createHeader(spec.getHeader()), spec.isSorted());
+        FileWriter.writeToFile(getPath(), spec.getCodec(), getSafeComments(spec.getComments()), data, ConfigManager.createHeader(spec.getHeader()), spec.isSorted());
     }
 
     private Path getPath() {

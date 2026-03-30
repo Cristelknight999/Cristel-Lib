@@ -7,7 +7,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.config.FileWriter;
 import de.cristelknight.cristellib.config.simple.ConfigHolder;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.data.condition.ICondition;
@@ -53,7 +53,7 @@ public record ConfigValueCondition(String className, String key, JsonElement exp
 
     private static <T> JsonElement fromClass(Class<T> clazz) {
         ConfigHolder<T> holder = ConfigRegistry.holder(clazz);
-        return ConfigManager.createElement("Couldn't write config for class: " + clazz.getName(), holder.getSettings().getCodec(), JsonOps.INSTANCE, holder.getInstance());
+        return FileWriter.writeToElement("Couldn't write config for class: " + clazz.getName(), holder.getSettings().getCodec(), JsonOps.INSTANCE, holder.getInstance());
     }
 
     @Override

@@ -6,7 +6,7 @@ import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
-import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.config.FileWriter;
 import de.cristelknight.cristellib.data.codec.BuiltInPackData;
 import de.cristelknight.cristellib.data.codec.BuiltInPackDataWrapper;
 import de.cristelknight.cristellib.data.condition.ConditionNode;
@@ -39,7 +39,7 @@ public class ReadData {
 
     private static void getAutoConfigSettings(String modId, Set<String> subPaths, Map<String, ACInfoData> data) {
         for (String subPath : subPaths) {
-            ACInfoData acInfoData = ConfigManager.readFromSubPath(modId, subPath, ACInfoData.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
+            ACInfoData acInfoData = FileWriter.readFromModContainer(modId, subPath, ACInfoData.CODEC, String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath));
 
             if (data.containsKey(modId)) {
                 Constants.LOG.warn("Overriding Auto Config data for modId: {} from path: {}", modId, subPath);
@@ -60,12 +60,12 @@ public class ReadData {
             // original mod's set. If a replacement was applied, we skip adding it as a new config.
             if (modId.equals(Constants.MC_ID)) {
                 Path fullPath = Path.of(subPath);
-                config = ConfigManager.readFromJanksonPath(fullPath, StructureConfig.CODEC);
+                config = FileWriter.readFromJanksonPath(fullPath, StructureConfig.CODEC);
                  if(checkForReplace(modIdAndConfigs, fullPath, config))
                      continue;
             }
             else
-                config = ConfigManager.readFromSubPath(
+                config = FileWriter.readFromModContainer(
                         modId,
                         subPath,
                         StructureConfig.CODEC,
@@ -109,9 +109,9 @@ public class ReadData {
 
             Either<BuiltInPackData, BuiltInPackDataWrapper> either;
             if (modId.equals(Constants.MC_ID))
-                either = ConfigManager.readFromJanksonPath(Path.of(subPath), BuiltInPackData.PACKS_CODEC);
+                either = FileWriter.readFromJanksonPath(Path.of(subPath), BuiltInPackData.PACKS_CODEC);
             else
-                either = ConfigManager.readFromSubPath(
+                either = FileWriter.readFromModContainer(
                         modId,
                         subPath,
                         BuiltInPackData.PACKS_CODEC,

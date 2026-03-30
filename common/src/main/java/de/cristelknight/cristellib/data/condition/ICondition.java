@@ -6,7 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.config.FileWriter;
 import net.minecraft.util.GsonHelper;
 
 import java.util.Map;
@@ -31,7 +31,7 @@ public interface ICondition<T extends ICondition<T>> {
         String type = GsonHelper.getAsString(object, "type");
         Codec<? extends ICondition<?>> conditionCodec = ConditionRegistry.getCodec(type);
         object.remove("type");
-        return ConfigManager.readElement("Couldn't read ICondition of type: " + type, conditionCodec, JsonOps.INSTANCE, object);
+        return FileWriter.loadFromElement("Couldn't read ICondition of type: " + type, conditionCodec, JsonOps.INSTANCE, object);
     }
 
     private static <T extends ICondition<?>> JsonObject encode(T condition) {
@@ -40,7 +40,7 @@ public interface ICondition<T extends ICondition<T>> {
         if (type == null)
             throw new RuntimeException(Constants.getWithPrefix("Unregistered Codec for ICondition"));
 
-        JsonElement e = ConfigManager.createElement("Couldn't encode ICondition", codec, JsonOps.INSTANCE, condition);
+        JsonElement e = FileWriter.writeToElement("Couldn't encode ICondition", codec, JsonOps.INSTANCE, condition);
         if (!(e instanceof JsonObject object))
             throw new RuntimeException(Constants.getWithPrefix("Expected ICondition to be an Object"));
 

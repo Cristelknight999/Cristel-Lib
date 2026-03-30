@@ -48,7 +48,7 @@ public class Util {
         }
 
         ACInfoData.currentData = autoConfigInfoData;
-        ACConfig.updateConfig();
+        ACConfig.update();
 
         for (String modId : modIdAndSets.keySet()) {
             if (ModFinder.shouldSkipModForACAfter(modId, configs.keySet())) continue;
