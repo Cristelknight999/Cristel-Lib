@@ -15,15 +15,15 @@ import java.util.Set;
 
 @CristelPlugin
 public class BuiltInAPI implements CristelLibAPI {
-    public static final StructureConfig MINECRAFT_ED = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "toggle_structure_config", ConfigType.ENABLE_DISABLE);
+    public static final StructureConfig MINECRAFT_T = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "toggle_structure_config", ConfigType.TOGGLE);
     public static final StructureConfig MINECRAFT_P = StructureConfig.createWithDefaultConfigPath("vanilla_structures", "placement_structure_config", ConfigType.PLACEMENT);
 
     @Override
     public void registerConfigs(Set<StructureConfig> sets) {
-        sets.add(MINECRAFT_ED);
+        sets.add(MINECRAFT_T);
         sets.add(MINECRAFT_P);
 
-        MINECRAFT_ED.setHeader("""
+        MINECRAFT_T.setHeader("""
                 This config makes it possible to switch off any Minecraft structure.
                 To disable a structure, simply set the value of that structure to "false".
                 To change the rarity of a structure category use the structure placement config.
@@ -48,11 +48,11 @@ public class BuiltInAPI implements CristelLibAPI {
                         "ancient_cities", "buried_treasures", "desert_pyramids", "end_cities", "igloos", "jungle_temples", "nether_complexes", "nether_fossils",
                         "ocean_monuments", "ocean_ruins", "pillager_outposts", "ruined_portals", "shipwrecks", "swamp_huts", "villages", "woodland_mansions"
                 ),
-                MINECRAFT_ED, MINECRAFT_P);
+                MINECRAFT_T, MINECRAFT_P);
 
 
         // No support yet for minecraft:concentric_rings (only for minecraft:random_spread)
-        registry.registerSetToConfig(Constants.MC_ID, Identifier.withDefaultNamespace("strongholds"), MINECRAFT_ED);
+        registry.registerSetToConfig(Constants.MC_ID, Identifier.withDefaultNamespace("strongholds"), MINECRAFT_T);
     }
 
     @Override

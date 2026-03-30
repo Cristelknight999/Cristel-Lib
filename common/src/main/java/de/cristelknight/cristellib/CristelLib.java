@@ -15,6 +15,10 @@ import java.util.*;
 
 public class CristelLib {
 
+    /**
+     * This is only for internal purposes, do not reuse this!
+     * Create your own {@link RuntimePack} if needed.
+     */
     public static final RuntimePack CONFIG_PACK = new RuntimePack(
             Constants.CRISTEL_LIB_PACK_ID,
             SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major(),
@@ -26,10 +30,11 @@ public class CristelLib {
 
     public static void init() {
         Constants.LOG.debug("Loading Cristel Lib (Stage 2)");
+        StructureConfig.addSetsToRuntimePack(CristelLibRegistry.getConfigs());
     }
 
-
     public static void preInit() {
+        Constants.LOG.debug("Loading Cristel Lib (Stage 1)");
         DataFixer.registerFixer();
         ConditionRegistry.init();
         CristelLibRegistry.configs = ImmutableMap.copyOf(getConfigs());
@@ -38,7 +43,6 @@ public class CristelLib {
 
         Set<StructureConfig> allConfigs = CristelLibRegistry.getConfigs();
         allConfigs.forEach(c -> c.writeConfig(false));
-        StructureConfig.addSetsToRuntimePack(allConfigs);
     }
 
     private static Map<String, Set<StructureConfig>> getConfigs() {

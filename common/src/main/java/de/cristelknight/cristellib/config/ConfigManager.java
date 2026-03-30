@@ -5,11 +5,13 @@ import blue.endless.jankson.JsonObject;
 import com.mojang.serialization.Codec;
 import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.StructureConfigPlacement;
+import de.cristelknight.cristellib.StructureConfigToggle;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
-import de.cristelknight.cristellib.config.structure.ed.ToggleConfigTransformer;
-import de.cristelknight.cristellib.config.structure.ed.NestedEDConfig;
-import de.cristelknight.cristellib.config.structure.ed.ToggleConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfigTransformer;
+import de.cristelknight.cristellib.config.structure.toggle.NestedToggleConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfig;
 import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.Identifier;
@@ -27,18 +29,18 @@ public class ConfigManager {
 
     public static final Path CONFIG_LIB = CONFIG_DIR.resolve("cristellib");
 
-    public static void createToggleConfig(StructureConfig config) {
-        Map<String, NestedEDConfig> nestedStructureMap;
-        if (config.getEnableDisableConfig() == null) {
+    public static void createToggleConfig(StructureConfigToggle config) {
+        Map<String, NestedToggleConfig> nestedStructureMap;
+        if (config.getToggleConfigs() == null) {
             nestedStructureMap = ToggleConfigTransformer.mapToNestedStructures(config);
         } else
             nestedStructureMap = ToggleConfigTransformer.mapToNestedStructuresWithValues(config);
 
-        writeConfig(config, NestedEDConfig.ED_CODEC, nestedStructureMap);
+        writeConfig(config, NestedToggleConfig.TOGGLE_CODEC, nestedStructureMap);
     }
 
-    public static Map<Identifier, ToggleConfig> readToggleConfig(StructureConfig config) {
-        Map<String, NestedEDConfig> externalMap = FileWriter.readFromJanksonPath(config.getPath(), NestedEDConfig.ED_CODEC);
+    public static Map<Identifier, ToggleConfig> readToggleConfig(StructureConfigToggle config) {
+        Map<String, NestedToggleConfig> externalMap = FileWriter.readFromJanksonPath(config.getPath(), NestedToggleConfig.TOGGLE_CODEC);
 
         return externalMap.entrySet().stream().collect(Collectors.toMap(
                 entry -> config.toDefaultId(entry.getKey()),
@@ -46,10 +48,10 @@ public class ConfigManager {
         ));
     }
 
-    public static void createPlacementConfig(StructureConfig config) {
-        Map<Identifier, PlacementConfig> internalMap = config.getPlacementConfig() == null ?
-                config.getDefaultStructurePlacement() :
-                config.getPlacementConfig();
+    public static void createPlacementConfig(StructureConfigPlacement config) {
+        Map<Identifier, PlacementConfig> internalMap = config.getPlacementConfigs() == null ?
+                config.getDefaultStructurePlacements() :
+                config.getPlacementConfigs();
 
         Map<String, PlacementConfig> externalMap = internalMap.entrySet().stream().collect(Collectors.toMap(
                 entry -> config.toDefaultString(entry.getKey()),
@@ -58,7 +60,7 @@ public class ConfigManager {
         writeConfig(config, PlacementConfig.PLACEMENT_CODEC, externalMap);
     }
 
-    public static Map<Identifier, PlacementConfig> readPlacementConfig(StructureConfig config) {
+    public static Map<Identifier, PlacementConfig> readPlacementConfig(StructureConfigPlacement config) {
         Map<String, PlacementConfig> externalMap = FileWriter.readFromJanksonPath(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
 
         return externalMap.entrySet().stream().collect(Collectors.toMap(

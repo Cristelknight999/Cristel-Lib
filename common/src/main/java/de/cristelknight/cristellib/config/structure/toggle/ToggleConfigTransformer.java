@@ -1,6 +1,6 @@
-package de.cristelknight.cristellib.config.structure.ed;
+package de.cristelknight.cristellib.config.structure.toggle;
 
-import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.StructureConfigToggle;
 import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
@@ -9,11 +9,11 @@ import java.util.Map;
 
 public class ToggleConfigTransformer {
 
-    public static Map<String, Boolean> stringBooleanMap(NestedEDConfig edConfig, String parent) {
+    public static Map<String, Boolean> stringBooleanMap(NestedToggleConfig toggleConfig, String parent) {
         Map<String, Boolean> map = new HashMap<>();
-        for (Map.Entry<String, NestedEDConfig.Entry> entry : edConfig.entries().entrySet()) {
+        for (Map.Entry<String, NestedToggleConfig.Entry> entry : toggleConfig.entries().entrySet()) {
             String key = entry.getKey();
-            NestedEDConfig.Entry object = entry.getValue();
+            NestedToggleConfig.Entry object = entry.getValue();
 
             String finalKey = parent.isEmpty() ? key : parent + "/" + key;
             if (object.isBoolean()) {
@@ -25,16 +25,16 @@ public class ToggleConfigTransformer {
         return map;
     }
 
-    public static Map<String, NestedEDConfig> mapToNestedStructures(StructureConfig structureConfig) {
-        Map<Identifier, List<Identifier>> defaultStructures = structureConfig.getDefaultStructures();
+    public static Map<String, NestedToggleConfig> mapToNestedStructures(StructureConfigToggle structureConfig) {
+        Map<Identifier, List<Identifier>> defaultStructures = structureConfig.getDefaultStructureToggles();
 
-        Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
+        Map<String, NestedToggleConfig> nestedStructures = new HashMap<>();
         for (Map.Entry<Identifier, List<Identifier>> mapEntry : defaultStructures.entrySet()) {
             Identifier location = mapEntry.getKey();
             List<Identifier> stringList = mapEntry.getValue();
 
             // Prepare the map for the NestedStructure
-            Map<String, NestedEDConfig.Entry> entries = new HashMap<>();
+            Map<String, NestedToggleConfig.Entry> entries = new HashMap<>();
 
             // Process each string in the list
             for (Identifier structure : stringList) {
@@ -43,23 +43,23 @@ public class ToggleConfigTransformer {
             }
 
             // Create NestedStructure for this Identifier
-            NestedEDConfig nestedStructure = new NestedEDConfig(entries);
+            NestedToggleConfig nestedStructure = new NestedToggleConfig(entries);
             nestedStructures.put(structureConfig.toDefaultString(location), nestedStructure);
         }
 
         return nestedStructures;
     }
 
-    public static Map<String, NestedEDConfig> mapToNestedStructuresWithValues(StructureConfig structureConfig) {
-        Map<Identifier, ToggleConfig> sets = structureConfig.getEnableDisableConfig();
+    public static Map<String, NestedToggleConfig> mapToNestedStructuresWithValues(StructureConfigToggle structureConfig) {
+        Map<Identifier, ToggleConfig> sets = structureConfig.getToggleConfigs();
 
-        Map<String, NestedEDConfig> nestedStructures = new HashMap<>();
+        Map<String, NestedToggleConfig> nestedStructures = new HashMap<>();
         for (Map.Entry<Identifier, ToggleConfig> mapEntry : sets.entrySet()) {
             Identifier location = mapEntry.getKey();
             ToggleConfig stringList = mapEntry.getValue();
 
             // Prepare the map for the NestedStructure
-            Map<String, NestedEDConfig.Entry> entries = new HashMap<>();
+            Map<String, NestedToggleConfig.Entry> entries = new HashMap<>();
 
             // Process each string in the list
             for (Map.Entry<String, Boolean> entry : stringList.setStructureInfo().entrySet()) {
@@ -69,14 +69,14 @@ public class ToggleConfigTransformer {
             }
 
             // Create NestedStructure for this Identifier
-            NestedEDConfig nestedStructure = new NestedEDConfig(entries);
+            NestedToggleConfig nestedStructure = new NestedToggleConfig(entries);
             nestedStructures.put(structureConfig.toDefaultString(location), nestedStructure);
         }
 
         return nestedStructures;
     }
 
-    public static void putStructureName(String structureName, boolean value, Map<String, NestedEDConfig.Entry> entries) {
+    public static void putStructureName(String structureName, boolean value, Map<String, NestedToggleConfig.Entry> entries) {
         if (structureName.contains("/")) {
             // Handle key-value pair scenario
             String[] parts = structureName.split("/", 2);
@@ -84,16 +84,16 @@ public class ToggleConfigTransformer {
             String restOfStructureName = parts[1];
 
             boolean containsNestedStructure = entries.containsKey(key);
-            Map<String, NestedEDConfig.Entry> nestedEntries;
+            Map<String, NestedToggleConfig.Entry> nestedEntries;
             if (containsNestedStructure) nestedEntries = entries.get(key).nested().entries();
             else nestedEntries = new HashMap<>();
 
             putStructureName(restOfStructureName, value, nestedEntries);
-            if (!containsNestedStructure) entries.put(key, NestedEDConfig.Entry.ofNested(new NestedEDConfig(nestedEntries)));
+            if (!containsNestedStructure) entries.put(key, NestedToggleConfig.Entry.ofNested(new NestedToggleConfig(nestedEntries)));
 
         } else {
             // Handle simple key-value pair where value is always true
-            entries.put(structureName, NestedEDConfig.Entry.ofBoolean(value));
+            entries.put(structureName, NestedToggleConfig.Entry.ofBoolean(value));
         }
     }
 

@@ -1,10 +1,10 @@
-package de.cristelknight.cristellib.config.structure.ed;
+package de.cristelknight.cristellib.config.structure.toggle;
 
 import java.util.Map;
 
 public record ToggleConfig(Map<String, Boolean> setStructureInfo) {
 
-    public ToggleConfig(NestedEDConfig nestedEDConfig) {
+    public ToggleConfig(NestedToggleConfig nestedEDConfig) {
         this(ToggleConfigTransformer.stringBooleanMap(nestedEDConfig, ""));
     }
 

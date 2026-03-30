@@ -2,44 +2,46 @@ package de.cristelknight.cristellib;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.structure.ReadStructureSets;
-import de.cristelknight.cristellib.config.structure.ed.ToggleConfig;
 import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
-import de.cristelknight.cristellib.util.JsonHelper;
-import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
+import de.cristelknight.cristellib.util.FileHelper;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackType;
 
 import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class StructureConfigPlacement extends StructureConfig {
 
     // default values
-    private final Supplier<Map<Identifier, List<Identifier>>> structuresForED;
+    private final Supplier<Map<Identifier, PlacementConfig>> structurePlacement;
 
     // current values (structure_set + Config)
-    private Map<Identifier, ToggleConfig> enableDisableConfig = null;
+    private Map<Identifier, PlacementConfig> placementConfig = null;
 
-
-    StructureConfigPlacement(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
-        super.this(path, header, comments, type, structureSetHolders);
-        this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
+    StructureConfigPlacement(Path path) {
+        this(path, null, new HashMap<>(), new ArrayList<>());
     }
 
-    private boolean updatePlacementsInSet(JsonObject structureSet, Identifier setLocation) {
-        PlacementConfig placementConfig = this.placementConfig.get(setLocation);
-        if(getDefaultStructurePlacement().get(setLocation).equals(placementConfig))
-            return false;
+    StructureConfigPlacement(String name, String path, String header, Map<String, String> comments, List<StructureSetData> structureSetHolders) {
+        this(FileHelper.janksonPathFromString(path, name), header, comments, structureSetHolders);
+    }
 
+    StructureConfigPlacement(Path path, String header, Map<String, String> comments, List<StructureSetData> structureSetHolders) {
+        super(path, header, comments, structureSetHolders);
+        this.structurePlacement = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddPlacements(structureSetHolders));
+    }
+
+    // old constructor kept temporarily — remove once callers are updated
+    StructureConfigPlacement(Path path, String header, Map<String, String> comments, ConfigType type, List<StructureSetData> structureSetHolders) {
+        this(path, header, comments, structureSetHolders);
+    }
+
+    private void updatePlacementsInSet(JsonObject structureSet, PlacementConfig placementConfig, Identifier setLocation) {
         JsonObject p = structureSet.get("placement").getAsJsonObject();
 
         p.addProperty("salt", placementConfig.salt());
@@ -50,37 +52,61 @@ public class StructureConfigPlacement extends StructureConfig {
 
         if ((p.has("frequency") || newF != 1.0) && (!p.has("frequency") || newF != p.get("frequency").getAsDouble()))
             p.addProperty("frequency", newF);
+    }
 
+    @Override
+    public boolean addChanges(String modId, Identifier setLocation) {
+        PlacementConfig setConfig = placementConfig.get(setLocation);
+        if(getDefaultStructurePlacements().get(setLocation).equals(setConfig))
+            return false;
+
+        JsonElement structureSetElement = getStructureSet(setLocation, modId);
+        if (!(structureSetElement instanceof JsonObject structureSet)) {
+            Constants.LOG.warn("Set for {} {} is not a JsonObject, skipping...", modId, setLocation);
+            return true;
+        }
+
+        updatePlacementsInSet(structureSet, setConfig, setLocation);
+        CristelLib.CONFIG_PACK.addStructureSet(setLocation, structureSet);
         return true;
     }
 
     @Override
-    public boolean add(String modId, Identifier setLocation) {
-        return false;
-    }
+    public void writeConfig(boolean override) {
+        if (!override && getPath().toFile().exists()) return;
 
-    private JsonElement getStructureSet(Identifier location, String modId) {
-        Identifier structureLocation = RuntimePackUtil.getLocationForStructureSet(location);
-        if (CristelLib.CONFIG_PACK.hasData(structureLocation)) {
-            return CristelLib.CONFIG_PACK.getResourceAsJson(PackType.SERVER_DATA, structureLocation);
-        }
-        return JsonHelper.getSetElement(location, modId);
+        ConfigManager.createPlacementConfig(this);
     }
 
     @Override
     public void readConfig(boolean override) {
-
+        if (placementConfig == null || override)
+            placementConfig = ConfigManager.readPlacementConfig(this);
     }
 
-    public Map<Identifier, List<Identifier>> getDefaultStructures() {
-        return structuresForED.get();
+    public Map<Identifier, PlacementConfig> getDefaultStructurePlacements() {
+        return structurePlacement.get();
     }
 
-    public Map<Identifier, ToggleConfig> getEnableDisableConfig() {
-        return enableDisableConfig;
+    public Map<Identifier, PlacementConfig> getPlacementConfigs() {
+        return placementConfig;
     }
 
-    public void updateEDConfig(Identifier key, ToggleConfig config) {
-        this.enableDisableConfig.put(key, config);
+    public Set<Identifier> getConfigKeys() {
+        return placementConfig.keySet();
+    }
+
+    public void updatePlacement(Identifier key, PlacementConfig config) {
+        this.placementConfig.put(key, config);
+    }
+
+    @Override
+    public void resetConfigs() {
+        placementConfig = null;
+    }
+
+    @Override
+    public ConfigType getType() {
+        return ConfigType.PLACEMENT;
     }
 }

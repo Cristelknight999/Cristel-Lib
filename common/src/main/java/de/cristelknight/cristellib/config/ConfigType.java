@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 public enum ConfigType implements StringRepresentable {
 
     //BOTH,
-    ENABLE_DISABLE("ENABLE_DISABLE"),
+    TOGGLE("ENABLE_DISABLE"),
     PLACEMENT("PLACEMENT");
 
     private final String name;

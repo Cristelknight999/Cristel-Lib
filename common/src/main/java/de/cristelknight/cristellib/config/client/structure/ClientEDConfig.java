@@ -1,6 +1,6 @@
 package de.cristelknight.cristellib.config.client.structure;
 
-import de.cristelknight.cristellib.config.structure.ed.ToggleConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfig;
 import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

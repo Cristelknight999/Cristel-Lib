@@ -52,6 +52,7 @@ public class ModLoadingUtilImpl {
     }
 
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public static Optional<Integer> compare(String modId, String version) {
         if (isModLoaded(modId)) {
             ModList modList = ModList.get();

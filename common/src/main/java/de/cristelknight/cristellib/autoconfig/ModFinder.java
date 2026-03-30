@@ -30,7 +30,7 @@ public class ModFinder {
         boolean customPath = ACInfoData.currentData.containsKey(modId) && !ACInfoData.currentData.get(modId).autoConfigPath().isEmpty();
         String customSubPath = ConfigRegistry.get(ACConfig.class).autoConfigSubPath();
 
-        StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modId).autoConfigPath() : customSubPath + modId, "structure_toggle_config", ConfigType.ENABLE_DISABLE);
+        StructureConfig edConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modId).autoConfigPath() : customSubPath + modId, "structure_toggle_config", ConfigType.TOGGLE);
         StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modId).autoConfigPath() : customSubPath + modId, "structure_placement_config", ConfigType.PLACEMENT);
 
         structureSets.forEach(path -> {
@@ -48,8 +48,8 @@ public class ModFinder {
             }
         });
 
-        if (!placementConfig.isSetsEmpty()) configSet.add(placementConfig);
-        if (!edConfig.isSetsEmpty()) configSet.add(edConfig);
+        if (placementConfig.setsNotEmpty()) configSet.add(placementConfig);
+        if (edConfig.setsNotEmpty()) configSet.add(edConfig);
         if (!configSet.isEmpty()) {
             configSet.forEach((config) -> {
                 config.setDefaultNamespace();

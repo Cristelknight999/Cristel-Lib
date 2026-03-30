@@ -6,10 +6,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.structure.ReadStructureSets;
-import de.cristelknight.cristellib.config.structure.ed.ToggleConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
 import net.minecraft.resources.Identifier;
+
+import de.cristelknight.cristellib.util.FileHelper;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -26,15 +29,19 @@ public class StructureConfigToggle extends StructureConfig {
         this(path, null, new HashMap<>(), new ArrayList<>());
     }
 
+    StructureConfigToggle(String name, String path, String header, Map<String, String> comments, List<StructureSetData> structureSetHolders) {
+        this(FileHelper.janksonPathFromString(path, name), header, comments, structureSetHolders);
+    }
+
     StructureConfigToggle(Path path, String header, Map<String, String> comments, List<StructureSetData> structureSetHolders) {
         super(path, header, comments, structureSetHolders);
         this.structuresForED = Suppliers.memoize(() -> ReadStructureSets.readSetsAndAddStructures(structureSetHolders));
     }
 
     @Override
-    public boolean add(String modId, Identifier setLocation) {
+    public boolean addChanges(String modId, Identifier setLocation) {
         ToggleConfig setConfig = enableDisableConfig.get(setLocation);
-        if(setConfig.hasDisabledStructure())
+        if(!setConfig.hasDisabledStructure())
             return false;
 
         JsonElement structureSetElement = getStructureSet(setLocation, modId);
@@ -44,14 +51,8 @@ public class StructureConfigToggle extends StructureConfig {
         }
 
         removeStructureInSets(structureSet, setConfig, setLocation);
-
+        CristelLib.CONFIG_PACK.addStructureSet(setLocation, structureSet);
         return true;
-    }
-
-    @Override
-    public void readConfig(boolean override) {
-        if (enableDisableConfig == null || override)
-            enableDisableConfig = ConfigManager.readToggleConfig(this);
     }
 
     private void removeStructureInSets(JsonObject structureSet, ToggleConfig setConfig, Identifier setLocation) {
@@ -71,17 +72,42 @@ public class StructureConfigToggle extends StructureConfig {
         }
     }
 
+    @Override
+    public void writeConfig(boolean override) {
+        if (!override && getPath().toFile().exists()) return;
 
+        ConfigManager.createToggleConfig(this);
+    }
 
-    public Map<Identifier, List<Identifier>> getDefaultStructures() {
+    @Override
+    public void readConfig(boolean override) {
+        if (enableDisableConfig == null || override)
+            enableDisableConfig = ConfigManager.readToggleConfig(this);
+    }
+
+    public Map<Identifier, List<Identifier>> getDefaultStructureToggles() {
         return structuresForED.get();
     }
 
-    public Map<Identifier, ToggleConfig> getEnableDisableConfig() {
+    public Map<Identifier, ToggleConfig> getToggleConfigs() {
         return enableDisableConfig;
+    }
+
+    public Set<Identifier> getConfigKeys() {
+        return enableDisableConfig.keySet();
     }
 
     public void updateEDConfig(Identifier key, ToggleConfig config) {
         this.enableDisableConfig.put(key, config);
+    }
+
+    @Override
+    public void resetConfigs() {
+        enableDisableConfig = null;
+    }
+
+    @Override
+    public ConfigType getType() {
+        return ConfigType.TOGGLE;
     }
 }

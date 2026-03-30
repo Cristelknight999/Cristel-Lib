@@ -34,6 +34,7 @@ public interface ICondition<T extends ICondition<T>> {
         return FileWriter.loadFromElement("Couldn't read ICondition of type: " + type, conditionCodec, JsonOps.INSTANCE, object);
     }
 
+    @SuppressWarnings("unchecked")
     private static <T extends ICondition<?>> JsonObject encode(T condition) {
         Codec<T> codec = (Codec<T>) condition.getCodec();
         String type = ConditionRegistry.getType(codec);

@@ -1,13 +1,14 @@
-package de.cristelknight.cristellib.config.structure.ed;
+package de.cristelknight.cristellib.config.structure.toggle;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 
 import java.util.Map;
 
-public record NestedEDConfig(Map<String, Entry> entries) {
+// TODO: Codec recursive maybe?
+public record NestedToggleConfig(Map<String, Entry> entries) {
 
-    public record Entry(Boolean value, NestedEDConfig nested) {
+    public record Entry(Boolean value, NestedToggleConfig nested) {
 
         public boolean isBoolean() {
             return value != null;
@@ -15,7 +16,7 @@ public record NestedEDConfig(Map<String, Entry> entries) {
 
         public static final Codec<Entry> CODEC = Codec.either(
                 Codec.BOOL,
-                Codec.lazyInitialized(() -> NestedEDConfig.CODEC)
+                Codec.lazyInitialized(() -> NestedToggleConfig.CODEC)
         ).xmap(
                 either -> either.map(Entry::ofBoolean, Entry::ofNested), //read
                 entry -> entry.isBoolean() ? Either.left(entry.value) : Either.right(entry.nested) //write
@@ -25,18 +26,18 @@ public record NestedEDConfig(Map<String, Entry> entries) {
             return new Entry(value, null);
         }
 
-        public static Entry ofNested(NestedEDConfig nested) {
+        public static Entry ofNested(NestedToggleConfig nested) {
             return new Entry(null, nested);
         }
     }
 
-    public static final Codec<NestedEDConfig> CODEC = Codec.unboundedMap(
+    public static final Codec<NestedToggleConfig> CODEC = Codec.unboundedMap(
             Codec.STRING,
             Entry.CODEC
-    ).xmap(NestedEDConfig::new, NestedEDConfig::entries);
+    ).xmap(NestedToggleConfig::new, NestedToggleConfig::entries);
 
-    public static final Codec<Map<String, NestedEDConfig>> ED_CODEC = Codec.unboundedMap(
+    public static final Codec<Map<String, NestedToggleConfig>> TOGGLE_CODEC = Codec.unboundedMap(
             Codec.STRING, // String keys
-            NestedEDConfig.CODEC // NestedStructure values
+            NestedToggleConfig.CODEC // NestedStructure values
     );
 }

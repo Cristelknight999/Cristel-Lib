@@ -1,8 +1,6 @@
 package de.cristelknight.cristellib.config.client.extension.extensions;
 
-import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLibRegistry;
-import de.cristelknight.cristellib.StructureConfig;
+import de.cristelknight.cristellib.*;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.autoconfig.ACInfoData;
 import de.cristelknight.cristellib.config.ConfigType;
@@ -12,8 +10,8 @@ import de.cristelknight.cristellib.config.client.structure.ClientEDConfig;
 import de.cristelknight.cristellib.config.client.structure.ClientPlacementConfig;
 import de.cristelknight.cristellib.config.client.structure.ClientStructureConfig;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
-import de.cristelknight.cristellib.config.structure.ed.ToggleConfigTransformer;
-import de.cristelknight.cristellib.config.structure.ed.NestedEDConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfigTransformer;
+import de.cristelknight.cristellib.config.structure.toggle.NestedToggleConfig;
 import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.util.Util;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -57,18 +55,18 @@ public class StructureConfigExtension extends ConfigScreenExtension {
     public void addToBuilder(ConfigBuilder builder, ConfigEntryBuilder entryBuilder) {
         for (StructureConfig structureConfig : sortStructureSets(CristelLibRegistry.getConfigMap().get(modId))) {
             if (structureConfig.getType().equals(ConfigType.PLACEMENT))
-                addPlacementCategory(builder, entryBuilder, structureConfig);
+                addPlacementCategory(builder, entryBuilder, (StructureConfigPlacement) structureConfig);
             else
-                addEDCategory(builder, entryBuilder, structureConfig);
+                addEDCategory(builder, entryBuilder, (StructureConfigToggle) structureConfig);
         }
     }
 
-    private void addPlacementCategory(ConfigBuilder builder, ConfigEntryBuilder entryBuilder, StructureConfig structureConfig) {
+    private void addPlacementCategory(ConfigBuilder builder, ConfigEntryBuilder entryBuilder, StructureConfigPlacement structureConfig) {
         ConfigCategory placementCategory = builder.getOrCreateCategory(Component.translatable("cristellib.placementCategoryTitle"));
         addHeader(structureConfig, placementCategory, entryBuilder);
 
-        Map<Identifier, PlacementConfig> placementConfigs = structureConfig.getPlacementConfig();
-        Map<Identifier, PlacementConfig> defaultPlacementConfigs = structureConfig.getDefaultStructurePlacement();
+        Map<Identifier, PlacementConfig> placementConfigs = structureConfig.getPlacementConfigs();
+        Map<Identifier, PlacementConfig> defaultPlacementConfigs = structureConfig.getDefaultStructurePlacements();
 
         Map<Identifier, ClientPlacementConfig> clientPlacementConfigs = new HashMap<>();
         for (Identifier structureSetLocation : Util.sortedKeyList(placementConfigs)) {
@@ -83,7 +81,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
             subCategory.setTooltip(tooltip(structureSetName, structureConfig.getComments()));
 
             ClientPlacementConfig clientPlacementConfig = new ClientPlacementConfig(
-                    frequencyEntry(entryBuilder, "frequency", currentConfig.frequency(), defaultConfig.frequency(), subCategory),
+                    frequencyEntry(entryBuilder, currentConfig.frequency(), defaultConfig.frequency(), subCategory),
                     intEntry(entryBuilder, "salt", currentConfig.salt(), defaultConfig.salt(), subCategory),
                     intEntry(entryBuilder, "separation", currentConfig.separation(), defaultConfig.separation(), subCategory),
                     intEntry(entryBuilder, "spacing", currentConfig.spacing(), defaultConfig.spacing(), subCategory)
@@ -96,17 +94,17 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         clientStructureConfigs.add(new ClientStructureConfig(structureConfig, clientPlacementConfigs, null));
     }
 
-    private void addEDCategory(ConfigBuilder builder, ConfigEntryBuilder entryBuilder, StructureConfig structureConfig) {
+    private void addEDCategory(ConfigBuilder builder, ConfigEntryBuilder entryBuilder, StructureConfigToggle structureConfig) {
         ConfigCategory edCategory = builder.getOrCreateCategory(Component.translatable("cristellib.toggleCategoryTitle"));
         addHeader(structureConfig, edCategory, entryBuilder);
 
-        Map<String, NestedEDConfig> nestedStructureMap = ToggleConfigTransformer.mapToNestedStructuresWithValues(structureConfig);
+        Map<String, NestedToggleConfig> nestedStructureMap = ToggleConfigTransformer.mapToNestedStructuresWithValues(structureConfig);
         Map<Identifier, ClientEDConfig> clientEDConfigs = new HashMap<>();
         for (String structureSetName : Util.sortedKeyList(nestedStructureMap)) {
             Map<String, BooleanListEntry> structures = new HashMap<>();
             SubCategoryBuilder rootSubCategory = entryBuilder.startSubCategory(Component.literal(structureSetName));
             rootSubCategory.setTooltip(tooltip(structureSetName, structureConfig.getComments()));
-            NestedEDConfig nestedEDConfig = nestedStructureMap.get(structureSetName);
+            NestedToggleConfig nestedEDConfig = nestedStructureMap.get(structureSetName);
 
             if (!checkForSingle(entryBuilder, nestedEDConfig, structureSetName, structureConfig, structures, edCategory, "")) {
                 addEDSubCategory(rootSubCategory, null, entryBuilder, nestedEDConfig, "", structures, structureConfig, structureSetName);
@@ -119,11 +117,11 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         clientStructureConfigs.add(new ClientStructureConfig(structureConfig, null, clientEDConfigs));
     }
 
-    private void addEDSubCategory(SubCategoryBuilder rootCategory, SubCategoryBuilder parent, ConfigEntryBuilder entryBuilder, NestedEDConfig edConfig, String pathPrefix,
-                                  Map<String, BooleanListEntry> structures, StructureConfig structureConfig, String structureSetName) {
-        Map<String, NestedEDConfig.Entry> entries = edConfig.entries();
+    private void addEDSubCategory(SubCategoryBuilder rootCategory, SubCategoryBuilder parent, ConfigEntryBuilder entryBuilder, NestedToggleConfig edConfig, String pathPrefix,
+                                  Map<String, BooleanListEntry> structures, StructureConfigToggle structureConfig, String structureSetName) {
+        Map<String, NestedToggleConfig.Entry> entries = edConfig.entries();
         for (String key : Util.sortedKeyList(entries)) {
-            NestedEDConfig.Entry value = entries.get(key);
+            NestedToggleConfig.Entry value = entries.get(key);
             String fullPath = pathPrefix.isEmpty() ? key : pathPrefix + "/" + key;
 
             if (value.isBoolean()) {
@@ -137,7 +135,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
 
                 structures.put(fullPath, toggle);
 
-                if (getEDSubWarn(structureConfig, fullPath, structureSetName)) continue;
+                if (getToggleSubWarn(structureConfig, fullPath, structureSetName)) continue;
 
                 if (parent == null) rootCategory.add(toggle);
                 else parent.add(toggle);
@@ -158,16 +156,16 @@ public class StructureConfigExtension extends ConfigScreenExtension {
 
     private boolean checkForSingle(
             ConfigEntryBuilder entryBuilder,
-            NestedEDConfig nestedEDConfig,
+            NestedToggleConfig nestedEDConfig,
             String structureSetName,
-            StructureConfig structureConfig,
+            StructureConfigToggle structureConfig,
             Map<String, BooleanListEntry> structures,
             ConfigCategory edCategory,
             String pathPrefix
     ) {
         if (nestedEDConfig.entries().size() != 1) return false;
         var entries = nestedEDConfig.entries();
-        NestedEDConfig.Entry entry = Util.getFirst(entries.values());
+        NestedToggleConfig.Entry entry = Util.getFirst(entries.values());
         String key = Util.getFirst(entries.keySet());
         assert entry != null;
         assert key != null;
@@ -187,7 +185,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
 
         structures.put(fullPath, toggle);
 
-        if (getEDSubWarn(structureConfig, fullPath, structureSetName)) return true;
+        if (getToggleSubWarn(structureConfig, fullPath, structureSetName)) return true;
 
         edCategory.addEntry(toggle);
         return true;
@@ -200,9 +198,9 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         for (ClientStructureConfig clientStructureConfig : clientStructureConfigs) {
             StructureConfig structureConfig = clientStructureConfig.structureConfig();
             if (structureConfig.getType().equals(ConfigType.PLACEMENT))
-                updatePlacements(structureConfig, clientStructureConfig.clientPlacementConfigs());
+                updatePlacements((StructureConfigPlacement) structureConfig, clientStructureConfig.clientPlacementConfigs());
             else
-                updateEDs(structureConfig, clientStructureConfig.clientEDConfigs());
+                updateToggles((StructureConfigToggle) structureConfig, clientStructureConfig.clientEDConfigs());
 
             structureConfig.writeConfig(true);
             configs.add(structureConfig);
@@ -210,13 +208,13 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         StructureConfig.addSetsToRuntimePack(configs);
     }
 
-    private void updatePlacements(StructureConfig structureConfig, Map<Identifier, ClientPlacementConfig> clientPlacementConfigs) {
+    private void updatePlacements(StructureConfigPlacement structureConfig, Map<Identifier, ClientPlacementConfig> clientPlacementConfigs) {
         for (Map.Entry<Identifier, ClientPlacementConfig> entry : clientPlacementConfigs.entrySet()) {
             structureConfig.updatePlacement(entry.getKey(), entry.getValue().toPlacement());
         }
     }
 
-    private void updateEDs(StructureConfig structureConfig, Map<Identifier, ClientEDConfig> clientEDConfigs) {
+    private void updateToggles(StructureConfigToggle structureConfig, Map<Identifier, ClientEDConfig> clientEDConfigs) {
         for (Map.Entry<Identifier, ClientEDConfig> entry : clientEDConfigs.entrySet()) {
             structureConfig.updateEDConfig(entry.getKey(), entry.getValue().toED());
         }
@@ -229,8 +227,8 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         return intEntry;
     }
 
-    private DoubleListEntry frequencyEntry(ConfigEntryBuilder configEntry, String name, double value, double defaultValue, SubCategoryBuilder subCategory) {
-        DoubleListEntry intEntry = configEntry.startDoubleField(Component.literal(name), value).setDefaultValue(defaultValue).setMin(0.000001).setMax(1.0).build();
+    private DoubleListEntry frequencyEntry(ConfigEntryBuilder configEntry, double value, double defaultValue, SubCategoryBuilder subCategory) {
+        DoubleListEntry intEntry = configEntry.startDoubleField(Component.literal("frequency"), value).setDefaultValue(defaultValue).setMin(0.0).setMax(1.0).build();
         subCategory.add(intEntry);
         return intEntry;
     }
@@ -240,9 +238,9 @@ public class StructureConfigExtension extends ConfigScreenExtension {
         Constants.LOG.warn("Structure Set: {} has no default config, skipping!\nThis probably indicates that this config file is outdated and should be deleted to re-create it. (Path: {})", structureSetName.toString(), structureConfig.getPath());
     }
 
-    private boolean getEDSubWarn(StructureConfig structureConfig, String fullPath, String structureSetName) {
+    private boolean getToggleSubWarn(StructureConfigToggle structureConfig, String fullPath, String structureSetName) {
         Identifier setLocation = structureConfig.toDefaultId(structureSetName);
-        List<Identifier> structures = structureConfig.getDefaultStructures().get(setLocation);
+        List<Identifier> structures = structureConfig.getDefaultStructureToggles().get(setLocation);
         if (structures == null) {
             getWarn(structureConfig, setLocation);
             return true;
@@ -284,7 +282,7 @@ public class StructureConfigExtension extends ConfigScreenExtension {
     private List<StructureConfig> sortStructureSets(Set<StructureConfig> structureConfigs) {
         List<StructureConfig> sortedList = new ArrayList<>();
         structureConfigs.forEach(structureConfig -> {
-            if (structureConfig.getType().equals(ConfigType.ENABLE_DISABLE)) {
+            if (structureConfig.getType().equals(ConfigType.TOGGLE)) {
                 sortedList.addFirst(structureConfig);
             } else sortedList.addLast(structureConfig);
         });
