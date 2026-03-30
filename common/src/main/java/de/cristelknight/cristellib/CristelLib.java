@@ -7,11 +7,17 @@ import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import de.cristelknight.cristellib.builtinpacks.RuntimePack;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
 import de.cristelknight.cristellib.data.condition.ConditionRegistry;
+import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.world.item.Items;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class CristelLib {
 
@@ -23,7 +29,7 @@ public class CristelLib {
             Constants.CRISTEL_LIB_PACK_ID,
             SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major(),
             "Runtime Pack for built-in features",
-            CristelLibExpectPlatform.getResourceStream(Constants.MOD_ID, "pack.png")
+            Services.PLATFORM.getResourceStream(Constants.MOD_ID, "pack.png")
     );
 
     private static final CristelLibRegistry REGISTRY = new CristelLibRegistry();
@@ -48,7 +54,7 @@ public class CristelLib {
     private static Map<String, Set<StructureConfig>> getConfigs() {
         Map<String, Set<StructureConfig>> configs = new HashMap<>();
 
-        for (Map.Entry<String, CristelLibAPI> entry : CristelLibExpectPlatform.getApis().entrySet()) {
+        for (Map.Entry<String, CristelLibAPI> entry : Services.PLATFORM.getApis().entrySet()) {
             String modId = entry.getKey();
             CristelLibAPI api = entry.getValue();
             CristelLib.readAPI(modId, api, configs);

@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "de.cristelknight.cristellib.mixin",
+  "refmap": "${mod_id}.refmap.json",
+  "compatibilityLevel": "${java}",
+  "mixins": [],
+  "client": [
+    "PackSelectionScreenMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+

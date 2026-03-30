@@ -2,8 +2,8 @@ package de.cristelknight.cristellib.builtinpacks;
 
 import com.mojang.datafixers.util.Pair;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
+import de.cristelknight.cristellib.platform.Services;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.*;
@@ -25,7 +25,7 @@ public class BuiltInPackLoader {
     }
 
     public static void registerPack(Identifier path, Component displayName, Supplier<Boolean> supplier) {
-        Pair<PackResources, PackResources> packs = CristelLibExpectPlatform.registerBuiltinResourcePack(path, displayName);
+        Pair<PackResources, PackResources> packs = Services.PLATFORM.registerBuiltinResourcePack(path, displayName);
         if (packs == null)
             return;
 
@@ -98,7 +98,7 @@ public class BuiltInPackLoader {
                     for (String overlay : metadata.overlays()) {
                         PackResources overlayPack = pack instanceof OverlayPack packWithOverlays ?
                                 packWithOverlays.createOverlay(overlay)
-                                : CristelLibExpectPlatform.createOverlay(pack, overlay);
+                                : Services.PLATFORM.createOverlay(pack, overlay);
                         if (overlayPack != null)
                             overlays.add(overlayPack);
                     }

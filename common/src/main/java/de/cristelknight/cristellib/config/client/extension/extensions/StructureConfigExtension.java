@@ -10,9 +10,9 @@ import de.cristelknight.cristellib.config.client.structure.ClientEDConfig;
 import de.cristelknight.cristellib.config.client.structure.ClientPlacementConfig;
 import de.cristelknight.cristellib.config.client.structure.ClientStructureConfig;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
-import de.cristelknight.cristellib.config.structure.toggle.ToggleConfigTransformer;
-import de.cristelknight.cristellib.config.structure.toggle.NestedToggleConfig;
 import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.structure.toggle.NestedToggleConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfigTransformer;
 import de.cristelknight.cristellib.util.Util;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -21,8 +21,6 @@ import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import me.shedaniel.clothconfig2.gui.entries.IntegerListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -33,7 +31,6 @@ import java.util.*;
 
 import static de.cristelknight.cristellib.config.client.ScreenBuilder.tooltip;
 
-@Environment(EnvType.CLIENT)
 public class StructureConfigExtension extends ConfigScreenExtension {
 
     private final Set<ClientStructureConfig> clientStructureConfigs = new HashSet<>();

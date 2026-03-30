@@ -10,9 +10,8 @@ import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.config.structure.ReadStructureSets;
 import de.cristelknight.cristellib.config.structure.toggle.ToggleConfig;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
-import net.minecraft.resources.Identifier;
-
 import de.cristelknight.cristellib.util.FileHelper;
+import net.minecraft.resources.Identifier;
 
 import java.nio.file.Path;
 import java.util.*;

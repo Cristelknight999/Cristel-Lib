@@ -1,7 +1,7 @@
 package de.cristelknight.cristellib.data.condition;
 
 import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.*;
+import com.mojang.serialization.Codec;
 
 import java.util.List;
 import java.util.Optional;

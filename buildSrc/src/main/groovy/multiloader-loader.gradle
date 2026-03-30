@@ -1,0 +1,101 @@
+plugins {
+    id 'multiloader-common'
+}
+
+configurations {
+    commonJava{
+        canBeResolved = true
+    }
+    commonResources{
+        canBeResolved = true
+    }
+}
+
+dependencies {
+    compileOnly(project(':common')) {
+        def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+        attributes {
+            attribute(loaderAttribute, 'common')
+        }
+    }
+    commonJava project(path: ':common', configuration: 'commonJava')
+    commonResources project(path: ':common', configuration: 'commonResources')
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn(configurations.commonJava)
+    source(configurations.commonJava)
+}
+
+processResources {
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+}
+
+/*
+tasks.named('javadoc', Javadoc).configure {
+    dependsOn(configurations.commonJava)
+    source(configurations.commonJava)
+}
+ */
+
+tasks.named('sourcesJar', Jar) {
+    dependsOn(configurations.commonJava)
+    from(configurations.commonJava)
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+}
+
+def changelogSource = rootProject.file("CHANGELOG.md")
+def changelogOutput = layout.buildDirectory.file("changelog.md")
+
+tasks.register("generateChangelog") {
+    inputs.file(changelogSource)
+    inputs.property('version', project.version)
+    outputs.file(changelogOutput)
+    doLast {
+        if (!changelogSource.exists()) {
+            throw new GradleException("Missing CHANGELOG.md at ${changelogSource}")
+        }
+
+        def lines = changelogSource.readLines("UTF-8")
+        def versionHeader = "## [${project.version}]"
+        def versionHeaderAlt = "## ${project.version}"
+        int start = -1
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines[i].startsWith(versionHeader) || lines[i].startsWith(versionHeaderAlt)) {
+                start = i
+                break
+            }
+        }
+        if (start == -1) {
+            def outFile = changelogOutput.get().asFile
+            outFile.parentFile.mkdirs()
+            outFile.text = ""
+            return
+        }
+
+        int end = lines.size()
+        for (int i = start + 1; i < lines.size(); i++) {
+            if (lines[i].startsWith("## ")) {
+                end = i
+                break
+            }
+        }
+
+        def section = lines.subList(start + 1, end).join(System.lineSeparator()).trim()
+        def outFile = changelogOutput.get().getAsFile()
+        outFile.parentFile.mkdirs()
+        outFile.text = section + System.lineSeparator()
+    }
+}
+
+tasks.matching { it.name in ["publishMod", "publishModrinth", "publishCurseforge", "publishGitHub"] }.configureEach {
+    dependsOn("generateChangelog")
+}
+
+plugins.withId("com.hypherionmc.modutils.modpublisher") {
+    publisher {
+        setChangelog(changelogOutput.get().getAsFile())
+    }
+}

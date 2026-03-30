@@ -1,7 +1,5 @@
 package de.cristelknight.cristellib.config.client.simple;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -9,7 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@Environment(EnvType.CLIENT)
 public class ClientConfigRegistry {
 
     private static final Map<String, Set<SimpleConfigScreen>> CONFIGS_WITH_SCREEN = new HashMap<>();

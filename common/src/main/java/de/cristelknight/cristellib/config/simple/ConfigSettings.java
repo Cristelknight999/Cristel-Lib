@@ -1,7 +1,8 @@
 package de.cristelknight.cristellib.config.simple;
 
-import blue.endless.jankson.annotation.Nullable;
+
 import com.mojang.serialization.Codec;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 

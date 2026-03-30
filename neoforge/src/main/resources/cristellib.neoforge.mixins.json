@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "de.cristelknight.cristellib.mixin",
+  "compatibilityLevel": "${java}",
+  "mixins": [
+    "JarContentsPackResourcesAccessor"
+  ],
+  "client": [
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

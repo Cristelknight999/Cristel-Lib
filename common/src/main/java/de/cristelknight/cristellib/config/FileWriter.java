@@ -8,7 +8,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.jankson.CommentArray;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 
@@ -74,7 +74,7 @@ public class FileWriter {
     }
 
     public static <T> T readFromModContainer(String modId, String subPath, Codec<T> codec, String errorMsg) {
-        InputStream stream = CristelLibExpectPlatform.getResourceStream(modId, subPath);
+        InputStream stream = Services.PLATFORM.getResourceStream(modId, subPath);
         if (stream == null) {
             throw new IllegalArgumentException(getWithPrefix("Couldn't create InputStream for subPath: " + subPath + " in ModContainer with id: " + modId));
         }

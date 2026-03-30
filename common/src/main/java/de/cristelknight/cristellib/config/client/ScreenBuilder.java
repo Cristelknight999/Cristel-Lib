@@ -1,13 +1,10 @@
 package de.cristelknight.cristellib.config.client;
 
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.config.client.extension.ConfigScreenExtension;
 import de.cristelknight.cristellib.config.client.extension.ExtensionRegistry;
+import de.cristelknight.cristellib.platform.Services;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -15,7 +12,6 @@ import net.minecraft.network.chat.MutableComponent;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Environment(EnvType.CLIENT)
 public class ScreenBuilder {
 
     private final String modId;
@@ -31,7 +27,7 @@ public class ScreenBuilder {
                 .setParentScreen(parent)
                 .setSavingRunnable(this::onConfigSave)
                 .setTitle(Component.translatable(
-                        "§7" + CristelLibExpectPlatform.getModDisplayName(modId) + " Configuration (via %s§7)", Constants.MOD_COMPONENT
+                        "§7" + Services.PLATFORM.getModDisplayName(modId) + " Configuration (via %s§7)", Constants.MOD_COMPONENT
                 ));
 
         addToBuilder(builder);
@@ -75,7 +71,7 @@ public class ScreenBuilder {
     }
 
     public static Set<String> allModsWithScreen() {
-        return ModLoadingUtil.getModIds().stream()
+        return Services.MOD_LOADING.getModIds().stream()
                 .filter(ScreenBuilder::shouldCreateScreen)
                 .collect(Collectors.toSet());
     }

@@ -4,24 +4,27 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.JsonHelper;
 import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -132,7 +135,7 @@ public class RuntimePack implements PackResources {
     }
 
     public byte[] addImageAsset(Identifier path, String modId, String subPath) {
-        InputStream stream = CristelLibExpectPlatform.getResourceStream(modId, subPath);
+        InputStream stream = Services.PLATFORM.getResourceStream(modId, subPath);
         if(stream == null)
             return null;
         byte[] asset = RuntimePackUtil.extractImageBytes(stream);
@@ -299,12 +302,20 @@ public class RuntimePack implements PackResources {
                 stream = supplier.get();
             }
         } catch (IOException e) {
-            throw new RuntimeException(Constants.getWithPrefix("Error reading pack.mcmeta from: " + packId()), e);
+            throw new RuntimeException(Constants.getWithPrefix("Error loading pack.mcmeta from: " + packId()), e);
         }
         if (stream == null) {
             throw new RuntimeException(Constants.getWithPrefix("Couldn't find pack.mcmeta of Runtime Pack: " + packId()));
         }
-        return FilePackResources.getMetadataFromStream(metadataSectionType, stream, metadata);
+
+        ResourceMetadata resourceMetadata;
+        try {
+            resourceMetadata = ResourceMetadata.fromJsonStream(stream);
+        } catch (IOException e) {
+            throw new RuntimeException(Constants.getWithPrefix("Error reading pack.mcmeta from: " + packId()), e);
+        }
+        Optional<T> section = resourceMetadata.getSection(metadataSectionType);
+        return section.orElse(null);
     }
 
     @Override

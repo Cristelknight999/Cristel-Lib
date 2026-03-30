@@ -1,9 +1,9 @@
 package de.cristelknight.cristellib.data;
 
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.FileHelper;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 public class PathFinder {
 
     // TODO: improve this for Fabric
-    public static PathFinder.PathFinderData getSubPathsInMod(String modId, Set<String> modsWithConfig) {
+    public static PathFinderData getSubPathsInMod(String modId, Set<String> modsWithConfig) {
         //long startTime = System.nanoTime(); // start profiling
 
         Set<String> autoConfig = new HashSet<>();
@@ -36,7 +36,7 @@ public class PathFinder {
                         filter,
                         dataPack::add);
             } else {
-                CristelLibExpectPlatform.findInModFiles(
+                Services.PLATFORM.findInModFiles(
                         modId,
                         "data",
                         path -> path.toString().endsWith(".json"),

@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.config.ConfigType;
 import de.cristelknight.cristellib.data.codec.StructureSetData;
+import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.FileHelper;
 import de.cristelknight.cristellib.util.JsonHelper;
 import de.cristelknight.cristellib.util.runtimepack.RuntimePackUtil;
@@ -136,12 +137,12 @@ public abstract class StructureConfig {
     }
 
     public static StructureConfig createWithDefaultConfigPath(String subPath, String name, ConfigType type) {
-        Path fullPath = CristelLibExpectPlatform.getConfigDirectory().resolve(subPath).resolve(name + ".json5");
+        Path fullPath = Services.PLATFORM.getConfigDirectory().resolve(subPath).resolve(name + ".json5");
         return create(fullPath, type);
     }
 
     public static StructureConfig createWithDefaultConfigPath(String name, ConfigType type) {
-        Path fullPath = CristelLibExpectPlatform.getConfigDirectory().resolve(name + ".json5");
+        Path fullPath = Services.PLATFORM.getConfigDirectory().resolve(name + ".json5");
         return create(fullPath, type);
     }
 

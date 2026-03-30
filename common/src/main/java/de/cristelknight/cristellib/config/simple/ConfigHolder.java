@@ -1,8 +1,8 @@
 package de.cristelknight.cristellib.config.simple;
 
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.ConfigManager;
 import de.cristelknight.cristellib.config.FileWriter;
+import de.cristelknight.cristellib.platform.Services;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,7 +54,7 @@ public class ConfigHolder<T> {
     }
 
     private Path getPath() {
-        return CristelLibExpectPlatform.getConfigDirectory().resolve(spec.getSubPath() + ".json5");
+        return Services.PLATFORM.getConfigDirectory().resolve(spec.getSubPath() + ".json5");
     }
 
     public static HashMap<String, String> getSafeComments(HashMap<String, String> comments) {

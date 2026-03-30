@@ -1,8 +1,8 @@
 package de.cristelknight.cristellib.config.simple;
 
 import com.mojang.serialization.Codec;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.client.simple.ClientConfigRegistry;
+import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.Util;
 
 import java.util.HashMap;
@@ -30,7 +30,7 @@ public class ConfigRegistry {
      */
     public static <T> void registerWithScreen(Class<T> clazz, ConfigSettings<T> spec, String modIdForScreen, String screenName, Runnable onScreenSave) {
         register(clazz, spec);
-        if (CristelLibExpectPlatform.isClient() && Util.isClothConfigLoaded())
+        if (Services.PLATFORM.isClient() && Util.isClothConfigLoaded())
             ClientConfigRegistry.registerScreen(modIdForScreen, screenName, onScreenSave, clazz);
     }
 

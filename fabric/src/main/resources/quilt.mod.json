@@ -1,28 +1,29 @@
 {
 	"schema_version": 1,
 	"quilt_loader": {
-		"group": "${maven_group}",
+		"group": "${group}",
 		"id": "${mod_id}",
 		"version": "${version}",
 		"metadata": {
 			"name": "${mod_name}",
-			"description": "${mod_description}",
+			"description": "${description}",
 			"contributors": {
-				"Cristelknight": "Owner"
+				"${mod_author}": "Owner"
 			},
 			"contact": {
 				"homepage": "${homepage}",
 				"issues": "${issues}",
 				"sources": "${sources}"
 			},
+			"license": "${license}",
 			"icon": "pack.png"
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"main": "de.cristelknight.cristellib.fabric.CristelLibFabric",
-			"client": "de.cristelknight.cristellib.fabric.client.CristelLibFabricClient",
+			"main": "de.cristelknight.cristellib.CristelLibFabric",
+			"client": "de.cristelknight.cristellib.client.CristelLibFabricClient",
 			"cristellib": "de.cristelknight.cristellib.api.BuiltInAPI",
-			"modmenu": "de.cristelknight.cristellib.fabric.client.ModMenuIntegration"
+			"modmenu": "de.cristelknight.cristellib.client.ModMenuIntegration"
 		},
 		"depends": [
 			{
@@ -38,18 +39,12 @@
 				"versions": ">=${minecraft_version}"
 			}
 		],
-		"breaks": [
-			{
-				"id": "t_and_t",
-				"versions": "<=1.13.8"
-			}
-		],
 		"jars": [
 			"META-INF/jars/jankson-1.2.3.jar"
 		]
 	},
 	"mixin": [
 		"cristellib.mixins.json",
-		"cristellib-common.mixins.json"
+		"cristellib.fabric.mixins.json"
 	]
 }

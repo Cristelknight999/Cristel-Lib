@@ -1,15 +1,12 @@
 package de.cristelknight.cristellib.config.client.extension;
 
-import de.cristelknight.cristellib.config.client.extension.extensions.StructureConfigExtension;
 import de.cristelknight.cristellib.config.client.extension.extensions.SimpleConfigExtension;
+import de.cristelknight.cristellib.config.client.extension.extensions.StructureConfigExtension;
 import de.cristelknight.cristellib.config.client.simple.ClientConfigRegistry;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Environment(EnvType.CLIENT)
 public class ExtensionRegistry {
 
     private static final Map<ExtensionFactory<?>, LoadPredicate> EXTENSIONS = new HashMap<>();

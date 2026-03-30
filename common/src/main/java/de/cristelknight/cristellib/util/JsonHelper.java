@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.platform.Services;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +25,7 @@ public class JsonHelper {
     }
 
     public static @Nullable JsonElement getElement(String getDataFromModId, String location) {
-        InputStream in = CristelLibExpectPlatform.getResourceStream(getDataFromModId, location);
+        InputStream in = Services.PLATFORM.getResourceStream(getDataFromModId, location);
         if (in == null) {
             Constants.LOG.warn("Couldn't create Input Stream for sub path {} in modId {}", location, getDataFromModId);
             return null;

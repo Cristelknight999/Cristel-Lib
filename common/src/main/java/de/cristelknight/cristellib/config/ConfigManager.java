@@ -3,16 +3,16 @@ package de.cristelknight.cristellib.config;
 import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonObject;
 import com.mojang.serialization.Codec;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.StructureConfig;
 import de.cristelknight.cristellib.StructureConfigPlacement;
 import de.cristelknight.cristellib.StructureConfigToggle;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
-import de.cristelknight.cristellib.config.structure.toggle.ToggleConfigTransformer;
+import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
 import de.cristelknight.cristellib.config.structure.toggle.NestedToggleConfig;
 import de.cristelknight.cristellib.config.structure.toggle.ToggleConfig;
-import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfigTransformer;
+import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.Identifier;
 
@@ -25,7 +25,7 @@ import static de.cristelknight.cristellib.Constants.getWithPrefix;
 
 public class ConfigManager {
 
-    public static final Path CONFIG_DIR = CristelLibExpectPlatform.getConfigDirectory();
+    public static final Path CONFIG_DIR = Services.PLATFORM.getConfigDirectory();
 
     public static final Path CONFIG_LIB = CONFIG_DIR.resolve("cristellib");
 

@@ -3,8 +3,8 @@ package de.cristelknight.cristellib.data.condition.conditions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.cristelknight.cristellib.Constants;
-import de.cristelknight.cristellib.ModLoadingUtil;
 import de.cristelknight.cristellib.data.condition.ICondition;
+import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.ModVersionComparator;
 
 import java.util.Optional;
@@ -20,7 +20,7 @@ public record ModLoadedCondition(String modId, Optional<String> optionalVersion)
     @Override
     public boolean test() {
         if (optionalVersion.isEmpty())
-            return ModLoadingUtil.isModLoaded(modId);
+            return Services.MOD_LOADING.isModLoaded(modId);
 
         String version = optionalVersion.get();
         for (ModVersionComparator comparator : ModVersionComparator.values()) {

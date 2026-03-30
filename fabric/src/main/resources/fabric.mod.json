@@ -1,44 +1,41 @@
 {
-  "schemaVersion": 1,
-  "id": "${mod_id}",
-  "version": "${version}",
-  "name": "${mod_name}",
-  "description": "${mod_description}",
-  "authors": [
-    "Cristelknight"
-  ],
-  "contact": {
-    "homepage": "${homepage}",
-    "issues": "${issues}",
-    "sources": "${sources}"
-  },
-  "license": "${mod_license}",
-  "icon": "pack.png",
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "de.cristelknight.cristellib.fabric.CristelLibFabric"
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_author}"
     ],
-    "client": [
-      "de.cristelknight.cristellib.fabric.client.CristelLibFabricClient"
+    "contact": {
+        "homepage": "${homepage}",
+        "issues": "${issues}",
+        "sources": "${sources}"
+    },
+    "license": "${license}",
+    "icon": "pack.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "de.cristelknight.cristellib.CristelLibFabric"
+        ],
+        "client": [
+            "de.cristelknight.cristellib.client.CristelLibFabricClient"
+        ],
+        "cristellib": [
+            "de.cristelknight.cristellib.api.BuiltInAPI"
+        ],
+        "modmenu": [
+            "de.cristelknight.cristellib.client.ModMenuIntegration"
+        ]
+    },
+    "mixins": [
+        "cristellib.mixins.json",
+        "cristellib.fabric.mixins.json"
     ],
-    "cristellib": [
-      "de.cristelknight.cristellib.api.BuiltInAPI"
-    ],
-    "modmenu": [
-      "de.cristelknight.cristellib.fabric.client.ModMenuIntegration"
-    ]
-  },
-  "mixins": [
-    "cristellib.mixins.json",
-    "cristellib-common.mixins.json"
-  ],
-  "depends": {
-    "fabricloader": ">=${fabric_loader_min_version}",
-    "fabric-api": ">=${fabric_api_version}",
-    "minecraft": ">=${minecraft_version}"
-  },
-  "breaks": {
-    "t_and_t": "<=1.13.8"
-  }
+    "depends": {
+        "fabricloader": ">=${fabric_loader_min_version}",
+        "fabric-api": ">=${fabric_api_version}",
+        "minecraft": ">=${minecraft_version}"
+    }
 }
