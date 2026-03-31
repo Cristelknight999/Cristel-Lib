@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.3]
+- move to MultiLoader
+- update to 26.1
+
 ## [3.1.2]
 - Refactor and improve StructureConfig class
 - Refactor ConfigManager class
