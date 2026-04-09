@@ -3,9 +3,9 @@ A Library Mod for Structure configs
 
 ## Features
 - Easy Structure Config System
-- Data support
-- Runtime Datapack
-- Datapack Loading
+- Runtime packs
+- Data/Resource pack Loading
+- fairly easy to use config creation in java
 
 ## Cristel Lib Wiki
 [Wiki](https://github.com/Cristelknight999/Cristel-Lib/wiki)
