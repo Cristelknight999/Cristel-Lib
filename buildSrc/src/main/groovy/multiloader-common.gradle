@@ -16,20 +16,19 @@ java {
 repositories {
     mavenCentral()
     // https://docs.gradle.org/current/userguide/declaring_repositories.html#declaring_content_exclusively_found_in_one_repository
+    def spongeRepository = maven {
+        name = 'Sponge'
+        url = uri('https://repo.spongepowered.org/repository/maven-public')
+    }
     exclusiveContent {
-        forRepository {
-            maven {
-                name = 'Sponge'
-                url = 'https://repo.spongepowered.org/repository/maven-public'
-            }
-        }
+        forRepository{spongeRepository}
         filter { includeGroupAndSubgroups('org.spongepowered') }
     }
     maven {
         name = 'BlameJared'
         url = 'https://maven.blamejared.com'
     }
-    maven { url "https://maven.shedaniel.me/" }
+    maven { url = "https://maven.shedaniel.me/" }
 }
 
 sourcesJar {
