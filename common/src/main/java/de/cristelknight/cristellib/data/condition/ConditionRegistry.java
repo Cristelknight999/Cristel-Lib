@@ -1,6 +1,7 @@
 package de.cristelknight.cristellib.data.condition;
 
 import com.mojang.serialization.Codec;
+import de.cristelknight.cristellib.Constants;
 import de.cristelknight.cristellib.data.condition.conditions.ConfigValueCondition;
 import de.cristelknight.cristellib.data.condition.conditions.ModLoadedCondition;
 import de.cristelknight.cristellib.data.condition.conditions.NotCondition;
@@ -30,7 +31,7 @@ public class ConditionRegistry {
                 return codecEntry.getKey();
             }
         }
-        return null;
+        throw new RuntimeException(Constants.getWithPrefix("Unregistered Codec, cannot get ICondition"));
     }
 
     private static void registerCondition(String type, Codec<? extends ICondition<?>> codec) {

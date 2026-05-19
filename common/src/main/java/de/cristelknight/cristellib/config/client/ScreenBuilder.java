@@ -39,7 +39,7 @@ public class ScreenBuilder {
     }
 
     public void addToBuilder(ConfigBuilder builder) {
-        for (Map.Entry<ExtensionRegistry.ExtensionFactory<?>, ExtensionRegistry.LoadPredicate> entry : ExtensionRegistry.getExtensions().entrySet()) {
+        for (var entry : ExtensionRegistry.getExtensions().entrySet()) {
             if (entry.getValue().test(modId) && !modId.equals(Constants.MC_ID)) {
                 ConfigScreenExtension extension = entry.getKey().create(modId);
                 extensions.add(extension);
@@ -67,7 +67,8 @@ public class ScreenBuilder {
         if (modId.equals(Constants.MOD_ID) || modId.equals(Constants.MC_ID))
             return false;
 
-        return ExtensionRegistry.getExtensions().values().stream().anyMatch(loadPredicate -> loadPredicate.test(modId));
+        return ExtensionRegistry.getExtensions().values().stream()
+                .anyMatch(loadPredicate -> loadPredicate.test(modId));
     }
 
     public static Set<String> allModsWithScreen() {

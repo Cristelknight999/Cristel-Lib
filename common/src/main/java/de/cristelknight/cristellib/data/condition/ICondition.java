@@ -38,8 +38,6 @@ public interface ICondition<T extends ICondition<T>> {
     private static <T extends ICondition<?>> JsonObject encode(T condition) {
         Codec<T> codec = (Codec<T>) condition.getCodec();
         String type = ConditionRegistry.getType(codec);
-        if (type == null)
-            throw new RuntimeException(Constants.getWithPrefix("Unregistered Codec for ICondition"));
 
         JsonElement e = FileWriter.writeToElement("Couldn't encode ICondition", codec, JsonOps.INSTANCE, condition);
         if (!(e instanceof JsonObject object))

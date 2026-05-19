@@ -52,9 +52,9 @@ public class FileWriter {
         }
     }
 
-    public static <T, K> K writeToElement(String errorMsg, Codec<T> codec, DynamicOps<K> ops, T from) {
-        DataResult<K> dataResult = codec.encodeStart(ops, from);
-        Optional<DataResult.Error<K>> error = dataResult.error();
+    public static <T, E> E writeToElement(String errorMsg, Codec<T> codec, DynamicOps<E> ops, T from) {
+        DataResult<E> dataResult = codec.encodeStart(ops, from);
+        Optional<DataResult.Error<E>> error = dataResult.error();
         if (error.isPresent()) {
             throw new IllegalArgumentException(getWithPrefix(errorMsg + "\n" + error.get().message()));
         }
@@ -82,9 +82,9 @@ public class FileWriter {
         return loadFromElement(errorMsg, codec, JsonOps.INSTANCE, load);
     }
 
-    public static <T, K> T loadFromElement(String errorMsg, Codec<T> codec, DynamicOps<K> ops, K load) {
-        DataResult<Pair<T, K>> decode = codec.decode(ops, load);
-        Optional<DataResult.Error<Pair<T, K>>> error = decode.error();
+    public static <T, E> T loadFromElement(String errorMsg, Codec<T> codec, DynamicOps<E> ops, E load) {
+        DataResult<Pair<T, E>> decode = codec.decode(ops, load);
+        Optional<DataResult.Error<Pair<T, E>>> error = decode.error();
 
         if (error.isPresent()) {
             throw new IllegalArgumentException(getWithPrefix(errorMsg) + "\n" + error.get().message());
