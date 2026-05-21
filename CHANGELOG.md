@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.1.4]
+- add missing structures (thx to @BAM2444 for pointing them out)
+
 ## [3.1.3]
 - move to MultiLoader
 - update to 26.1
