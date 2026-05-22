@@ -18,7 +18,7 @@ public class DataFixer {
     public static <T> boolean appliedFixer(Class<T> tClass, JsonObject object) {
         Set<Function<JsonObject, Boolean>> fixers = DATA_FIXERS.getOrDefault(tClass, Set.of());
         boolean changed = false;
-        for(Function<JsonObject, Boolean> fixer : fixers) {
+        for (Function<JsonObject, Boolean> fixer : fixers) {
             if (fixer != null && fixer.apply(object)) changed = true;
         }
         return changed;
@@ -31,13 +31,13 @@ public class DataFixer {
 
     public static void registerFixer() {
         register(BuiltInPackConfig.class, jsonObject -> {
-            if(jsonObject.containsKey("hideAllPacksInScreen")) return false;
+            if (jsonObject.containsKey("hideAllPacksInScreen")) return false;
             jsonObject.put("hideAllPacksInScreen", new JsonPrimitive(false));
             return true;
         });
 
         register(ACConfig.class, jsonObject -> {
-            if(jsonObject.containsKey("autoConfigSubPath")) return false;
+            if (jsonObject.containsKey("autoConfigSubPath")) return false;
             jsonObject.put("autoConfigSubPath", new JsonPrimitive(""));
             return true;
         });

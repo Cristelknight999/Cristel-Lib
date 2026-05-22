@@ -1,7 +1,8 @@
 package de.cristelknight.cristellib.config.simple;
 
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
 import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.config.FileWriter;
+import de.cristelknight.cristellib.PlatformHelper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,11 +50,11 @@ public class ConfigHolder<T> {
     }
 
     private void write(T data) {
-        ConfigManager.writeFile(getPath(), spec.getCodec(), getSafeComments(spec.getComments()), data, ConfigManager.createHeader(spec.getHeader()), spec.isSorted());
+        FileWriter.writeToFile(getPath(), spec.getCodec(), getSafeComments(spec.getComments()), data, ConfigManager.createHeader(spec.getHeader()), spec.isSorted());
     }
 
     private Path getPath() {
-        return CristelLibExpectPlatform.getConfigDirectory().resolve(spec.getSubPath() + ".json5");
+        return PlatformHelper.getConfigDirectory().resolve(spec.getSubPath() + ".json5");
     }
 
     public static HashMap<String, String> getSafeComments(HashMap<String, String> comments) {

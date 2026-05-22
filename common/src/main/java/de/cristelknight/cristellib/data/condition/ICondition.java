@@ -1,0 +1,58 @@
+package de.cristelknight.cristellib.data.condition;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
+import de.cristelknight.cristellib.Constants;
+import de.cristelknight.cristellib.config.FileWriter;
+import net.minecraft.util.GsonHelper;
+
+import java.util.Map;
+
+public interface ICondition<T extends ICondition<T>> {
+
+    /*
+    Could replace this by using a Registry, but then I need to deal with NeoForge nonsense:
+    Codec<ICondition<?>> CODEC = ConditionRegistry.REGISTRY.byNameCodec()
+            .dispatch("type", ICondition::getCodec, codec -> codec);
+     */
+
+    Codec<ICondition<?>> FULL_CODEC = Codec.PASSTHROUGH.xmap(
+            dynamic -> decode(dynamic.convert(JsonOps.INSTANCE).getValue()),
+            condition -> new Dynamic<>(JsonOps.INSTANCE, encode(condition))
+    );
+
+    private static ICondition<?> decode(JsonElement e) {
+        if (!(e instanceof JsonObject object))
+            throw new RuntimeException(Constants.getWithPrefix("Expected ICondition to be an Object"));
+
+        String type = GsonHelper.getAsString(object, "type");
+        Codec<? extends ICondition<?>> conditionCodec = ConditionRegistry.getCodec(type);
+        object.remove("type");
+        return FileWriter.loadFromElement("Couldn't read ICondition of type: " + type, conditionCodec, JsonOps.INSTANCE, object);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends ICondition<?>> JsonObject encode(T condition) {
+        Codec<T> codec = (Codec<T>) condition.getCodec();
+        String type = ConditionRegistry.getType(codec);
+
+        JsonElement e = FileWriter.writeToElement("Couldn't encode ICondition", codec, JsonOps.INSTANCE, condition);
+        if (!(e instanceof JsonObject object))
+            throw new RuntimeException(Constants.getWithPrefix("Expected ICondition to be an Object"));
+
+        JsonObject reordered = new JsonObject();
+        reordered.addProperty("type", type);
+        for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+            reordered.add(entry.getKey(), entry.getValue());
+        }
+        return reordered;
+    }
+
+    boolean test();
+
+    Codec<T> getCodec();
+
+}

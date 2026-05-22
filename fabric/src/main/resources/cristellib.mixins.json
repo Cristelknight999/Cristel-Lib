@@ -6,8 +6,8 @@
   "client": [
   ],
   "mixins": [
-    "LoadConfig",
-    "LoadPacks"
+    "BootstrapMixin",
+    "ResourceLoaderImplMixin"
   ],
   "injectors": {
     "defaultRequire": 1

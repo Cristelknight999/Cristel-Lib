@@ -15,20 +15,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class CristelLibFabric implements ModInitializer {
+
     @Override
     public void onInitialize() {
         CristelLib.init();
-        if(FabricLoader.getInstance().isDevelopmentEnvironment()) register();
-
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) registerCommands();
     }
 
-    public static void register() {
+    public static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            registerDumpPack(dispatcher);
+            registerDumpPackCmd(dispatcher);
         });
     }
 
-    private static void registerDumpPack(CommandDispatcher<CommandSourceStack> dispatcher) {
+    private static void registerDumpPackCmd(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("dump_runtime_pack")
                 .then(Commands.argument("outputPath", StringArgumentType.string())
                         .executes(ctx -> dumpPack(ctx, StringArgumentType.getString(ctx, "outputPath"))))
@@ -39,7 +39,7 @@ public class CristelLibFabric implements ModInitializer {
         CommandSourceStack source = ctx.getSource();
         try {
             Path path = Paths.get(outputPathStr);
-            CristelLib.RUNTIME_PACK.dumpToFolder(path);
+            CristelLib.CONFIG_PACK.dumpToFolder(path);
             source.sendSuccess(() -> Component.literal("RuntimePack dumped to: " + path.toAbsolutePath()), false);
             return 1;
         } catch (Exception e) {

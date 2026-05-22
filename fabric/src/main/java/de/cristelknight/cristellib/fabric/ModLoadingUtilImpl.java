@@ -1,27 +1,31 @@
 package de.cristelknight.cristellib.fabric;
 
-import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.ModLoadingUtil;
+import de.cristelknight.cristellib.Constants;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ModLoadingUtilImpl {
 
-    public static boolean isModLoaded(String modID) {
-        return FabricLoader.getInstance().isModLoaded(modID);
+    public static List<String> getModIds() {
+        return FabricLoader.getInstance().getAllMods().stream().map(mod -> mod.getMetadata().getId()).toList();
     }
 
-    public static Optional<Integer> compare(String modID, String version) {
-        if (ModLoadingUtil.isModLoaded(modID)) {
-            Version modVersion = FabricLoader.getInstance().getModContainer(modID).get().getMetadata().getVersion();
+    public static boolean isModLoaded(String modId) {
+        return FabricLoader.getInstance().isModLoaded(modId);
+    }
+
+    public static Optional<Integer> compare(String modId, String version) {
+        if (isModLoaded(modId)) {
+            Version modVersion = FabricLoader.getInstance().getModContainer(modId).get().getMetadata().getVersion();
             Version min;
             try {
                 min = Version.parse(version);
             } catch (VersionParsingException e) {
-                CristelLib.LOGGER.error("Couldn't parse version: {}", version);
+                Constants.LOG.error("Couldn't parse version: {}", version);
                 return Optional.empty();
             }
             return Optional.of(modVersion.compareTo(min));

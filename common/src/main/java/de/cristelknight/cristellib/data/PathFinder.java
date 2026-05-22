@@ -1,80 +1,113 @@
 package de.cristelknight.cristellib.data;
 
-import de.cristelknight.cristellib.CristelLib;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
+import de.cristelknight.cristellib.Constants;
+import de.cristelknight.cristellib.autoconfig.ModFinder;
 import de.cristelknight.cristellib.config.ConfigManager;
+import de.cristelknight.cristellib.PlatformHelper;
+import de.cristelknight.cristellib.util.FileHelper;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.BiFunction;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class PathFinder {
 
-    public static List<Path> getPathsInDir(String modId, String subPath) {
-        List<Path> paths = new ArrayList<>();
+    // TODO: improve this for Fabric
+    public static PathFinderData getSubPathsInMod(String modId, Set<String> modsWithConfig) {
+        //long startTime = System.nanoTime(); // start profiling
 
-        findInFiles(CristelLibExpectPlatform.getRootPaths(modId), modId, subPath, Files::exists, (path, file) -> {
-            if (Files.isRegularFile(file) && file.getFileName().toString().endsWith(".json")) {
-                paths.add(file);
-            }
-            return true;
-        }, true, Integer.MAX_VALUE);
-        return paths;
-    }
+        Set<String> autoConfig = new HashSet<>();
+        Set<String> structureConfig = new HashSet<>();
+        Set<String> dataPack = new HashSet<>();
+        Set<String> structureSets = ModFinder.shouldSkipModForACPre(modId, modsWithConfig) ? null : new HashSet<>();
 
-    private static void findInFiles(List<Path> rootPaths, String modId, String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
         try {
-            if (modId.equals("minecraft")) {
-                walk(ConfigManager.CONFIG_LIB.resolve(subPath), rootFilter, processor, visitAllFiles, maxDepth);
-                return;
+            if (modId.equals(Constants.MC_ID)) {
+                Predicate<Path> filter = path -> Files.isRegularFile(path) && path.toString().endsWith(".json");
+                walk(ConfigManager.CONFIG_LIB.resolve("structure_config"),
+                        filter,
+                        structureConfig::add);
+                walk(ConfigManager.CONFIG_LIB.resolve("data_pack"),
+                        filter,
+                        dataPack::add);
+            } else {
+                PlatformHelper.findInModFiles(
+                        modId,
+                        "data",
+                        path -> path.toString().endsWith(".json"),
+                        p -> categorizePath(p, autoConfig, structureConfig, dataPack, structureSets)
+                );
             }
-
-            findInModFiles(rootPaths, modId, String.format("data/cristellib/%s", subPath), rootFilter, processor, visitAllFiles, maxDepth);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(Constants.getWithPrefix("Error while trying to walk through mod files"), e);
         }
+
+        /*
+        long endTime = System.nanoTime(); // end profiling
+        double durationMs = (endTime - startTime) / 1_000_000.0;
+        CristelLib.LOGGER.error("Scanned mod {} in {}ms", modId, durationMs);
+         */
+
+        return new PathFinderData(autoConfig, structureConfig, dataPack, structureSets == null ?
+                Set.of() :
+                structureSets
+        );
     }
 
+    private static final Pattern STRUCTURE_SET = Pattern.compile("data/[^/]+/worldgen/structure_set/.*");
 
+    private static void categorizePath(String path,
+                                       Set<String> autoConfig,
+                                       Set<String> structureConfig,
+                                       Set<String> dataPack,
+                                       Set<String> structureSets) {
 
-    private static void findInModFiles(List<Path> rootPaths, String modId, String subPath, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) throws IOException {
-        boolean hasOldPath = false;
-        boolean hasNewPath = false;
-        for (var root : rootPaths) {
-            Path newPath = root.resolve(subPath);
+        // Normalize slashes for consistency across OSes
+        path = FileHelper.normalizeResourcePath(path);
 
-            if (!hasOldPath) hasOldPath = Files.exists(root.resolve(subPath + "s"));
-            if (!hasNewPath) hasNewPath = Files.exists(newPath);
-
-            walk(newPath, rootFilter, processor, visitAllFiles, maxDepth);
-        }
-        if (hasOldPath && !hasNewPath)
-            CristelLib.LOGGER.warn("Mod with id: {} only has an old path for subPath: {}. New Path for Cristel Lib >=2.0.1 is missing! Maybe contact the mod author to let them know.", modId, subPath);
-
-    }
-
-    public static void walk(Path root, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) throws IOException {
-        if (root == null || !Files.exists(root) || !rootFilter.test(root)) {
+        if (!path.startsWith("data/")) {
             return;
         }
-        if (processor == null) return;
-        try (var stream = Files.walk(root, maxDepth)) {
-            Iterator<Path> itr = stream.iterator();
 
-            while (itr.hasNext()) {
-                boolean keepGoing = processor.apply(root, itr.next());
-                if (!visitAllFiles && !keepGoing) {
-                    return;
+        if (structureSets != null && STRUCTURE_SET.matcher(path).matches()) {
+            structureSets.add(path);
+            return;
+        }
+
+        if (!path.startsWith("data/cristellib/")) {
+            return;
+        }
+
+        if (path.startsWith("data/cristellib/structure_config/")) {
+            structureConfig.add(path);
+        } else if (path.startsWith("data/cristellib/data_pack/")) {
+            dataPack.add(path);
+        } else if (path.startsWith("data/cristellib/auto_config/")) {
+            autoConfig.add(path);
+        }
+    }
+
+
+    public static void walk(Path root, Predicate<Path> fileFilter, Consumer<String> consumer) throws IOException {
+        if (root == null || !Files.exists(root)) return;
+
+        try (var stream = Files.walk(root, Integer.MAX_VALUE)) {
+            for (Path subPath : (Iterable<Path>) stream::iterator) {
+                if (fileFilter.test(subPath)) {
+                    consumer.accept(subPath.toString());
                 }
             }
         }
     }
 
-
+    public record PathFinderData(Set<String> autoConfig,
+                                 Set<String> structureConfig,
+                                 Set<String> dataPack,
+                                 Set<String> structureSets) {}
 
 }

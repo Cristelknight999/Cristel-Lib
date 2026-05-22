@@ -1,166 +1,103 @@
 package de.cristelknight.cristellib.config;
 
-import blue.endless.jankson.*;
-import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
+import blue.endless.jankson.JsonElement;
+import blue.endless.jankson.JsonObject;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
-import de.cristelknight.cristellib.CristelLib;
 import de.cristelknight.cristellib.StructureConfig;
-import de.cristelknight.cristellib.CristelLibExpectPlatform;
-import de.cristelknight.cristellib.config.serialize.ed.EDConfig;
-import de.cristelknight.cristellib.config.serialize.ed.EDConfigTransformer;
-import de.cristelknight.cristellib.config.serialize.ed.NestedEDConfig;
-import de.cristelknight.cristellib.config.serialize.placement.PlacementConfig;
+import de.cristelknight.cristellib.StructureConfigPlacement;
+import de.cristelknight.cristellib.StructureConfigToggle;
 import de.cristelknight.cristellib.config.simple.ConfigRegistry;
 import de.cristelknight.cristellib.config.simple.datafixer.DataFixer;
-import de.cristelknight.cristellib.util.JanksonUtil;
+import de.cristelknight.cristellib.config.structure.placement.PlacementConfig;
+import de.cristelknight.cristellib.config.structure.toggle.NestedToggleConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfig;
+import de.cristelknight.cristellib.config.structure.toggle.ToggleConfigTransformer;
+import de.cristelknight.cristellib.PlatformHelper;
 import de.cristelknight.cristellib.util.jankson.JanksonOps;
 import net.minecraft.resources.ResourceLocation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static de.cristelknight.cristellib.CristelLib.getWithPrefix;
+import static de.cristelknight.cristellib.Constants.getWithPrefix;
 
 public class ConfigManager {
 
-    public static final Path CONFIG_DIR = CristelLibExpectPlatform.getConfigDirectory();
+    public static final Path CONFIG_DIR = PlatformHelper.getConfigDirectory();
 
     public static final Path CONFIG_LIB = CONFIG_DIR.resolve("cristellib");
 
-    public static final Jankson JANKSON = Jankson.builder().build();
+    public static void createToggleConfig(StructureConfigToggle config) {
+        Map<String, NestedToggleConfig> nestedStructureMap;
+        if (config.getToggleConfigs() == null) {
+            nestedStructureMap = ToggleConfigTransformer.mapToNestedStructures(config);
+        } else
+            nestedStructureMap = ToggleConfigTransformer.mapToNestedStructuresWithValues(config);
 
-    public static final Supplier<JsonGrammar.Builder> JSON_GRAMMAR_BUILDER = () -> new JsonGrammar.Builder().withComments(true).bareSpecialNumerics(true).printCommas(true);
-
-    public static final JsonGrammar JSON_GRAMMAR = JSON_GRAMMAR_BUILDER.get().build();
-
-    public static void createEDConfig(StructureConfig config, boolean override) {
-        Map<String, NestedEDConfig> nestedStructureMap;
-        if(config.enableDisableConfig == null) {
-            Map<ResourceLocation, List<ResourceLocation>> sets = config.getDefaultStructures();
-            nestedStructureMap = EDConfigTransformer.mapToNestedStructures(sets, config);
-        } else nestedStructureMap = EDConfigTransformer.mapToNestedStructuresWithValues(config.enableDisableConfig, config);
-
-        writeConfig(config, NestedEDConfig.ED_CODEC, nestedStructureMap, override);
+        writeConfig(config, NestedToggleConfig.TOGGLE_CODEC, nestedStructureMap);
     }
 
-    public static Map<ResourceLocation, EDConfig> readEDConfig(StructureConfig config) {
-        Map<String, NestedEDConfig> configMap = readFromJanksonPath(config.getPath(), NestedEDConfig.ED_CODEC);
+    public static Map<ResourceLocation, ToggleConfig> readToggleConfig(StructureConfigToggle config) {
+        Map<String, NestedToggleConfig> externalMap = FileWriter.readFromJanksonPath(config.getPath(), NestedToggleConfig.TOGGLE_CODEC);
 
-        Map<ResourceLocation, EDConfig> map = new HashMap<>();
-        for (String structureSet : configMap.keySet()) {
-            map.put(config.toDefaultRL(structureSet), new EDConfig(EDConfigTransformer.stringBooleanMap(configMap.get(structureSet), "")));
-        }
-        return map;
+        return externalMap.entrySet().stream().collect(Collectors.toMap(
+                entry -> config.toDefaultId(entry.getKey()),
+                entry -> new ToggleConfig(entry.getValue())
+        ));
     }
 
-    public static void createPlacementConfig(StructureConfig config, boolean override) {
-        Map<ResourceLocation, PlacementConfig> sets = config.placementConfig == null ? config.getDefaultStructurePlacement() : config.placementConfig;
-        Map<String, PlacementConfig> sets2 = sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultString(entry.getKey()), Map.Entry::getValue));
-        writeConfig(config, PlacementConfig.PLACEMENT_CODEC, sets2, override);
+    public static void createPlacementConfig(StructureConfigPlacement config) {
+        Map<ResourceLocation, PlacementConfig> internalMap = config.getPlacementConfigs() == null ?
+                config.getDefaultStructurePlacements() :
+                config.getPlacementConfigs();
+
+        Map<String, PlacementConfig> externalMap = internalMap.entrySet().stream().collect(Collectors.toMap(
+                entry -> config.toDefaultString(entry.getKey()),
+                Map.Entry::getValue
+        ));
+        writeConfig(config, PlacementConfig.PLACEMENT_CODEC, externalMap);
     }
 
-    public static Map<ResourceLocation, PlacementConfig> readPlacementConfig(StructureConfig config) {
-        Map<String, PlacementConfig> sets = readFromJanksonPath(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
-        return sets.entrySet().stream().collect(Collectors.toMap(entry -> config.toDefaultRL(entry.getKey()), Map.Entry::getValue));
-    }
+    public static Map<ResourceLocation, PlacementConfig> readPlacementConfig(StructureConfigPlacement config) {
+        Map<String, PlacementConfig> externalMap = FileWriter.readFromJanksonPath(config.getPath(), PlacementConfig.PLACEMENT_CODEC);
 
-    // File and Codec Util
-    public static String createHeader(String header) {
-        if(header == null || header.isEmpty()) return "";
-        if (!header.endsWith("\n")) {
-            header += "\n";
-        }
-        return "/*\n" + header + "*/\n";
+        return externalMap.entrySet().stream().collect(Collectors.toMap(
+                entry -> config.toDefaultId(entry.getKey()),
+                Map.Entry::getValue
+        ));
     }
 
     // Write
-    public static <T> void writeConfig(StructureConfig config, Codec<T> codec, T from, boolean override) {
-        Path path = config.getPath();
-        if (!override && path.toFile().exists()) return;
-
-        writeFile(config.getPath(), codec, config.getComments(), from, ConfigManager.createHeader(config.getHeader()), true);
-    }
-
-
-    public static <T> void writeFile(Path path, Codec<T> codec, Map<String, String> comments, T from, String header, boolean isSorted) {
-        JsonElement jsonElement = createElement(path, codec, JanksonOps.INSTANCE, from);
-
-        if (jsonElement instanceof JsonObject jsonObject) {
-            jsonElement = JanksonUtil.addCommentsAndAlphabeticallySortRecursively(comments, jsonObject, "", isSorted);
-        }
-        try {
-            Files.createDirectories(path.getParent());
-            String output = header + jsonElement.toJson(JSON_GRAMMAR);
-            Files.write(path, output.getBytes());
-        } catch (IOException e) {
-            CristelLib.LOGGER.error(e.toString());
-        }
-    }
-
-    public static <T, K> K createElement(Path path, Codec<T> codec, DynamicOps<K> ops, T from) {
-        DataResult<K> dataResult = codec.encodeStart(ops, from);
-        Optional<DataResult.Error<K>> error = dataResult.error();
-        if (error.isPresent()) {
-            throw new IllegalArgumentException(getWithPrefix(String.format("Jankson file creation for \"%s\" failed due to the following error(s):\n%s", path.toString(), error.get().message())));
-        }
-
-        return dataResult.result().orElseThrow();
+    public static <T> void writeConfig(StructureConfig config, Codec<T> codec, T from) {
+        FileWriter.writeToFile(config.getPath(), codec, config.getComments(), from, createHeader(config.getHeader()), true);
     }
 
     // Read
-    public static <T> T readFromJanksonPath(Path path, Codec<T> codec) {
-        JsonElement load;
-        try {
-            load = JANKSON.load(path.toFile());
-        } catch (Exception errorMsg) {
-            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
-        }
-        return readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
-    }
-
+    // SimpleConfig helper
     public static <T> T readFromJanksonPathWithFix(Path path, Codec<T> codec, Consumer<T> writeAfterFix) {
         JsonElement load;
         try {
-            load = JANKSON.load(path.toFile());
+            load = FileWriter.JANKSON.load(path.toFile());
         } catch (Exception errorMsg) {
             throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
         }
         boolean gotFixed = load instanceof JsonObject object && DataFixer.appliedFixer(ConfigRegistry.getClazzFromCodec(codec), object);
-        T config = readElement(String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path), codec, JanksonOps.INSTANCE, load);
-        if(gotFixed) writeAfterFix.accept(config);
+        T config = FileWriter.loadFromElement(
+                String.format("Couldn't read %s, crashing instead. Maybe try to delete the config files!", path),
+                codec, JanksonOps.INSTANCE, load
+        );
+        if (gotFixed) writeAfterFix.accept(config);
         return config;
     }
 
-    public static <T> T readFromJsonPath(String errorMsg, Path path, Codec<T> codec) {
-        InputStream stream;
-        try {
-            stream = Files.newInputStream(path);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
+    // File and Codec Util
+    public static String createHeader(String header) {
+        if (header == null || header.isEmpty()) return "";
+        if (!header.endsWith("\n")) {
+            header += "\n";
         }
-        com.google.gson.JsonElement load = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-        return readElement(errorMsg, codec, JsonOps.INSTANCE, load);
-    }
-
-    public static <T, K> T readElement(String errorMsg, Codec<T> codec, DynamicOps<K> ops, K load) {
-        DataResult<Pair<T, K>> decode = codec.decode(ops, load);
-        Optional<DataResult.Error<Pair<T, K>>> error = decode.error();
-
-        if (error.isPresent()) {
-            throw new IllegalArgumentException(getWithPrefix(errorMsg) + " " + error.get().message());
-        }
-        return decode.result().orElseThrow().getFirst();
+        return "/*\n" + header + "*/\n";
     }
 }
