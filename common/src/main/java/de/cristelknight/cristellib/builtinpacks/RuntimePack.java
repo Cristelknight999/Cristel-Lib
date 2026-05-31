@@ -11,7 +11,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.*;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
-import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.flag.FeatureFlags;
@@ -54,7 +53,7 @@ public class RuntimePack implements PackResources {
                 this.id,
                 Component.literal(description),
                 new BuiltinResourcePackSource(),
-                Optional.of(new KnownPack(Constants.MOD_ID, this.id, String.valueOf(version)))
+                Optional.empty()
         );
 
         if (imageStream != null) {

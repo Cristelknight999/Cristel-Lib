@@ -15,7 +15,6 @@ import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
-import net.minecraft.server.packs.repository.KnownPack;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -37,7 +36,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class PlatformHelperImpl {
-
     public static Path getConfigDirectory() {
         return FMLPaths.CONFIGDIR.get();
     }
@@ -61,11 +59,15 @@ public class PlatformHelperImpl {
         String path = id.getPath();
         Path totalPath = getResourceDirectory(modID, id.getPath());
         if (totalPath != null) {
+            // Use Optional.empty() so NeoForge does NOT include these packs in the
+            // known-packs handshake.  If a KnownPack is set here the server advertises
+            // the pack to connecting clients; the client has no matching data pack
+            // entry to acknowledge, causing the configuration-phase sync to stall / crash.
             PackLocationInfo metadata = new PackLocationInfo(
                     id.toString(),
                     displayName,
                     new BuiltinResourcePackSource(),
-                    Optional.of(new KnownPack(Constants.MOD_ID, id.toString(), ModList.get().getModFileById(modID).versionString()))
+                    Optional.empty()
             );
             PathPackResources server = new PathPackResources(metadata, totalPath);
             PathPackResources client = new PathPackResources(metadata, totalPath);
