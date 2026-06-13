@@ -15,13 +15,11 @@ import java.util.*;
 
 public class Util {
 
-    public static boolean isClothConfigLoaded() {
-        if (CristelLibExpectPlatform.getPlatform().equals(Platform.FABRIC))
-            return ModLoadingUtil.isModLoaded("cloth-config");
-        else
-            return ModLoadingUtil.isModLoaded("cloth_config");
-    }
+    public static final String CLOTH_ID = CristelLibExpectPlatform.getPlatform().equals(Platform.FABRIC) ? "cloth-config" : "cloth_config";
 
+    public static boolean isClothConfigLoaded() {
+        return ModLoadingUtil.isModLoaded(CLOTH_ID);
+    }
 
     public static <V> V getFirst(Collection<V> collection) {
         Iterator<V> it = collection.iterator();
@@ -33,7 +31,7 @@ public class Util {
     }
 
     private static final Set<String> SKIP_MODS = Set.of("neoforge", "java", Constants.MOD_ID,
-            "modmenu", "cloth-config", "cloth-basic-math"
+            "modmenu", CLOTH_ID, "cloth-basic-math"
     );
 
     // TODO: fix this mess, do excludes properly
