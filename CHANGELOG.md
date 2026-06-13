@@ -1,5 +1,12 @@
 # Changelog
 
+
+## [3.1.7]
+- improve placement config auto-finder
+- fix NeoForge client pack sync
+- fix NeoForge pack load order
+- remove outdated ru_ru translations
+
 ## [3.1.4]
 - add missing structures (thx to @BAM2444 for pointing them out)
 
