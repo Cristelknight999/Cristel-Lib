@@ -54,7 +54,7 @@ public class RuntimePack implements PackResources {
                 this.id,
                 Component.literal(description),
                 new BuiltinResourcePackSource(),
-                Optional.of(new KnownPack(Constants.MOD_ID, this.id, String.valueOf(version)))
+                Optional.empty()
         );
 
         if (imageStream != null) {
