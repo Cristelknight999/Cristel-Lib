@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.7]
+- improve placement config auto-finder
+- fix NeoForge client pack sync
+- fix NeoForge pack load order
+- add missing structures (thx to @BAM2444 for pointing them out)
+- update zh_cn translation
+
 ## [3.1.2]
 - Refactor and improve StructureConfig class
 - Refactor ConfigManager class
