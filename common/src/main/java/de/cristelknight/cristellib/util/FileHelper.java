@@ -94,9 +94,9 @@ public class FileHelper {
      * @param fileName  the filename to parse
      * @param separator the character used to separate namespace and path
      * @return a Pair where left = namespace, right = path
-     * @throws IllegalArgumentException if the filename is invalid or separator is missing
+     * @throws IdentifierException if the filename is invalid or separator is missing
      */
-    public static Pair<String, String> parseNamespaceAndPath(String fileName, char separator) throws IllegalArgumentException {
+    public static Pair<String, String> parseNamespaceAndPath(String fileName, char separator) throws IdentifierException {
         int sepIndex = fileName.indexOf(separator);
         if (sepIndex < 1 || sepIndex == fileName.length() - 1) {
             throw new IdentifierException("Invalid file name: " + fileName + ", missing or misplaced separator '" + separator + "'");
