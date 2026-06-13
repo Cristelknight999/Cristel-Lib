@@ -37,7 +37,7 @@ public class CristelLibFabricClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (shouldOpenScreen) {
                 shouldOpenScreen = false;
-                if (pending != null) client.setScreen(pending);
+                if (pending != null) client.setScreenAndShow(pending);
                 pending = null;
             }
         });
