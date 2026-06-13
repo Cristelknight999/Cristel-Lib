@@ -8,7 +8,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.*;
 import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.RepositorySource;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
@@ -68,51 +70,85 @@ public class BuiltInPackLoader {
                     config.disabledPacks().contains(pack.packId()))
                 continue;
 
-            Component displayName = entry.displayName();
-            PackLocationInfo metadata = new PackLocationInfo(
-                    pack.packId(),
-                    displayName,
-                    new BuiltinResourcePackSource(),
-                    pack.knownPackInfo()
-            );
-            PackSelectionConfig selectionConfig = new PackSelectionConfig(
-                    true,
-                    Pack.Position.TOP,
-                    false
-            );
+            Pack profile = buildPack(entry, type);
 
-            Pack profile = Pack.readMetaAndCreate(metadata, new Pack.ResourcesSupplier() {
-                @Override
-                public @NotNull PackResources openPrimary(@NonNull PackLocationInfo var1) {
+            if (profile == null) continue;
+            consumer.accept(profile);
+        }
+    }
+
+    /**
+     * Registers one {@link RepositorySource} per qualifying pack so that NeoForge's
+     * per-source alphabetical sorting (via TreeMap in {@code PackRepository.discoverAvailable})
+     * does not reorder packs relative to their {@link #PACK_LIST} insertion order.
+     * Each single-pack source has only one entry in NeoForge's TreeMap, so sorting is a no-op,
+     * and the outer LinkedHashMap preserves source-registration order = PACK_LIST order.
+     */
+    public static void registerEachPackAsSource(PackType type, Consumer<RepositorySource> sourceRegistrar) {
+        if (!frozen) throw new RuntimeException(getWithPrefix("Tried to load Packs before the Registry phase is over!"));
+        if (PACK_LIST.isEmpty()) return;
+
+        for (BuiltInPack entry : PACK_LIST) {
+            PackResources pack = entry.packResource();
+            if (!entry.type().equals(type) || pack.getNamespaces(type).isEmpty()) continue;
+
+            sourceRegistrar.accept(consumer -> {
+                BuiltInPackConfig config = ConfigRegistry.get(BuiltInPackConfig.class);
+                if (!entry.supplier().get() || config.disabledPacks().contains(pack.packId())) return;
+                Pack profile = buildPack(entry, type);
+                if (profile == null) return;
+                consumer.accept(profile);
+            });
+        }
+    }
+
+    @Nullable
+    private static Pack buildPack(BuiltInPack entry, PackType type) {
+        PackResources pack = entry.packResource();
+        Component displayName = entry.displayName();
+
+        PackLocationInfo metadata = new PackLocationInfo(
+                pack.packId(),
+                displayName,
+                new BuiltinResourcePackSource(),
+                pack.knownPackInfo()
+        );
+        PackSelectionConfig selectionConfig = new PackSelectionConfig(
+                true,
+                Pack.Position.TOP,
+                false
+        );
+
+        Pack profile = Pack.readMetaAndCreate(metadata, new Pack.ResourcesSupplier() {
+            @Override
+            public @NotNull PackResources openPrimary(@NonNull PackLocationInfo var1) {
+                return pack;
+            }
+
+            @Override
+            public @NonNull PackResources openFull(@NonNull PackLocationInfo packLocationInfo, Pack.@NonNull Metadata metadata) {
+                if (metadata.overlays().isEmpty()) {
                     return pack;
                 }
 
-                @Override
-                public @NotNull PackResources openFull(@NonNull PackLocationInfo var1, Pack.@NonNull Metadata metadata) {
-                    if (metadata.overlays().isEmpty()) {
-                        return pack;
-                    }
+                List<PackResources> overlays = new ArrayList<>(metadata.overlays().size());
 
-                    List<PackResources> overlays = new ArrayList<>(metadata.overlays().size());
-
-                    for (String overlay : metadata.overlays()) {
-                        PackResources overlayPack = pack instanceof OverlayPack packWithOverlays ?
-                                packWithOverlays.createOverlay(overlay)
-                                : Services.PLATFORM.createOverlay(pack, overlay);
-                        if (overlayPack != null)
-                            overlays.add(overlayPack);
-                    }
-
-                    return new CompositePackResources(pack, overlays);
+                for (String overlay : metadata.overlays()) {
+                    PackResources overlayPack = pack instanceof OverlayPack packWithOverlays ?
+                            packWithOverlays.createOverlay(overlay)
+                            : Services.PLATFORM.createOverlay(pack, overlay);
+                    if (overlayPack != null)
+                        overlays.add(overlayPack);
                 }
-            }, type, selectionConfig);
 
-            if (profile == null) {
-                Constants.LOG.error("Pack Profile with display name: {} is null", displayName);
-                continue;
+                return new CompositePackResources(pack, overlays);
             }
-            consumer.accept(profile);
+        }, type, selectionConfig);
+
+        if (profile == null) {
+            Constants.LOG.error("Pack Profile with display name: {} is null", displayName);
         }
+        return profile;
     }
 
     private static boolean frozen = false;

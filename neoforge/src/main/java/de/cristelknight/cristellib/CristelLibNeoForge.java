@@ -1,8 +1,8 @@
 package de.cristelknight.cristellib;
 
 
+import de.cristelknight.cristellib.builtinpacks.BuiltInPackLoader;
 import de.cristelknight.cristellib.client.CristelLibNeoForgeClient;
-import de.cristelknight.cristellib.extrapackutil.RepositorySourceMaker;
 import de.cristelknight.cristellib.util.Util;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -24,6 +24,7 @@ public class CristelLibNeoForge {
     }
 
     private void injectPackRepositories(AddPackFindersEvent event) {
-        event.addRepositorySource(new RepositorySourceMaker(event.getPackType()));
+        // Register one source per pack to avoid NeoForge's per-source alphabetical sort
+        BuiltInPackLoader.registerEachPackAsSource(event.getPackType(), event::addRepositorySource);
     }
 }

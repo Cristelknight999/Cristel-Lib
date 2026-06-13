@@ -72,7 +72,7 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
                 id.toString(),
                 displayName,
                 new BuiltinResourcePackSource(),
-                Optional.of(new KnownPack(Constants.MOD_ID, id.toString(), ModList.get().getModFileById(modId).versionString()))
+                Optional.empty()
         );
 
         PackResources server = new JarContentsPackResources(metadata, file.getContents(), path);
