@@ -18,7 +18,7 @@ public class CristelLibNeoForge {
     public CristelLibNeoForge(IEventBus eventBus) {
         CristelLib.preInit();
         CristelLib.init();
-        eventBus.addListener(EventPriority.LOWEST, AddPackFindersEvent.class, this::injectPackRepositories);
+        eventBus.addListener(this::injectPackRepositories);
 
         if (FMLEnvironment.dist.isClient() && Util.isClothConfigLoaded()) {
             CristelLibNeoForgeClient.registerMainConfigScreen();
@@ -27,8 +27,6 @@ public class CristelLibNeoForge {
     }
 
     private void injectPackRepositories(AddPackFindersEvent event) {
-        // Run after other mods so CristelLib-provided override packs keep the highest
-        // priority, matching Fabric's tail injection behavior.
         // Register one source per pack to avoid NeoForge's per-source alphabetical sort
         // (PackRepository.discoverAvailable puts each source's packs into a TreeMap).
         BuiltInPackLoader.registerEachPackAsSource(event.getPackType(), event::addRepositorySource);
