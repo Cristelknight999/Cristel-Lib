@@ -1,0 +1,7 @@
+{
+  "cristellib.nameAndSource": "%s（由 §d§nCristel Lib§r 提供）",
+
+  "cristellib.autoCategoryInfo": "此界面由%s自动生成。你可以在配置文件中禁用此自动界面。\n模组开发者可以点击此处查看维基。",
+  "cristellib.placementCategoryTitle": "结构放置",
+  "cristellib.toggleCategoryTitle": "开关结构"
+}
