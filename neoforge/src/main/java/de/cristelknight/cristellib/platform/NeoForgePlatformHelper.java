@@ -14,7 +14,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.repository.KnownPack;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.jarcontents.JarContents;

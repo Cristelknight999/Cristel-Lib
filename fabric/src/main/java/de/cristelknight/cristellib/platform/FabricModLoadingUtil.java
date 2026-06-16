@@ -22,6 +22,7 @@ public class FabricModLoadingUtil implements IModLoadingUtil {
     }
 
     @Override
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public Optional<Integer> compare(String modId, String version) {
         if (isModLoaded(modId)) {
             Version modVersion = FabricLoader.getInstance().getModContainer(modId).get().getMetadata().getVersion();

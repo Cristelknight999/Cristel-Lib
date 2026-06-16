@@ -10,9 +10,7 @@ import de.cristelknight.cristellib.data.condition.ConditionRegistry;
 import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.Util;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.world.item.Items;
 
 import java.util.HashMap;
 import java.util.HashSet;

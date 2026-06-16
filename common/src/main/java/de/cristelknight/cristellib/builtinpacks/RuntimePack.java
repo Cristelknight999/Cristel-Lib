@@ -13,7 +13,6 @@ import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
-import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.GsonHelper;

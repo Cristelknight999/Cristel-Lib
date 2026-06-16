@@ -42,6 +42,7 @@ public class NeoForgeModLoadingUtil implements IModLoadingUtil {
     }
 
     @Override
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public Optional<Integer> compare(String modId, String version) {
         if (isModLoaded(modId)) {
             ModList modList = ModList.get();
