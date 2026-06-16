@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.1.8]
+- update to 26.2
+- modmenu now doesn't show an available config screen option for Cristel Lib if cloth config isn't even installed
 
 ## [3.1.7]
 - improve placement config auto-finder
