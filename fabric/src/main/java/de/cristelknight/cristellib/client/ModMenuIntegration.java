@@ -16,16 +16,18 @@ public class ModMenuIntegration implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return screenFactory -> Util.isClothConfigLoaded() ? new ScreenBuilder(Constants.MOD_ID).create(screenFactory) : null;
+        return Util.isClothConfigLoaded() ?
+                screenFactory -> new ScreenBuilder(Constants.MOD_ID).create(screenFactory)
+                : ModMenuApi.super.getModConfigScreenFactory();
     }
 
     @Override
     public Map<String, ConfigScreenFactory<?>> getProvidedConfigScreenFactories() {
-        if (!Util.isClothConfigLoaded()) return Map.of();
+        if (!Util.isClothConfigLoaded())
+            return ModMenuApi.super.getProvidedConfigScreenFactories();
 
         Map<String, ConfigScreenFactory<?>> screens = new HashMap<>();
         for (String modId : ScreenBuilder.allModsWithScreen()) {
-
             screens.put(modId, (providedConfigScreenFactories) ->
                     new ScreenBuilder(modId).create(providedConfigScreenFactories)
             );
