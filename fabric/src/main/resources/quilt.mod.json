@@ -32,7 +32,7 @@
 			},
 			{
 				"id": "fabric-api",
-				"versions": ">=${fabric_api_version}"
+				"versions": "*"
 			},
 			{
 				"id": "minecraft",
