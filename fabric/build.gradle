@@ -107,7 +107,7 @@ publisher {
 
     // Add supported java versions. Currently only used by CurseForge
     // Supports anything that can be parsed using JavaVersion.toVersion()
-    setJavaVersions([("VERSION_" + java_version)])
+    setJavaVersions([JavaVersion.toVersion(java_version)])
 }
 
 /* Implement mcgradleconventions loader attribute
