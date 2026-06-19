@@ -63,17 +63,20 @@ public class ScreenBuilder {
         return Optional.empty();
     }
 
-    public static boolean shouldCreateScreen(String modId) {
-        if (modId.equals(Constants.MOD_ID) || modId.equals(Constants.MC_ID))
-            return false;
-
+    public static boolean hasScreen(String modId) {
         return ExtensionRegistry.getExtensions().values().stream()
                 .anyMatch(loadPredicate -> loadPredicate.test(modId));
     }
 
+    public static Set<String> allModsWithScreenFiltered() {
+        Set<String> allModsWithScreen = allModsWithScreen();
+        allModsWithScreen.removeAll(Set.of(Constants.MOD_ID, Constants.MC_ID));
+        return allModsWithScreen;
+    }
+
     public static Set<String> allModsWithScreen() {
         return Services.MOD_LOADING.getModIds().stream()
-                .filter(ScreenBuilder::shouldCreateScreen)
+                .filter(ScreenBuilder::hasScreen)
                 .collect(Collectors.toSet());
     }
 }

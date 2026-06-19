@@ -83,12 +83,10 @@ public class CristelLibFabricClient implements ClientModInitializer {
             return 0;
         }
 
-        Minecraft.getInstance().execute(() -> {
-            pending = new ScreenBuilder(modId).create(null);
-            if (pending != null) {
-                shouldOpenScreen = true;
-            }
-        });
+        pending = new ScreenBuilder(modId).create(null);
+        if (pending != null) {
+            shouldOpenScreen = true;
+        }
 
         if (!shouldOpenScreen) {
             source.sendError(Component.literal("Mod: " + modId + " has no (enabled) screen!"));

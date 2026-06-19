@@ -23,7 +23,7 @@ public class CristelLibNeoForgeClient {
     }
 
     public static void addOtherConfigScreens() {
-        for (String modId : ScreenBuilder.allModsWithScreen()) {
+        for (String modId : ScreenBuilder.allModsWithScreenFiltered()) {
 
             Optional<? extends ModContainer> container = ModList.get().getModContainerById(modId);
             if (container.isEmpty() || container.get().getCustomExtension(IConfigScreenFactory.class).isPresent()) continue;
