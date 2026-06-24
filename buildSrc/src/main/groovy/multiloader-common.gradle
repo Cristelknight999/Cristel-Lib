@@ -59,7 +59,7 @@ processResources {
     var expandProps = [
             'version'                      : version,
             'group'                        : project.group, //Else we target the task's group.
-            'minecraft_version'            : minecraft_version,
+            'minecraft_version'            : minecraft_versions.tokenize(",").getFirst(),
             'fabric_api_version'           : fabric_api_version,
             'fabric_loader_version'        : fabric_loader_version,
             'fabric_loader_min_version'    : fabric_loader_min_version,

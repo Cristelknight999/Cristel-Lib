@@ -32,7 +32,7 @@ config="cristellib.mixins.json"
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
-versionRange="[${neoforge_version},)"
+versionRange="[${minecraft_version},)"
 ordering="NONE"
 side="BOTH"
 

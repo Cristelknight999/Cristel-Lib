@@ -1,5 +1,7 @@
 # Changelog
 
+## [3.1.8]
+- fix versioning on 1.26 and 1.26.1
 
 ## [3.1.7]
 - improve placement config auto-finder
