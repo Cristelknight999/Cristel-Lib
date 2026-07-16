@@ -3,6 +3,7 @@ package de.cristelknight.cristellib.config.client.extension;
 import de.cristelknight.cristellib.config.client.extension.extensions.SimpleConfigExtension;
 import de.cristelknight.cristellib.config.client.extension.extensions.StructureConfigExtension;
 import de.cristelknight.cristellib.config.client.simple.ClientConfigRegistry;
+import de.cristelknight.cristellib.util.Util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +26,10 @@ public class ExtensionRegistry {
     }
 
     static {
-        registerConfigScreenExtension(StructureConfigExtension::new, StructureConfigExtension.SHOULD_LOAD);
-        registerConfigScreenExtension(SimpleConfigExtension::new, ClientConfigRegistry::hasScreens);
+        if(Util.isClothConfigLoaded()) {
+            registerConfigScreenExtension(StructureConfigExtension::new, StructureConfigExtension.SHOULD_LOAD);
+            registerConfigScreenExtension(SimpleConfigExtension::new, ClientConfigRegistry::hasScreens);
+        }
     }
 
     @FunctionalInterface
