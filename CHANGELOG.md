@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.1.9]
+- fix error log spam when using mod menu and cloth config is not installed
+
 ## [3.1.8]
 - fix versioning on 1.26 and 1.26.1
 
