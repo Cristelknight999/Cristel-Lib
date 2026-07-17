@@ -4,17 +4,17 @@ import de.cristelknight.cristellib.config.simple.custom.AlphaColorField;
 import de.cristelknight.cristellib.config.simple.custom.ColorField;
 import net.minecraft.network.chat.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 @SuppressWarnings("unchecked")
 public class SimpleScreenTypes {
 
-    private static final List<EntryPredicate> FIELD_ENTRIES = new ArrayList<>();
+    private static final List<EntryPredicate> FIELD_ENTRIES = new CopyOnWriteArrayList<>();
 
     /* ----------------------------
        Registration helpers

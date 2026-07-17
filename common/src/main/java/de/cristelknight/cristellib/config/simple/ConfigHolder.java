@@ -11,29 +11,36 @@ import java.util.HashMap;
 public class ConfigHolder<T> {
 
     private final ConfigSettings<T> spec;
-    private T instance;
+    private volatile T instance;
 
     public ConfigHolder(ConfigSettings<T> spec) {
         this.spec = spec;
     }
 
     public T getInstance() {
-        if (instance == null) {
-            instance = readOrCreate();
+        T current = instance;
+        if (current != null) {
+            return current;
         }
-        return instance;
+
+        synchronized (this) {
+            if (instance == null) {
+                instance = readOrCreate();
+            }
+            return instance;
+        }
     }
 
-    public void update(T newData) {
+    public synchronized void update(T newData) {
         instance = newData;
     }
 
-    public void updateAndSave(T newData) {
+    public synchronized void updateAndSave(T newData) {
         instance = newData;
         save();
     }
 
-    public void save() {
+    public synchronized void save() {
         write(instance);
     }
 
@@ -50,14 +57,10 @@ public class ConfigHolder<T> {
     }
 
     private void write(T data) {
-        FileWriter.writeToFile(getPath(), spec.getCodec(), getSafeComments(spec.getComments()), data, ConfigManager.createHeader(spec.getHeader()), spec.isSorted());
+        FileWriter.writeToFile(getPath(), spec.getCodec(), FileWriter.getSafeComments(spec.getComments()), data, ConfigManager.createHeader(spec.getHeader()), spec.isSorted());
     }
 
     private Path getPath() {
         return Services.PLATFORM.getConfigDirectory().resolve(spec.getSubPath() + ".json5");
-    }
-
-    public static HashMap<String, String> getSafeComments(HashMap<String, String> comments) {
-        return comments == null ? new HashMap<>() : comments;
     }
 }

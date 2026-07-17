@@ -1,6 +1,7 @@
 package de.cristelknight.cristellib.config.client.extension.extensions;
 
 import de.cristelknight.cristellib.Constants;
+import de.cristelknight.cristellib.config.FileWriter;
 import de.cristelknight.cristellib.config.client.ScreenBuilder;
 import de.cristelknight.cristellib.config.client.extension.ConfigScreenExtension;
 import de.cristelknight.cristellib.config.client.simple.ClientConfigRegistry;
@@ -39,7 +40,7 @@ public class SimpleConfigExtension extends ConfigScreenExtension {
         Class<T> config = (Class<T>) simpleScreen.simpleConfig();
         T configInstance = ConfigRegistry.get(config);
         ConfigSettings<T> settings = ConfigRegistry.getSettings(config);
-        HashMap<String, String> comments = ConfigHolder.getSafeComments(settings.getComments());
+        HashMap<String, String> comments = FileWriter.getSafeComments(settings.getComments());
 
         String categoryName = simpleScreen.screenName();
         ConfigCategory category = builder.getOrCreateCategory(Component.literal(categoryName.isEmpty() ? config.getSimpleName() : categoryName));
