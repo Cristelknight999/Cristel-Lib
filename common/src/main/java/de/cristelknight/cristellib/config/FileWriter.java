@@ -27,8 +27,6 @@ import static de.cristelknight.cristellib.Constants.getWithPrefix;
 
 public class FileWriter {
 
-    public static final Jankson JANKSON = Jankson.builder().build();
-
     public static final Supplier<JsonGrammar.Builder> JSON_GRAMMAR_BUILDER = () -> new JsonGrammar.Builder().withComments(true).bareSpecialNumerics(true).printCommas(true);
 
     public static final JsonGrammar JSON_GRAMMAR = JSON_GRAMMAR_BUILDER.get().build();
@@ -66,7 +64,7 @@ public class FileWriter {
     public static <T> T readFromJanksonPath(Path path, Codec<T> codec) {
         JsonElement load;
         try {
-            load = JANKSON.load(path.toFile());
+            load = Jankson.builder().build().load(path.toFile());
         } catch (Exception errorMsg) {
             throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
         }

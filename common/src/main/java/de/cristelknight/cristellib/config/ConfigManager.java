@@ -1,5 +1,6 @@
 package de.cristelknight.cristellib.config;
 
+import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonObject;
 import com.mojang.serialization.Codec;
@@ -79,9 +80,9 @@ public class ConfigManager {
     public static <T> T readFromJanksonPathWithFix(Path path, Codec<T> codec, Consumer<T> writeAfterFix) {
         JsonElement load;
         try {
-            load = FileWriter.JANKSON.load(path.toFile());
+            load = Jankson.builder().build().load(path.toFile());
         } catch (Exception errorMsg) {
-            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files!", path)));
+            throw new IllegalArgumentException(getWithPrefix(String.format("Couldn't load %s, crashing instead. Maybe try to delete the config files, with following error: (%s)", path, errorMsg)));
         }
         boolean gotFixed = load instanceof JsonObject object && DataFixer.appliedFixer(ConfigRegistry.getClazzFromCodec(codec), object);
         T config = FileWriter.loadFromElement(
