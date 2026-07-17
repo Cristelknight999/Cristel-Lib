@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.1.11]
+- fix more thread safety issues
+
 ## [3.1.10]
 - fix crash caused by Jankson not being thread-safe
 
