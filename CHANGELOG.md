@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.1.10]
+- fix crash caused by Jankson not being thread-safe
+
 ## [3.1.9]
 - fix error log spam when using mod menu and cloth config is not installed
 
