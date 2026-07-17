@@ -5,15 +5,16 @@ import de.cristelknight.cristellib.config.client.extension.extensions.StructureC
 import de.cristelknight.cristellib.config.client.simple.ClientConfigRegistry;
 import de.cristelknight.cristellib.util.Util;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ExtensionRegistry {
 
-    private static final Map<ExtensionFactory<?>, LoadPredicate> EXTENSIONS = new HashMap<>();
+    private static final ConcurrentMap<ExtensionFactory<?>, LoadPredicate> EXTENSIONS = new ConcurrentHashMap<>();
 
     public static Map<ExtensionFactory<?>, LoadPredicate> getExtensions() {
-        return EXTENSIONS;
+        return Map.copyOf(EXTENSIONS);
     }
 
     @SuppressWarnings("unused")

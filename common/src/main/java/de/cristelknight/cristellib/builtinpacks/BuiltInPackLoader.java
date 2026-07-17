@@ -22,6 +22,11 @@ import static de.cristelknight.cristellib.Constants.getWithPrefix;
 
 public class BuiltInPackLoader {
 
+    private static final Object PACK_LOCK = new Object();
+    private static final List<BuiltInPack> REGISTERED_PACKS = new ArrayList<>();
+    private static List<BuiltInPack> frozenPacks = List.of();
+    private static boolean frozen;
+
     public static void registerAlwaysOnPack(Identifier path, Component displayName) {
         registerPack(path, displayName, () -> true);
     }
@@ -42,23 +47,27 @@ public class BuiltInPackLoader {
     }
 
     public static void registerPack(PackResources packResource, Component displayName, Supplier<Boolean> supplier, PackType type) {
-        if (frozen)
-            throw new RuntimeException(getWithPrefix(String.format("BuiltInPack Registry is already frozen. Cannot add Pack with id: %s", packResource.packId())));
-        PACK_LIST.add(new BuiltInPack(packResource, displayName, supplier, type));
+        synchronized (PACK_LOCK) {
+            if (frozen) {
+                throw new IllegalStateException(getWithPrefix(String.format(
+                        "BuiltInPack Registry is already frozen. Cannot add Pack with id: %s", packResource.packId())));
+            }
+            REGISTERED_PACKS.add(new BuiltInPack(packResource, displayName, supplier, type));
+        }
     }
 
     public static List<String> getCustomIDs() {
-        return PACK_LIST.stream().map(pack -> pack.packResource().packId()).filter(id -> !id.equals(Constants.CRISTEL_LIB_PACK_ID.toString())).toList();
+        return getFrozenPacks().stream().map(pack -> pack.packResource().packId())
+                .filter(id -> !id.equals(Constants.CRISTEL_LIB_PACK_ID.toString()))
+                .toList();
     }
 
-    private static final List<BuiltInPack> PACK_LIST = new ArrayList<>();
-
     public static void getPacks(Consumer<Pack> consumer, PackType type) {
-        if (!frozen) throw new RuntimeException(getWithPrefix("Tried to load Packs before the Registry phase is over!"));
-        if (PACK_LIST.isEmpty()) return;
+        List<BuiltInPack> packs = getFrozenPacks();
+        if (packs.isEmpty()) return;
         BuiltInPackConfig config = ConfigRegistry.get(BuiltInPackConfig.class);
 
-        for (BuiltInPack entry : PACK_LIST) {
+        for (BuiltInPack entry : packs) {
             PackResources pack = entry.packResource();
 
             // Check conditions
@@ -80,15 +89,15 @@ public class BuiltInPackLoader {
     /**
      * Registers one {@link RepositorySource} per qualifying pack so that NeoForge's
      * per-source alphabetical sorting (via TreeMap in {@code PackRepository.discoverAvailable})
-     * does not reorder packs relative to their {@link #PACK_LIST} insertion order.
+     * does not reorder packs relative to their registration order.
      * Each single-pack source has only one entry in NeoForge's TreeMap, so sorting is a no-op,
-     * and the outer LinkedHashMap preserves source-registration order = PACK_LIST order.
+     * and the outer LinkedHashMap preserves source-registration order.
      */
     public static void registerEachPackAsSource(PackType type, Consumer<RepositorySource> sourceRegistrar) {
-        if (!frozen) throw new RuntimeException(getWithPrefix("Tried to load Packs before the Registry phase is over!"));
-        if (PACK_LIST.isEmpty()) return;
+        List<BuiltInPack> packs = getFrozenPacks();
+        if (packs.isEmpty()) return;
 
-        for (BuiltInPack entry : PACK_LIST) {
+        for (BuiltInPack entry : packs) {
             PackResources pack = entry.packResource();
             if (!entry.type().equals(type) || pack.getNamespaces(type).isEmpty()) continue;
 
@@ -151,9 +160,22 @@ public class BuiltInPackLoader {
         return profile;
     }
 
-    private static boolean frozen = false;
-
     public static void freeze() {
-        frozen = true;
+        synchronized (PACK_LOCK) {
+            if (frozen) {
+                return;
+            }
+            frozenPacks = List.copyOf(REGISTERED_PACKS);
+            frozen = true;
+        }
+    }
+
+    private static List<BuiltInPack> getFrozenPacks() {
+        synchronized (PACK_LOCK) {
+            if (!frozen) {
+                throw new IllegalStateException(getWithPrefix("Tried to load Packs before the Registry phase is over!"));
+            }
+            return frozenPacks;
+        }
     }
 }

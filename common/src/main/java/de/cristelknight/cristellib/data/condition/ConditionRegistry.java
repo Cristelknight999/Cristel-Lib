@@ -8,8 +8,9 @@ import de.cristelknight.cristellib.data.condition.conditions.NotCondition;
 import de.cristelknight.cristellib.data.condition.conditions.OrCondition;
 import net.minecraft.resources.Identifier;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ConditionRegistry {
 
@@ -19,7 +20,7 @@ public class ConditionRegistry {
             ResourceKey.createRegistryKey(Constants.id("condition_types")), Lifecycle.stable());
      */
 
-    private static final Map<String, Codec<? extends ICondition<?>>> CONDITIONS = new HashMap<>();
+    private static final ConcurrentMap<String, Codec<? extends ICondition<?>>> CONDITIONS = new ConcurrentHashMap<>();
 
     protected static Codec<? extends ICondition<?>> getCodec(String type) {
         return CONDITIONS.get(type);

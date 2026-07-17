@@ -5,12 +5,13 @@ import de.cristelknight.cristellib.config.client.simple.ClientConfigRegistry;
 import de.cristelknight.cristellib.platform.Services;
 import de.cristelknight.cristellib.util.Util;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ConfigRegistry {
 
-    private static final Map<Class<?>, ConfigHolder<?>> CONFIGS = new HashMap<>();
+    private static final ConcurrentMap<Class<?>, ConfigHolder<?>> CONFIGS = new ConcurrentHashMap<>();
 
     public static <T> void register(Class<T> clazz, ConfigSettings<T> spec) {
         CONFIGS.put(clazz, new ConfigHolder<>(spec));
