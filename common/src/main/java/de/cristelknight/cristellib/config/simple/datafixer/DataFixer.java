@@ -5,15 +5,14 @@ import blue.endless.jankson.JsonPrimitive;
 import de.cristelknight.cristellib.autoconfig.ACConfig;
 import de.cristelknight.cristellib.builtinpacks.BuiltInPackConfig;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 public class DataFixer {
 
-    private static final Map<Class<?>, Set<Function<JsonObject, Boolean>>> DATA_FIXERS = new HashMap<>();
+    private static final ConcurrentMap<Class<?>, Set<Function<JsonObject, Boolean>>> DATA_FIXERS = new ConcurrentHashMap<>();
 
     public static <T> boolean appliedFixer(Class<T> tClass, JsonObject object) {
         Set<Function<JsonObject, Boolean>> fixers = DATA_FIXERS.getOrDefault(tClass, Set.of());
@@ -25,7 +24,7 @@ public class DataFixer {
     }
 
     public static void register(Class<?> clazz, Function<JsonObject, Boolean> fixer) {
-        DATA_FIXERS.computeIfAbsent(clazz, (l) -> new HashSet<>()).add(fixer);
+        DATA_FIXERS.computeIfAbsent(clazz,_ -> ConcurrentHashMap.newKeySet()).add(fixer);
     }
 
 

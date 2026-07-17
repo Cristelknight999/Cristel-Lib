@@ -50,7 +50,7 @@ public class Util {
             ReadData.readData(modId, autoConfigInfoData, configs, modIdAndSets);
         }
 
-        ACInfoData.currentData = autoConfigInfoData;
+        ACInfoData.setCurrentData(autoConfigInfoData);
         ACConfig.update();
 
         for (String modId : modIdAndSets.keySet()) {

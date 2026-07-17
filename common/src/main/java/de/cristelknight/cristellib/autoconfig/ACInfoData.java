@@ -1,14 +1,27 @@
 package de.cristelknight.cristellib.autoconfig;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import de.cristelknight.cristellib.Constants;
 
 import java.util.List;
 import java.util.Map;
 
 public record ACInfoData(boolean disableAC, boolean disableACScreen, String autoConfigPath) {
 
-    public static Map<String, ACInfoData> currentData;
+    private static boolean frozen = false;
+    private static ImmutableMap<String, ACInfoData> currentData;
+
+    public static ImmutableMap<String, ACInfoData> getCurrentData() {
+        return currentData;
+    }
+
+    public static void setCurrentData(Map<String, ACInfoData> data) {
+        if(frozen) throw new RuntimeException(Constants.getWithPrefix("Cannot set Auto Config data twice! It's already frozen."));
+        currentData = ImmutableMap.copyOf(data);
+        frozen = true;
+    }
 
     public static final Codec<ACInfoData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
