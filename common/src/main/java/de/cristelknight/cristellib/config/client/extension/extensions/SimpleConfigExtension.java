@@ -21,8 +21,7 @@ import java.util.*;
 public class SimpleConfigExtension extends ConfigScreenExtension {
 
     // Helper: store changes in a map for each config + field
-    // TODO: better data structure here
-    private static final Map<Class<?>, Map<String, Object>> pendingUpdates = new HashMap<>();
+    private final Map<Class<?>, Map<String, Object>> pendingUpdates = new HashMap<>();
 
     public SimpleConfigExtension(String modId) {
         super(modId);
@@ -95,10 +94,7 @@ public class SimpleConfigExtension extends ConfigScreenExtension {
     // Saving
     @Override
     public void onSave() {
-        Map<String, Set<SimpleConfigScreen>> simpleConfigsWithScreen = ClientConfigRegistry.getAllConfigsWithScreen();
-        if (!simpleConfigsWithScreen.containsKey(modId)) return;
-
-        for (SimpleConfigScreen simpleConfig : simpleConfigsWithScreen.get(modId)) {
+        for (SimpleConfigScreen simpleConfig : ClientConfigRegistry.getScreens(modId)) {
             saveConfig(simpleConfig.simpleConfig(), modId);
         }
     }

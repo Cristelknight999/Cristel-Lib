@@ -72,7 +72,7 @@ public class ReadData {
                         String.format("Couldn't read %s, crashing instead. This file is corrupted!", subPath)
                 );
 
-            modIdAndConfigs.computeIfAbsent(modId, k -> new HashSet<>()).add(config);
+            modIdAndConfigs.computeIfAbsent(modId, _ -> new HashSet<>()).add(config);
         }
     }
 

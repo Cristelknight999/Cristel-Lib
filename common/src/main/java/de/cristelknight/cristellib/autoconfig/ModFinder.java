@@ -22,11 +22,11 @@ public class ModFinder {
     public static void addAutoConfigs(String modId, Set<String> structureSets, Map<String, Set<StructureConfig>> structureConfigData, CristelLibRegistry registry) {
         Set<StructureConfig> configSet = new HashSet<>();
 
-        boolean customPath = ACInfoData.currentData.containsKey(modId) && !ACInfoData.currentData.get(modId).autoConfigPath().isEmpty();
+        boolean customPath = ACInfoData.getCurrentData().containsKey(modId) && !ACInfoData.getCurrentData().get(modId).autoConfigPath().isEmpty();
         String customSubPath = ConfigRegistry.get(ACConfig.class).autoConfigSubPath();
 
-        StructureConfig toggleConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modId).autoConfigPath() : customSubPath + modId, "structure_toggle_config", ConfigType.TOGGLE);
-        StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.currentData.get(modId).autoConfigPath() : customSubPath + modId, "structure_placement_config", ConfigType.PLACEMENT);
+        StructureConfig toggleConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.getCurrentData().get(modId).autoConfigPath() : customSubPath + modId, "structure_toggle_config", ConfigType.TOGGLE);
+        StructureConfig placementConfig = StructureConfig.createWithDefaultConfigPath(customPath ? ACInfoData.getCurrentData().get(modId).autoConfigPath() : customSubPath + modId, "structure_placement_config", ConfigType.PLACEMENT);
 
         structureSets.forEach(path -> {
             JsonElement e = JsonHelper.getElement(modId, path);
